@@ -10,6 +10,7 @@
         <!-- Bootstrap -->
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+        <link href="css/bootstrap-datepicker.min.css" rel="stylesheet">
 
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -93,9 +94,16 @@
             <script src="js/jquery.min.js"></script>
             <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
             <script src="js/bootstrap.min.js"></script>
+            <script src="js/bootstrap-datepicker.min.js">
             <script src="js/parser.js"></script>
             <script>
                 $('form').validate();
+
+                $('#date').datepicker({
+                    format: 'dd.mm.yyyy',
+                    weekStart: 1,
+                    todayBtn: true
+                });
 
                 // Handler for the submit button click event
                 var clickHandler = function (event) {
