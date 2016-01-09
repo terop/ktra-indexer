@@ -7,7 +7,7 @@ var parseFeature = function (line, featureStatus) {
         featureStatus['sample-mania'] = true;
     } else if (line.search(/Does It Sound Good at 170\?/i) !== -1) {
         featureStatus['sound-good'] = true;
-    } else if (line.search(/The Hardest Record In The World/i) !== -1) {
+    } else if (line.search(/(?:The )?Hardest Record In The World/i) !== -1) {
         featureStatus['hardest-record'] = true;
     } else if (line.search(/[\w\s]+ Guest Mix/i) !== -1) {
         featureStatus['guest-mix'] = true;
@@ -20,7 +20,7 @@ var parseFeature = function (line, featureStatus) {
 
 // Parses a track extracting artist and track name including possible show feature
 var parseTrack = function (trackLine, feature) {
-    var split = trackLine.split(/[-–]/);
+    var split = trackLine.split(/\s+[-–]\s+/);
     if (split.length !== 2) {
         // Invalid track name
         return null;
