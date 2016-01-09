@@ -3,7 +3,8 @@
 CREATE TABLE episodes (
        ep_id SERIAL PRIMARY KEY,
        number INTEGER NOT NULL UNIQUE,
-       name VARCHAR(100) NOT NULL UNIQUE
+       name VARCHAR(100) NOT NULL UNIQUE,
+       date DATE NOT NULL
 );
 
 -- Artists table
@@ -22,7 +23,7 @@ CREATE TABLE tracks (
 -- Features table
 CREATE TABLE features (
        feature_id INTEGER PRIMARY KEY,
-       name VARCHAR(50) NOT NULL
+       name VARCHAR(50) NOT NULL UNIQUE
 );
 INSERT INTO features (feature_id, name) VALUES (1, 'Does It Sound Good At 170?');
 INSERT INTO features (feature_id, name) VALUES (2, 'The Hardest Record In The World');

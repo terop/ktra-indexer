@@ -53,58 +53,78 @@
         </nav>
 
         <div class="container content">
-            <h3>Add episode</h3>
+            {% if not insert-status %}
+                <h3>Add episode</h3>
 
-            <form method="post" action="/add">
-                <label for="date">Episode date</label>
-                <input type="text" class="form-control" id="date" name="date" required>
-                <br>
-                <label for="name">Episode name</label>
-                <input type="text" class="form-control" id="name" name="name" required>
-                <br>
-                <label for="tracklist">Tracklist</label>
-                <textarea id="tracklist" class="form-control required" name="tracklist" cols="80"
-                          rows="20" required></textarea>
-                <br>
-                <input type="submit" id="submitBtn" class="btn btn-primary" value="Submit">
-            </form>
+                <form method="post" action="/add">
+                    <label for="date">Episode date</label>
+                    <input type="text" class="form-control" id="date" name="date" required>
+                    <br>
+                    <label for="name">Episode name</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                    <br>
+                    <label for="tracklist">Tracklist</label>
+                    <textarea id="tracklist" class="form-control required" name="tracklist" cols="80"
+                              rows="20" required></textarea>
+                    <br>
+                    <input type="submit" id="submitBtn" class="btn btn-primary" value="Submit">
+                </form>
+            {% else %}
+                {% ifequal insert-status.status "success" %}
+                    <h3>Successfully inserted episode!</h3>
+                {% else %}
+                    <h3 style="color: red;">
+                        {% ifequal insert-status.cause "duplicate-episode" %}
+                            Error: duplicate episode insert attempted
+                        {% else %}
+                            {% ifequal insert-status.cause "invalid-name" %}
+                                Error: the episode has an invalid name
+                            {% else %}
+                                Error: a general error occurred
+                            {% endifequal %}
+                        {% endifequal %}
+                    </h3>
+                {% endifequal %}
+            {% endif %}
         </div>
 
-        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="js/jquery.min.js"></script>
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-        <script src="js/parser.js"></script>
-        <script>
-            $('form').validate();
+        {% if not insert-status %}
+            <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+            <script src="js/jquery.min.js"></script>
+            <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.14.0/jquery.validate.min.js"></script>
+            <script src="js/bootstrap.min.js"></script>
+            <script src="js/parser.js"></script>
+            <script>
+                $('form').validate();
 
-            // Handler for the submit button click event
-            var clickHandler = function (event) {
-                var tracklistTa = document.getElementById('tracklist'),
-                    tlArrayWithEmptyLines = tracklistTa.value.split('\n');
-                var tlArray = tlArrayWithEmptyLines.filter(function (value) {
-                    return value.length > 0;
-                });
+                // Handler for the submit button click event
+                var clickHandler = function (event) {
+                    var tracklistTa = document.getElementById('tracklist'),
+                        tlArrayWithEmptyLines = tracklistTa.value.split('\n');
+                    var tlArray = tlArrayWithEmptyLines.filter(function (value) {
+                        return value.length > 0;
+                    });
 
-                // Validate date
-                if (!/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(document.getElementById('date').value)) {
-                    alert('Error: episode date has invalid format!');
-                    event.preventDefault();
-                    return;
-                }
-
-                if (tlArray.length > 0) {
-                    var encodedTracklist = parseTracklist(tlArray);
-                    if (encodedTracklist.length < 5) {
-                        alert('Error: tracklist is too short!');
+                    // Validate date
+                    if (!/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(document.getElementById('date').value)) {
+                        alert('Error: episode date has invalid format!');
                         event.preventDefault();
                         return;
                     }
-                    tracklistTa.value = JSON.stringify(encodedTracklist);
-                }
-            };
 
-            document.getElementById('submitBtn').addEventListener('click', clickHandler, false);
-        </script>
+                    if (tlArray.length > 0) {
+                        var encodedTracklist = parseTracklist(tlArray);
+                        if (encodedTracklist.length < 5) {
+                            alert('Error: tracklist is too short!');
+                            event.preventDefault();
+                            return;
+                        }
+                        tracklistTa.value = JSON.stringify(encodedTracklist);
+                    }
+                };
+
+                document.getElementById('submitBtn').addEventListener('click', clickHandler, false);
+            </script>
+        {% endif %}
     </body>
 </html>
