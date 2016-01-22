@@ -8,12 +8,11 @@
                  [ring/ring-defaults "0.1.5"]
                  [ring/ring-devel "1.4.0"]
                  [org.immutant/web "2.1.2"]
-                 [selmer "0.9.9"]
+                 [selmer "1.0.0"]
                  [cheshire "5.5.0"]
                  [org.postgresql/postgresql "9.4.1207"]
                  [korma "0.4.2"]
                  [clj-time "0.11.0"]]
-  :plugins [[lein-ring "0.9.7"]]
   :main ktra-indexer.handler
   :profiles
   {:dev {:dependencies [[ring/ring-mock "0.3.0"]]
