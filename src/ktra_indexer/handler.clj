@@ -2,14 +2,80 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+            [ring.util.response :as resp]
             [immutant.web :refer [run run-dmc]]
             [selmer.parser :refer :all]
             [cheshire.core :refer [parse-string]]
-            [ktra-indexer.db :refer [insert-episode]]))
+            [buddy.auth :refer [authenticated? throw-unauthorized]]
+            [buddy.auth.backends.session :refer [session-backend]]
+            [buddy.auth.middleware :refer [wrap-authentication
+                                           wrap-authorization]]
+            [ktra-indexer.db :refer [insert-episode get-user-data]]
+            [ktra-indexer.config :as cfg])
+  (:import (com.yubico.client.v2 ResponseStatus VerificationResponse
+                                 YubicoClient)))
+
+(defn login-authenticate
+  "Check request username and OTP value against the recorded Yubikeys for the
+  current user. On successful authentication, set appropriate user into the
+  session and  redirect to the value of (:query-params (:next request)).
+  On failed authentication, renders the login page."
+  [request]
+  (let [username (get-in request [:form-params "username"])
+        otp (get-in request [:form-params "otp"])
+        session (:session request)
+        user-data (get-user-data username)]
+    (if (if-not (YubicoClient/isValidOTPFormat otp)
+          false
+          (let [client
+                (YubicoClient/getClient
+                 (Integer/parseInt (cfg/get-conf-value :yubico-client-id))
+                 (cfg/get-conf-value :yubico-secret-key))]
+            (if (and (.isOk (.verify client otp))
+                     (contains? (:yubikey-ids user-data)
+                                (YubicoClient/getPublicId otp)))
+              true false)))
+      (let [next-url (get-in request [:query-params :next] "/add")
+            updated-session (assoc session :identity (keyword username))]
+        (-> (resp/redirect next-url)
+            (assoc :session updated-session)))
+      (render-file "templates/login.html"
+                   {:error "Error: an invalid OTP value was provided"
+                    :username username}))))
+
+(defn logout
+  "Logs out the user and redirects her to the front page."
+  [request]
+  (-> (resp/redirect "/")
+      (assoc :session {})))
+
+(defn unauthorized-response
+  "The response sent when a request is unauthorized."
+  []
+  (resp/redirect "/login"))
+
+(defn unauthorized-handler
+  "Handles unauthorized requests."
+  [request metadata]
+  (if (authenticated? request)
+    ;; If request is authenticated, raise 403 instead of 401 as the user
+    ;; is authenticated but permission denied is raised.
+    (assoc (resp/response "403 Forbidden") :status 403)
+    ;; In other cases, redirect it user to login
+    (resp/redirect "/login")))
+
+(def auth-backend (session-backend
+                   {:unauthorized-handler unauthorized-handler}))
 
 (defroutes app-routes
   (GET "/" [] (render-file "templates/index.html" {}))
-  (GET "/add" [] (render-file "templates/add.html" {}))
+  (GET "/login" [] (render-file "templates/login.html" {}))
+  (GET "/logout" [] logout)
+  (GET "/add" request
+       (if (authenticated? request)
+         (render-file "templates/add.html" {})
+         (unauthorized-response)))
+  ;; Form submissions
   (POST "/add" request
         (let [form-params (:params request)
               insert-res (insert-episode (:date form-params)
@@ -17,13 +83,17 @@
                                          (parse-string
                                           (:tracklist form-params) true))]
           (render-file "templates/add.html" {:insert-status insert-res})))
+  (POST "/login" [] login-authenticate)
   ;; Serve static files
   (route/files "/" {:root "resources"})
   (route/not-found "404 Not Found"))
 
 (def app
-  (wrap-defaults app-routes
-                 (assoc-in site-defaults [:security :anti-forgery] false)))
+  (wrap-defaults
+   (-> app-routes
+       (wrap-authorization auth-backend)
+       (wrap-authentication auth-backend))
+   (assoc-in site-defaults [:security :anti-forgery] false)))
 
 (defn -main
   "Starts the web server."

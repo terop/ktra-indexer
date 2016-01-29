@@ -15,9 +15,25 @@
 (kc/defentity tracks)
 (kc/defentity features)
 (kc/defentity episode_tracks)
+(kc/defentity users)
+(kc/defentity yubikeys)
 
 (def date-formatter (f/formatter "d.M.Y"))
 
+;; User handling
+(defn get-user-data
+  "Returns the Yubikey ID of the user with the given username.
+  Returns nil if the user is not found."
+  [username]
+  (let [key-rs (kc/select yubikeys
+                          (kc/fields :yubikey_id)
+                          (kc/join users (= :users.user_id :user_id))
+                          (kc/where {:users.username username}))
+        key-ids (set (for [id key-rs] (:yubikey_id id)))]
+    (when (pos? (count key-ids))
+      {:yubikey-ids key-ids})))
+
+;; Artist, track and episode handling
 (defn get-or-insert-artist
   "Gets the ID of an artist if it exists. If not, it inserts it and
   returns the ID. Returns ID > 0 on success and -1 on error."

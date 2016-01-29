@@ -38,3 +38,16 @@ CREATE TABLE episode_tracks (
        track_id INTEGER REFERENCES tracks (track_id),
        feature_id INTEGER
 );
+
+-- Users table
+CREATE TABLE users (
+       user_id SERIAL PRIMARY KEY,
+       username VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- Yubikey ID table
+CREATE TABLE yubikeys (
+    key_id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users (user_id),
+    yubikey_id VARCHAR(32) NOT NULL UNIQUE
+);
