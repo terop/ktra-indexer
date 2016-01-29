@@ -2,10 +2,10 @@
             ;; Database parameters
             ;; Sample values
             :host "localhost"
-            :db "yamm"
+            :db "ktra"
             :port "5432"
             :user "foobar"
-            :password ""
+            :password "123"
             }
  ;; Yubico OTP parameters
  ;; Sample values

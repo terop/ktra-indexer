@@ -2,13 +2,25 @@
   (:require [korma.db :refer [defdb postgres rollback transaction]]
             [korma.core :as kc]
             [clj-time.format :as f]
-            [clj-time.jdbc]))
+            [clj-time.jdbc]
+            [ktra-indexer.config :as cfg]))
 
-(defdb db (postgres {:host "localhost"
-                     :port 5432
-                     :db "ktra"
-                     :user "tpalohei"
-                     :password ""}))
+(defdb db (postgres {:host (get (System/getenv)
+                                "OPENSHIFT_POSTGRESQL_DB_HOST"
+                                (cfg/db-conf :host))
+                     :port (get (System/getenv)
+                                "OPENSHIFT_POSTGRESQL_DB_PORT"
+                                (cfg/db-conf :port))
+                     :db (if (get (System/getenv)
+                                  "OPENSHIFT_POSTGRESQL_DB_PORT")
+                           (cfg/db-conf :db-openshift)
+                           (cfg/db-conf :db))
+                     :user (get (System/getenv)
+                                "OPENSHIFT_POSTGRESQL_DB_USERNAME"
+                                (cfg/db-conf :user))
+                     :password (get (System/getenv)
+                                    "OPENSHIFT_POSTGRESQL_DB_PASSWORD"
+                                    (cfg/db-conf :password))}))
 
 (kc/defentity episodes)
 (kc/defentity artists)
