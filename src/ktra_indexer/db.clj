@@ -74,7 +74,8 @@
         (let [query-res (kc/select tracks
                                    (kc/fields :track_id)
                                    (kc/where {:artist_id artist-id
-                                              :name [like (:track track-json)]}))]
+                                              :name [like
+                                                     (:track track-json)]}))]
           (if (= (count query-res) 1)
             ;; Track found
             (:track_id (first query-res))

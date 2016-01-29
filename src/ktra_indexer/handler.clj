@@ -37,8 +37,7 @@
               true false)))
       (let [next-url (get-in request [:query-params :next] "/add")
             updated-session (assoc session :identity (keyword username))]
-        (-> (resp/redirect next-url)
-            (assoc :session updated-session)))
+        (assoc (resp/redirect next-url) :session updated-session))
       (render-file "templates/login.html"
                    {:error "Error: an invalid OTP value was provided"
                     :username username}))))
@@ -46,8 +45,7 @@
 (defn logout
   "Logs out the user and redirects her to the front page."
   [request]
-  (-> (resp/redirect "/")
-      (assoc :session {})))
+  (assoc (resp/redirect "/") :session {}))
 
 (defn unauthorized-response
   "The response sent when a request is unauthorized."
