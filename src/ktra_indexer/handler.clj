@@ -10,8 +10,10 @@
             [buddy.auth.backends.session :refer [session-backend]]
             [buddy.auth.middleware :refer [wrap-authentication
                                            wrap-authorization]]
-            [ktra-indexer.db :refer [insert-episode get-user-data]]
-            [ktra-indexer.config :as cfg])
+            [ktra-indexer.db :refer [insert-episode
+                                     get-user-data
+                                     get-episodes]]
+            [ktra-indexer.config :refer [get-conf-value]])
   (:import (com.yubico.client.v2 ResponseStatus VerificationResponse
                                  YubicoClient)))
 
@@ -29,8 +31,8 @@
           false
           (let [client
                 (YubicoClient/getClient
-                 (Integer/parseInt (cfg/get-conf-value :yubico-client-id))
-                 (cfg/get-conf-value :yubico-secret-key))]
+                 (Integer/parseInt (get-conf-value :yubico-client-id))
+                 (get-conf-value :yubico-secret-key))]
             (if (and (.isOk (.verify client otp))
                      (contains? (:yubikey-ids user-data)
                                 (YubicoClient/getPublicId otp)))
@@ -66,7 +68,8 @@
                    {:unauthorized-handler unauthorized-handler}))
 
 (defroutes app-routes
-  (GET "/" [] (render-file "templates/index.html" {}))
+  (GET "/" [] (render-file "templates/index.html"
+                           {:episodes (get-episodes)}))
   (GET "/login" [] (render-file "templates/login.html" {}))
   (GET "/logout" [] logout)
   (GET "/add" request

@@ -2,6 +2,7 @@
   (:require [korma.db :refer [defdb postgres rollback transaction]]
             [korma.core :as kc]
             [clj-time.format :as f]
+            [clj-time.coerce :as c]
             [clj-time.jdbc]
             [ktra-indexer.config :as cfg]))
 
@@ -146,3 +147,16 @@
           :cause "duplicate-episode"}
          {:status "error"
           :cause "general-error"})))))
+
+(defn get-episodes
+  "Returns all the episodes in the database. Returns episode number, name
+  date."
+  []
+  (let [results (kc/select episodes
+                           (kc/fields :number :name :date)
+                           (kc/order :number :DESC))
+        format-date (fn [row]
+                      (assoc row :date
+                             (f/unparse date-formatter
+                                        (c/from-sql-date (:date row)))))]
+    (map format-date results)))
