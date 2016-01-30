@@ -11,11 +11,6 @@
         <link href="/css/bootstrap.min.css" rel="stylesheet">
         <link href="/css/bootstrap-theme.min.css" rel="stylesheet">
         <link href="/css/common.css" rel="stylesheet">
-        <style type="text/css">
-            #episode-table > tbody > tr {
-                cursor: pointer;
-            }
-        </style>
 
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -39,33 +34,38 @@
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li class="active"><a href="#">Home</a></li>
+                        <li><a href="/">Home</a></li>
                         <li><a href="/add">Add</a></li>
+                        <li class="active"><a href="#">View</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
 
         <div class="container">
-            <h3>KTRA episodes</h3>
+            {% if basic-data %}
+                <h3>{{basic-data.name}} on {{basic-data.date}}</h3>
 
-            <table id="episode-table" class="table">
-                <thead>
-                    <tr>
-                        <th>Episode #</th>
-                        <th>Name</th>
-                        <th>Date</th>
-                </thead>
-                <tbody>
-                    {% for ep in episodes %}
-                        <tr onclick="window.document.location='/view/{{ep.number}}';">
-                            <td>{{ep.number}}</td>
-                            <td>{{ep.name}}</td>
-                            <td>{{ep.date}}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                <table id="track-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Artist</th>
+                            <th>Name</th>
+                            <th>Episode feature</th>
+                    </thead>
+                    <tbody>
+                        {% for tr in tracks %}
+                            <tr>
+                                <td>{{tr.artist_name}}</td>
+                                <td>{{tr.track_name}}</td>
+                                <td>{{tr.feature}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <h3 class="text-danger">The episode with the given number could not be found</h3>
+            {% endif %}
         </div>
 
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

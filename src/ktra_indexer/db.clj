@@ -1,27 +1,39 @@
 (ns ktra-indexer.db
   (:require [korma.db :refer [defdb postgres rollback transaction]]
             [korma.core :as kc]
+            [clojure.java.jdbc :as j]
             [clj-time.format :as f]
             [clj-time.coerce :as c]
             [clj-time.jdbc]
             [ktra-indexer.config :as cfg]))
 
-(defdb db (postgres {:host (get (System/getenv)
-                                "OPENSHIFT_POSTGRESQL_DB_HOST"
-                                (cfg/db-conf :host))
-                     :port (get (System/getenv)
-                                "OPENSHIFT_POSTGRESQL_DB_PORT"
-                                (cfg/db-conf :port))
-                     :db (if (get (System/getenv)
-                                  "OPENSHIFT_POSTGRESQL_DB_PORT")
-                           (cfg/db-conf :db-openshift)
-                           (cfg/db-conf :db))
-                     :user (get (System/getenv)
-                                "OPENSHIFT_POSTGRESQL_DB_USERNAME"
-                                (cfg/db-conf :user))
-                     :password (get (System/getenv)
-                                    "OPENSHIFT_POSTGRESQL_DB_PASSWORD"
-                                    (cfg/db-conf :password))}))
+(let [db-host (get (System/getenv)
+                   "OPENSHIFT_POSTGRESQL_DB_HOST"
+                   (cfg/db-conf :host))
+      db-port (get (System/getenv)
+                   "OPENSHIFT_POSTGRESQL_DB_PORT"
+                   (cfg/db-conf :port))
+      db-name (if (get (System/getenv)
+                       "OPENSHIFT_POSTGRESQL_DB_PORT")
+                (cfg/db-conf :db-openshift)
+                (cfg/db-conf :db))
+      db-user (get (System/getenv)
+                   "OPENSHIFT_POSTGRESQL_DB_USERNAME"
+                   (cfg/db-conf :user))
+      db-password (get (System/getenv)
+                       "OPENSHIFT_POSTGRESQL_DB_PASSWORD"
+                       (cfg/db-conf :password))]
+  (def db-jdbc {:classname "org.postgresql.Driver"
+                :subprotocol "postgresql"
+                :subname (format "//%s:%s/%s"
+                                 db-host db-port db-name)
+                :user db-user
+                :password db-password})
+  (defdb db (postgres {:host db-host
+                       :port db-port
+                       :db db-name
+                       :user db-user
+                       :password db-password})))
 
 (kc/defentity episodes)
 (kc/defentity artists)
@@ -160,3 +172,33 @@
                              (f/unparse date-formatter
                                         (c/from-sql-date (:date row)))))]
     (map format-date results)))
+
+(defn get-episode-basic-data
+  "Returns the basic data (name and date) of the episode with
+  the provided number."
+  [episode-number]
+  (let [results (kc/select episodes
+                           (kc/fields :name :date)
+                           (kc/where {:number (Integer/parseInt
+                                               episode-number)}))
+        format-date (fn [row]
+                      (assoc row :date
+                             (f/unparse date-formatter
+                                        (c/from-sql-date (:date row)))))]
+    (first (map format-date results))))
+
+(defn get-episode-tracks
+  "Returns the track name, artist and possible feature of each track in the
+  provided episode."
+  [episode-number]
+  (j/query db-jdbc
+           [(str "SELECT t.name AS track_name, "
+                 "a.name AS artist_name, f.name AS feature "
+                 "FROM tracks t "
+                 "INNER JOIN episode_tracks et USING (track_id) "
+                 "INNER JOIN artists a USING (artist_id) "
+                 "LEFT JOIN features f USING (feature_id) "
+                 "WHERE et.ep_id = "
+                 "(SELECT ep_id FROM episodes WHERE number = ?) "
+                 "ORDER BY et.ep_tr_id ASC")
+            (Integer/parseInt episode-number)]))

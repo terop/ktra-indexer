@@ -10,9 +10,7 @@
             [buddy.auth.backends.session :refer [session-backend]]
             [buddy.auth.middleware :refer [wrap-authentication
                                            wrap-authorization]]
-            [ktra-indexer.db :refer [insert-episode
-                                     get-user-data
-                                     get-episodes]]
+            [ktra-indexer.db :as db]
             [ktra-indexer.config :refer [get-conf-value]])
   (:import (com.yubico.client.v2 ResponseStatus VerificationResponse
                                  YubicoClient)))
@@ -26,7 +24,7 @@
   (let [username (get-in request [:form-params "username"])
         otp (get-in request [:form-params "otp"])
         session (:session request)
-        user-data (get-user-data username)]
+        user-data (db/get-user-data username)]
     (if (if-not (YubicoClient/isValidOTPFormat otp)
           false
           (let [client
@@ -69,20 +67,24 @@
 
 (defroutes app-routes
   (GET "/" [] (render-file "templates/index.html"
-                           {:episodes (get-episodes)}))
+                           {:episodes (db/get-episodes)}))
   (GET "/login" [] (render-file "templates/login.html" {}))
   (GET "/logout" [] logout)
   (GET "/add" request
        (if (authenticated? request)
          (render-file "templates/add.html" {})
          (unauthorized-response)))
+  (GET "/view/:id{\\d+}" [id]
+       (render-file "templates/view.html"
+                    {:tracks (db/get-episode-tracks id)
+                     :basic-data (db/get-episode-basic-data id)}))
   ;; Form submissions
   (POST "/add" request
         (let [form-params (:params request)
-              insert-res (insert-episode (:date form-params)
-                                         (:name form-params)
-                                         (parse-string
-                                          (:tracklist form-params) true))]
+              insert-res (db/insert-episode (:date form-params)
+                                            (:name form-params)
+                                            (parse-string
+                                             (:tracklist form-params) true))]
           (render-file "templates/add.html" {:insert-status insert-res})))
   (POST "/login" [] login-authenticate)
   ;; Serve static files
