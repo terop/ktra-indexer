@@ -4,8 +4,10 @@
             [clojure.java.jdbc :as j]
             [clj-time.format :as f]
             [clj-time.coerce :as c]
+            [clj-time.local :as l]
             [clj-time.jdbc]
-            [ktra-indexer.config :as cfg]))
+            [ktra-indexer.config :as cfg])
+  (:import org.joda.time.format.DateTimeFormat))
 
 (let [db-host (get (System/getenv)
                    "OPENSHIFT_POSTGRESQL_DB_HOST"
@@ -160,6 +162,14 @@
          {:status "error"
           :cause "general-error"})))))
 
+(defn format-as-local-date
+  "Format a date from the database as a local date. This avoids problems
+  with timezones."
+  [db-date]
+  (binding [l/*local-formatters* {:local
+                                  (DateTimeFormat/forPattern "d.M.y")}]
+    (l/format-local-time (l/to-local-date-time db-date) :local)))
+
 (defn get-episodes
   "Returns all the episodes in the database. Returns episode number, name
   date."
@@ -169,8 +179,7 @@
                            (kc/order :number :DESC))
         format-date (fn [row]
                       (assoc row :date
-                             (f/unparse date-formatter
-                                        (c/from-sql-date (:date row)))))]
+                             (format-as-local-date (:date row))))]
     (map format-date results)))
 
 (defn get-episode-basic-data
@@ -183,8 +192,7 @@
                                                episode-number)}))
         format-date (fn [row]
                       (assoc row :date
-                             (f/unparse date-formatter
-                                        (c/from-sql-date (:date row)))))]
+                             (format-as-local-date (:date row))))]
     (first (map format-date results))))
 
 (defn get-episode-tracks
