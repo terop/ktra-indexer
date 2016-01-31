@@ -17,7 +17,7 @@ CREATE TABLE artists (
 CREATE TABLE tracks (
        track_id SERIAL PRIMARY KEY,
        artist_id INTEGER REFERENCES artists (artist_id),
-       name VARCHAR(100) NOT NULL UNIQUE
+       name VARCHAR(100) NOT NULL
 );
 
 -- Features table
