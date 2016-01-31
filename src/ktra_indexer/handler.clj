@@ -67,7 +67,8 @@
 
 (defroutes app-routes
   (GET "/" [] (render-file "templates/index.html"
-                           {:episodes (db/get-episodes)}))
+                           {:episodes (db/get-episodes)
+                            :artists (db/get-all-artists)}))
   (GET "/login" [] (render-file "templates/login.html" {}))
   (GET "/logout" [] logout)
   (GET "/add" request

@@ -10,6 +10,8 @@
         <!-- Bootstrap -->
         <link href="/css/bootstrap.min.css" rel="stylesheet">
         <link href="/css/bootstrap-theme.min.css" rel="stylesheet">
+        <link href="/css/jquery-ui.min.css" rel="stylesheet">
+        <link href="/css/jquery-ui.theme.min.css" rel="stylesheet">
         <link href="/css/common.css" rel="stylesheet">
         <style type="text/css">
             #episode-table > tbody > tr {
@@ -49,6 +51,8 @@
         <div class="container">
             <h3>KTRA episodes</h3>
 
+            <p>Search for artist:&nbsp;<input type="text" id="artist-search"></p>
+
             <table id="episode-table" class="table">
                 <thead>
                     <tr>
@@ -71,5 +75,16 @@
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
         <script src="/js/jquery-2.2.0.min.js"></script>
         <script src="/js/bootstrap.min.js"></script>
+        <script src="/js/jquery-ui.min.js"></script>
+        <script>
+            $('#artist-search').autocomplete({
+                source: {{artists|json|safe}},
+                minLength: 2,
+                select: function(event, ui) {
+                    window.document.location = '/tracks/' +
+                                               encodeURIComponent(ui.item.label);
+                }
+            });
+        </script>
     </body>
 </html>

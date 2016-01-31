@@ -163,7 +163,7 @@
 
 (defn format-as-local-date
   "Format a date from the database as a local date. This avoids problems
-  with timezones."
+  with time zones."
   [db-date]
   (binding [l/*local-formatters* {:local
                                   (DateTimeFormat/forPattern "d.M.y")}]
@@ -177,8 +177,7 @@
                            (kc/fields :number :name :date)
                            (kc/order :number :DESC))
         format-date (fn [row]
-                      (assoc row :date
-                             (format-as-local-date (:date row))))]
+                      (update-in row [:date] format-as-local-date))]
     (map format-date results)))
 
 (defn get-episode-basic-data
@@ -190,8 +189,7 @@
                            (kc/where {:number (Integer/parseInt
                                                episode-number)}))
         format-date (fn [row]
-                      (assoc row :date
-                             (format-as-local-date (:date row))))]
+                      (update-in row [:date] format-as-local-date))]
     (first (map format-date results))))
 
 (defn get-episode-tracks
@@ -214,10 +212,18 @@
   "Return the tracks played in all episodes by the provided artist."
   [artist]
   (j/query db-jdbc
-           [(str "SELECT t.name AS track_name, e.name AS ep_name "
+           [(str "SELECT t.name AS track_name, e.name AS ep_name, e.number "
                  "FROM tracks t "
                  "INNER JOIN episode_tracks et USING (track_id) "
                  "INNER JOIN episodes e ON e.ep_id = et.ep_id "
                  "WHERE artist_id = "
                  "(SELECT artist_id FROM artists WHERE name LIKE ?)")
             artist]))
+
+(defn get-all-artists
+  "Returns all artists' names from the database."
+  []
+  (let [result (kc/select artists
+                          (kc/fields :name)
+                          (kc/order :name :ASC))]
+    (map :name result)))
