@@ -11,6 +11,7 @@
             [buddy.auth.backends.session :refer [session-backend]]
             [buddy.auth.middleware :refer [wrap-authentication
                                            wrap-authorization]]
+            [clojure.string :as s]
             [ktra-indexer.db :as db]
             [ktra-indexer.config :refer [get-conf-value]])
   (:import (com.yubico.client.v2 ResponseStatus VerificationResponse
@@ -80,10 +81,11 @@
        (render-file "templates/view.html"
                     {:tracks (db/get-episode-tracks id)
                      :basic-data (db/get-episode-basic-data id)}))
-  (GET "/tracks/:artist" [artist]
-       (render-file "templates/tracks.html"
-                    {:artist artist
-                     :tracks (db/get-tracks-by-artist artist)}))
+  (GET "/tracks" [artist]
+       (let [artist (s/replace artist "&amp;" "&")]
+         (render-file "templates/tracks.html"
+                      {:artist artist
+                       :tracks (db/get-tracks-by-artist artist)})))
   ;; Form submissions
   (POST "/add" request
         (let [form-params (:params request)

@@ -81,7 +81,7 @@
 
             // Click handler for track showing
             var artistNameHandler = function (event) {
-                window.document.location = '/tracks/' +
+                window.document.location = '/tracks?artist=' +
                                            encodeURIComponent(this.innerHTML);
             };
 

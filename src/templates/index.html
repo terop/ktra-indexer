@@ -81,7 +81,7 @@
                 source: {{artists|json|safe}},
                 minLength: 2,
                 select: function(event, ui) {
-                    window.document.location = '/tracks/' +
+                    window.document.location = '/tracks?artist=' +
                                                encodeURIComponent(ui.item.label);
                 }
             });
