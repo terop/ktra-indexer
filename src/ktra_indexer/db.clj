@@ -210,3 +210,15 @@
                  "(SELECT ep_id FROM episodes WHERE number = ?) "
                  "ORDER BY et.ep_tr_id ASC")
             (Integer/parseInt episode-number)]))
+
+(defn get-tracks-by-artist
+  "Return the tracks played in all episodes by the provided artist."
+  [artist]
+  (j/query db-jdbc
+           [(str "SELECT t.name AS track_name, e.name AS ep_name "
+                 "FROM tracks t "
+                 "INNER JOIN episode_tracks et USING (track_id) "
+                 "INNER JOIN episodes e ON e.ep_id = et.ep_id "
+                 "WHERE artist_id = "
+                 "(SELECT artist_id FROM artists WHERE name LIKE ?)")
+            artist]))
