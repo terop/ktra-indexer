@@ -1,7 +1,8 @@
 (ns ktra-indexer.handler
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+            [ring.middleware.defaults :refer [wrap-defaults site-defaults
+                                              secure-site-defaults]]
             [ring.util.response :as resp]
             [immutant.web :refer [run run-dmc]]
             [selmer.parser :refer :all]
@@ -101,10 +102,21 @@
    (-> app-routes
        (wrap-authorization auth-backend)
        (wrap-authentication auth-backend))
-   (assoc-in site-defaults [:security :anti-forgery] false)))
+   (if-not (get-conf-value :in-production)
+     ;; TODO fix CSRF tokens
+     (assoc-in site-defaults [:security :anti-forgery] false)
+     (assoc (assoc-in secure-site-defaults
+                      [:security :anti-forgery] false)
+            :proxy true))))
 
 (defn -main
   "Starts the web server."
   []
-  ;; (run app opts)
-  (run-dmc app))
+  (let [ip (get (System/getenv) "OPENSHIFT_CLOJURE_HTTP_IP" "localhost")
+        port (Integer/parseInt (get (System/getenv)
+                                    "OPENSHIFT_CLOJURE_HTTP_PORT" "8080"))
+        production? (get-conf-value :in-production)
+        opts {:host ip :port port}]
+    (if production?
+      (run app opts)
+      (run-dmc app opts))))

@@ -10,4 +10,5 @@
  ;; Yubico OTP parameters
  ;; Sample values
  :yubico-client-id "12345"
- :yubico-secret-key "/xyz="}
+ :yubico-secret-key "/xyz="
+ :in-production true}
