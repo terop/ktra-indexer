@@ -134,8 +134,7 @@
   (transaction
    (try
      (let [ep-name-parts (re-matches
-                          #"KTRA Episode (\d+)[\w\d\s:;-]* (?:feat\.)?.+"
-                          ep-name)]
+                          #"KTRA Episode (\d+).+" ep-name)]
        (if-not (= (count ep-name-parts) 2)
          {:status "error"
           :cause "invalid-name"}
