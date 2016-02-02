@@ -86,6 +86,11 @@
          (render-file "templates/tracks.html"
                       {:artist artist
                        :tracks (db/get-tracks-by-artist artist)})))
+  (GET "/track-episodes" [track-field]
+       (let [track-name (s/replace track-field "&amp;" "&")]
+         (render-file "templates/track-episodes.html"
+                      {:track track-name
+                       :episodes (db/get-episodes-with-track track-name)})))
   ;; Form submissions
   (POST "/add" request
         (let [form-params (:params request)

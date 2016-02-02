@@ -10,17 +10,7 @@
         <!-- Bootstrap -->
         <link href="/css/bootstrap.min.css" rel="stylesheet">
         <link href="/css/bootstrap-theme.min.css" rel="stylesheet">
-        <link href="/css/jquery-ui.min.css" rel="stylesheet">
-        <link href="/css/jquery-ui.theme.min.css" rel="stylesheet">
         <link href="/css/common.css" rel="stylesheet">
-        <style type="text/css">
-            #episode-table > tbody > tr {
-                cursor: pointer;
-            }
-            input[type="text"] {
-                width: 30%;
-            }
-        </style>
 
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -44,58 +34,40 @@
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li class="active"><a href="#">Home</a></li>
+                        <li><a href="/">Home</a></li>
                         <li><a href="/add">Add</a></li>
+                        <li class="active"><a href="#">Episodes</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
 
         <div class="container">
-            <h3>KTRA episodes</h3>
+            {% ifunequal episodes|length 0 %}
+                <h3>Episodes where {{track}} is played</h3>
 
-            <p>Search tracks for <strong>artist</strong>:
-                <input class="form-control" type="text" id="artist-field">
-            </p>
-            <p>Search episodes for <strong>track</strong>:</p>
-            <form method="GET" action="/track-episodes">
-                <input class="form-control" type="text" name="track-field">
-                <input class="btn btn-primary" style="margin: 10px 0 10px 0;"
-                       type="submit" value="Search">
-            </form>
-
-            <table id="episode-table" class="table">
-                <thead>
-                    <tr>
-                        <th>Episode #</th>
-                        <th>Name</th>
-                        <th>Date</th>
-                </thead>
-                <tbody>
-                    {% for ep in episodes %}
-                        <tr onclick="window.document.location='/view/{{ep.number}}';">
-                            <td>{{ep.number}}</td>
-                            <td>{{ep.name}}</td>
-                            <td>{{ep.date}}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                <table id="episode-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Artist</th>
+                            <th>Episode</th>
+                    </thead>
+                    <tbody>
+                        {% for ep in episodes %}
+                            <tr>
+                                <td>{{ep.artist}}</td>
+                                <td><a href="/view/{{ep.number}}">{{ep.name}}</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <h3 class="text-danger">Could not find any episodes where {{track}} was played</h3>
+            {% endifunequal %}
         </div>
 
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
         <script src="/js/jquery-2.2.0.min.js"></script>
         <script src="/js/bootstrap.min.js"></script>
-        <script src="/js/jquery-ui.min.js"></script>
-        <script>
-            $('#artist-field').autocomplete({
-                source: {{artists|json|safe}},
-                minLength: 2,
-                select: function(event, ui) {
-                    window.document.location = '/tracks?artist=' +
-                                               encodeURIComponent(ui.item.label);
-                }
-            });
-        </script>
     </body>
 </html>

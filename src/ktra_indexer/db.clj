@@ -227,3 +227,14 @@
                           (kc/fields :name)
                           (kc/order :name :ASC))]
     (map :name result)))
+
+(defn get-episodes-with-track
+  "Returns artist, episode name and number of the provided track."
+  [track-name]
+  (j/query db-jdbc
+           [(str "SELECT a.name AS artist, e.number, e.name "
+                 "FROM tracks t "
+                 "INNER JOIN artists a USING (artist_id) "
+                 "INNER JOIN episode_tracks et USING (track_id) "
+                 "INNER JOIN episodes e ON e.ep_id = et.ep_id "
+                 "WHERE t.name LIKE ?") track-name]))
