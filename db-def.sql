@@ -17,8 +17,9 @@ CREATE TABLE artists (
 CREATE TABLE tracks (
        track_id SERIAL PRIMARY KEY,
        artist_id INTEGER REFERENCES artists (artist_id),
-       name VARCHAR(100) NOT NULL
+       name TEXT NOT NULL
 );
+CREATE INDEX tracks_name_idx ON tracks USING gin(to_tsvector('english', name));
 
 -- Features table
 CREATE TABLE features (

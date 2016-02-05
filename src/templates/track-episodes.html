@@ -50,13 +50,15 @@
                     <thead>
                         <tr>
                             <th>Artist</th>
+                            <th>Track</th>
                             <th>Episode</th>
                     </thead>
                     <tbody>
                         {% for ep in episodes %}
                             <tr>
                                 <td>{{ep.artist}}</td>
-                                <td><a href="/view/{{ep.number}}">{{ep.name}}</a></td>
+                                <td>{{ep.track}}</td>
+                                <td><a href="/view/{{ep.number}}">{{ep.ep_name}}</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>

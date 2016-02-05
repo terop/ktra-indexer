@@ -2,12 +2,14 @@
   (:require [korma.db :refer [defdb postgres rollback transaction]]
             [korma.core :as kc]
             [clojure.java.jdbc :as j]
+            [clojure.string :as s]
             [clj-time.format :as f]
             [clj-time.coerce :as c]
             [clj-time.local :as l]
             [clj-time.jdbc]
             [ktra-indexer.config :as cfg])
-  (:import org.joda.time.format.DateTimeFormat))
+  (:import org.joda.time.format.DateTimeFormat
+           org.apache.commons.lang3.text.StrTokenizer))
 
 (let [db-host (get (System/getenv)
                    "OPENSHIFT_POSTGRESQL_DB_HOST"
@@ -229,12 +231,15 @@
     (map :name result)))
 
 (defn get-episodes-with-track
-  "Returns artist, episode name and number of the provided track."
+  "Returns track name, artist, episode name and number of the provided track."
   [track-name]
-  (j/query db-jdbc
-           [(str "SELECT a.name AS artist, e.number, e.name "
-                 "FROM tracks t "
-                 "INNER JOIN artists a USING (artist_id) "
-                 "INNER JOIN episode_tracks et USING (track_id) "
-                 "INNER JOIN episodes e ON e.ep_id = et.ep_id "
-                 "WHERE t.name LIKE ?") track-name]))
+  (let [tokenizer (new StrTokenizer (s/replace track-name #"[()&;\-{2}\']" ""))
+        tokens (.getTokenArray tokenizer)]
+    (j/query db-jdbc
+             [(str "SELECT t.name AS track, a.name AS artist, e.number, "
+                   "e.name AS ep_name FROM tracks t "
+                   "INNER JOIN artists a USING (artist_id) "
+                   "INNER JOIN episode_tracks et USING (track_id) "
+                   "INNER JOIN episodes e ON e.ep_id = et.ep_id "
+                   "WHERE to_tsvector(t.name) @@ to_tsquery(?)")
+              (s/join " & " tokens)])))

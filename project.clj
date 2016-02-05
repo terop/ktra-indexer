@@ -15,7 +15,8 @@
                  [org.clojure/java.jdbc "0.4.2"]
                  [clj-time "0.11.0"]
                  [buddy/buddy-auth "0.9.0"]
-                 [com.yubico/yubico-validation-client2 "3.0.1"]]
+                 [com.yubico/yubico-validation-client2 "3.0.1"]
+                 [org.apache.commons/commons-lang3 "3.4"]]
   :main ktra-indexer.handler
   :profiles
   {:dev {:dependencies [[ring/ring-mock "0.3.0"]]
