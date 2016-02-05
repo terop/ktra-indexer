@@ -3,6 +3,7 @@
             [korma.core :as kc]
             [clojure.java.jdbc :as j]
             [clojure.string :as s]
+            [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.coerce :as c]
             [clj-time.local :as l]
@@ -144,8 +145,12 @@
                                      (kc/values [{:number (Integer/parseInt
                                                            (ep-name-parts 1))
                                                   :name ep-name
-                                                  :date (f/parse date-formatter
-                                                                 date)}]))
+                                                  :date (t/to-time-zone
+                                                         (f/parse date-formatter
+                                                                  date)
+                                                         (t/time-zone-for-id
+                                                          (cfg/get-conf-value
+                                                           :time-zone)))}]))
                episode-id (:ep_id insert-res)]
            (if (every? pos? (for [track-json tracklist-json]
                               (insert-episode-track episode-id track-json)))
