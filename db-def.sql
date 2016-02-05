@@ -35,8 +35,8 @@ INSERT INTO features (feature_id, name) VALUES (5, 'Final Vinyl');
 -- Tracks per episode
 CREATE TABLE episode_tracks (
        ep_tr_id SERIAL PRIMARY KEY,
-       ep_id INTEGER REFERENCES episodes (ep_id),
-       track_id INTEGER REFERENCES tracks (track_id),
+       ep_id INTEGER REFERENCES episodes (ep_id) ON DELETE CASCADE,
+       track_id INTEGER REFERENCES tracks (track_id) ON DELETE CASCADE,
        feature_id INTEGER
 );
 
