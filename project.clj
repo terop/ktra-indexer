@@ -18,6 +18,8 @@
                  [com.yubico/yubico-validation-client2 "3.0.1"]
                  [org.apache.commons/commons-lang3 "3.4"]]
   :main ktra-indexer.handler
+  :plugins [[lein-environ "1.0.2"]]
   :profiles
   {:dev {:dependencies [[ring/ring-mock "0.3.0"]]
-         :resource-paths ["resources"]}})
+         :resource-paths ["resources"]
+         :env {:squiggly {:checkers [:eastwood :kibit :typed]}}}})
