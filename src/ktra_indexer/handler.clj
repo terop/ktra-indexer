@@ -37,7 +37,7 @@
                      (contains? (:yubikey-ids user-data)
                                 (YubicoClient/getPublicId otp)))
               true false)))
-      (let [next-url (get-in request [:query-params :next] "/add")
+      (let [next-url (get-in request [:params :next] "/add")
             updated-session (assoc session :identity (keyword username))]
         (assoc (resp/redirect next-url) :session updated-session))
       (render-file "templates/login.html"
@@ -77,15 +77,29 @@
        (if (authenticated? request)
          (render-file "templates/add.html" {})
          (unauthorized-response)))
-  (GET "/view/:id{\\d+}" [id]
-       (render-file "templates/view.html"
-                    {:tracks (db/get-episode-tracks id)
-                     :basic-data (db/get-episode-basic-data id)}))
+  (GET "/add-tracks" request
+       (let [id (:id (:params request))]
+         (if (re-find #"\d+" id)
+           (if (authenticated? request)
+             (render-file "templates/add-tracks.html"
+                          {:episode-id id
+                           :data (db/get-episode-basic-data id)})
+             (unauthorized-response))
+           (resp/redirect "/"))))
+  (GET "/view" request
+       (let [id (:id (:params request))]
+         (if (re-find #"\d+" id)
+           (render-file "templates/view.html"
+                        {:tracks (db/get-episode-tracks id)
+                         :basic-data (db/get-episode-basic-data id)
+                         :is-authenticated? (authenticated? request)
+                         :episode-id id})
+           (resp/redirect "/"))))
   (GET "/tracks" [artist]
-       (let [artist (s/replace artist "&amp;" "&")]
-         (render-file "templates/tracks.html"
-                      {:artist artist
-                       :tracks (db/get-tracks-by-artist artist)})))
+       (let [artist (s/replace artist "&amp ;" "&")]
+       (render-file "templates/tracks.html"
+                    {:artist artist
+                     :tracks (db/get-tracks-by-artist artist)})))
   (GET "/track-episodes" [track-field]
        (let [track-name (s/replace track-field "&amp;" "&")]
          (render-file "templates/track-episodes.html"
@@ -99,6 +113,12 @@
                                             (parse-string
                                              (:tracklist form-params) true))]
           (render-file "templates/add.html" {:insert-status insert-res})))
+    (POST "/add-tracks" request
+        (let [form-params (:params request)
+              insert-res (db/insert-additional-tracks
+                          (:episode-id form-params)
+                          (parse-string (:tracklist form-params) true))]
+          (render-file "templates/add-tracks.html" {:insert-status insert-res})))
   (POST "/login" [] login-authenticate)
   ;; Serve static files
   (route/files "/" {:root "resources"})

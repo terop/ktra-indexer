@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-        <title>KTRA indexer - add episode</title>
+        <title>KTRA indexer - add tracks</title>
 
         <!-- Bootstrap -->
         <link href="/css/bootstrap.min.css" rel="stylesheet">
@@ -54,38 +54,27 @@
         </nav>
 
         <div class="container">
-            {% if not insert-status %}
-                <h3>Add episode</h3>
-
-                <form method="post" action="/add">
-                    <label for="date">Episode date</label>
-                    <input type="text" class="form-control" id="date" name="date" required>
-                    <br>
-                    <label for="name">Episode name</label>
-                    <input type="text" class="form-control" id="name" name="name" required>
-                    <br>
-                    <label for="tracklist">Tracklist</label>
-                    <textarea id="tracklist" class="form-control required" name="tracklist" cols="80"
-                              rows="20" required></textarea>
-                    <br>
-                    <input type="submit" id="submitBtn" class="btn btn-primary" value="Submit">
-                </form>
+            {% if not data %}
+                <h3 class="text-danger">The episode with the given number could not be found</h3>
             {% else %}
-                {% ifequal insert-status.status "success" %}
-                    <h3>Successfully inserted episode!</h3>
+                {% if not insert-status %}
+                    <h3>Add tracks to episode number {{episode-id}}</h3>
+
+                    <form method="post" action="/add-tracks">
+                        <label for="tracklist">New tracklist</label>
+                        <textarea id="tracklist" class="form-control required" name="tracklist" cols="80"
+                                  rows="20" required></textarea>
+                        <br>
+                        <input type="hidden" name="episode-id" value="{{episode-id}}">
+                        <input type="submit" id="submitBtn" class="btn btn-primary" value="Submit">
+                    </form>
                 {% else %}
-                    <h3 class="error">
-                        {% ifequal insert-status.cause "duplicate-episode" %}
-                            Error: duplicate episode insert attempted
-                        {% else %}
-                            {% ifequal insert-status.cause "invalid-name" %}
-                                Error: the episode has an invalid name
-                            {% else %}
-                                Error: a general error occurred
-                            {% endifequal %}
-                        {% endifequal %}
-                    </h3>
-                {% endifequal %}
+                    {% ifequal insert-status.status "success" %}
+                        <h3>Successfully added new tracks!</h3>
+                    {% else %}
+                        <h3 class="error">Adding of tracks failed</h3>
+                    {% endifequal %}
+                {% endif %}
             {% endif %}
         </div>
 
@@ -97,13 +86,8 @@
             <script src="/js/bootstrap-datepicker.min.js"></script>
             <script src="/js/parser.js"></script>
             <script>
+                {% if data %}
                 $('form').validate();
-
-                $('#date').datepicker({
-                    format: 'dd.mm.yyyy',
-                    weekStart: 1,
-                    todayBtn: true
-                });
 
                 // Handler for the submit button click event
                 var clickHandler = function (event) {
@@ -113,16 +97,9 @@
                         return value.length > 0;
                     });
 
-                    // Validate date
-                    if (!/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(document.getElementById('date').value)) {
-                        alert('Error: episode date has invalid format!');
-                        event.preventDefault();
-                        return;
-                    }
-
                     if (tlArray.length > 0) {
                         var encodedTracklist = parseTracklist(tlArray);
-                        if (encodedTracklist.length < 5) {
+                        if (!encodedTracklist.length) {
                             alert('Error: tracklist is too short!');
                             event.preventDefault();
                             return;
@@ -132,6 +109,7 @@
                 };
 
                 document.getElementById('submitBtn').addEventListener('click', clickHandler, false);
+                {% endif %}
             </script>
         {% endif %}
     </body>

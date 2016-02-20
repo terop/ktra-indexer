@@ -73,7 +73,7 @@
                 </thead>
                 <tbody>
                     {% for ep in episodes %}
-                        <tr onclick="window.document.location='/view/{{ep.number}}';">
+                        <tr onclick="window.document.location='/view?id={{ep.number}}';">
                             <td>{{ep.number}}</td>
                             <td>{{ep.name}}</td>
                             <td>{{ep.date}}</td>

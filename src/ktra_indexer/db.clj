@@ -132,7 +132,7 @@
 
 (defn insert-episode
   "Inserts a KTRA episode into the episodes table. Returns a map containing the
-  status of the insertion."
+  status of the insert operation."
   [date ep-name tracklist-json]
   (transaction
    (try
@@ -168,13 +168,31 @@
          {:status "error"
           :cause "general-error"})))))
 
+(defn insert-additional-tracks
+  "Adds additional tracks on an existing episode. Returns a map containing the
+  status of the insert operation."
+  [episode-number tracklist-json]
+  (let [ep-id (:ep_id (first (kc/select episodes
+                                        (kc/fields :ep_id)
+                                        (kc/where {:number
+                                                   (Integer/parseInt
+                                                    episode-number)}))))]
+    (transaction
+     (if (every? pos? (for [track-json tracklist-json]
+                        (insert-episode-track ep-id track-json)))
+       {:status "success"}
+       (do
+         (rollback)
+         {:status "error"})))))
+
 (defn format-as-local-date
   "Format a date from the database as a local date. This avoids problems
   with time zones."
   [db-date]
-  (binding [l/*local-formatters* {:local
-                                  (DateTimeFormat/forPattern "d.M.y")}]
-    (l/format-local-time (l/to-local-date-time db-date) :local)))
+  (f/unparse date-formatter
+             (t/to-time-zone (c/from-sql-date db-date)
+                             (t/time-zone-for-id
+                              (cfg/get-conf-value :time-zone)))))
 
 (defn get-episodes
   "Returns all the episodes in the database. Returns episode number, name

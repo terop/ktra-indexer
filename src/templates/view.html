@@ -51,7 +51,12 @@
             {% if basic-data %}
                 <h3>{{basic-data.name}} on {{basic-data.date}}</h3>
 
-                <table id="track-table" class="table">
+                {% if is-authenticated? %}
+                    <input type="button" class="btn btn-primary" id="edit-btn" value="Add tracks"
+                    onclick="window.document.location='/add-tracks?id={{episode-id}}'">
+                {% endif %}
+
+                <table id="track-table" class="table" style="margin-top: 10px;">
                     <thead>
                         <tr>
                             <th>Artist</th>
