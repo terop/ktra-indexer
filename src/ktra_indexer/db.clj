@@ -129,7 +129,6 @@
           -1))
       -1)))
 
-
 (defn insert-episode
   "Inserts a KTRA episode into the episodes table. Returns a map containing the
   status of the insert operation."
@@ -141,16 +140,18 @@
        (if-not (= (count ep-name-parts) 2)
          {:status "error"
           :cause "invalid-name"}
-         (let [insert-res (kc/insert episodes
+         (let [date-str-to-sql-date (fn [date] (c/to-sql-date
+                                                (t/from-time-zone
+                                                 (f/parse date-formatter date)
+                                                 (t/time-zone-for-id
+                                                  (cfg/get-conf-value
+                                                   :time-zone)))))
+               insert-res (kc/insert episodes
                                      (kc/values [{:number (Integer/parseInt
                                                            (ep-name-parts 1))
                                                   :name ep-name
-                                                  :date (t/to-time-zone
-                                                         (f/parse date-formatter
-                                                                  date)
-                                                         (t/time-zone-for-id
-                                                          (cfg/get-conf-value
-                                                           :time-zone)))}]))
+                                                  :date (date-str-to-sql-date
+                                                         date)}]))
                episode-id (:ep_id insert-res)]
            (if (every? pos? (for [track-json tracklist-json]
                               (insert-episode-track episode-id track-json)))
