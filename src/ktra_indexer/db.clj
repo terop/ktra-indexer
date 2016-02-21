@@ -186,13 +186,15 @@
          {:status "error"})))))
 
 (defn format-as-local-date
-  "Format a date from the database as a local date. This avoids problems
-  with time zones."
-  [db-date]
-  (f/unparse date-formatter
-             (t/to-time-zone (c/from-sql-date db-date)
-                             (t/time-zone-for-id
-                              (cfg/get-conf-value :time-zone)))))
+  "Returns the given SQL date as a formatted string in local time"
+  [sql-date]
+  (binding [l/*local-formatters* {:local
+                                  (DateTimeFormat/forPattern "d.M.y")}]
+    (l/format-local-time (t/to-time-zone
+                          (c/from-sql-date sql-date)
+                          (t/time-zone-for-id (cfg/get-conf-value
+                                               :time-zone)))
+                         :local)))
 
 (defn get-episodes
   "Returns all the episodes in the database. Returns episode number, name
