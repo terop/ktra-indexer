@@ -1,6 +1,6 @@
 (ns ktra-indexer.db
-  (:require [korma.db :refer [defdb postgres rollback transaction]]
-            [korma.core :as kc]
+  (:require [honeysql.core :as sql]
+            [honeysql.helpers :refer :all]
             [clojure.java.jdbc :as j]
             [clojure.string :as s]
             [clj-time.core :as t]
@@ -33,20 +33,7 @@
                 :subname (format "//%s:%s/%s"
                                  db-host db-port db-name)
                 :user db-user
-                :password db-password})
-  (defdb db (postgres {:host db-host
-                       :port db-port
-                       :db db-name
-                       :user db-user
-                       :password db-password})))
-
-(kc/defentity episodes)
-(kc/defentity artists)
-(kc/defentity tracks)
-(kc/defentity features)
-(kc/defentity episode_tracks)
-(kc/defentity users)
-(kc/defentity yubikeys)
+                :password db-password}))
 
 (def date-formatter (f/formatter "d.M.Y"))
 
@@ -55,10 +42,14 @@
   "Returns the Yubikey ID of the user with the given username.
   Returns nil if the user is not found."
   [username]
-  (let [key-rs (kc/select yubikeys
-                          (kc/fields :yubikey_id)
-                          (kc/join users (= :users.user_id :user_id))
-                          (kc/where {:users.username username}))
+  (let [key-rs (j/query db-jdbc
+                        (sql/format (sql/build :select :yubikey_id
+                                               :from :yubikeys
+                                               :join
+                                               [:users [:= :users.user_id
+                                                        :yubikeys.user_id]]
+                                               :where [:= :users.username
+                                                       username])))
         key-ids (set (for [id key-rs] (:yubikey_id id)))]
     (when (pos? (count key-ids))
       {:yubikey-ids key-ids})))
@@ -69,14 +60,18 @@
   returns the ID. Returns ID > 0 on success and -1 on error."
   [artist-name]
   (try
-    (let [query-res (kc/select artists
-                               (kc/fields :artist_id)
-                               (kc/where {:name [like artist-name]}))]
+    (let [query-res (j/query db-jdbc
+                             (sql/format (sql/build :select :artist_id
+                                                    :from :artists
+                                                    :where [:like :name
+                                                            (s/trim
+                                                             artist-name)])))]
       (if (= (count query-res) 1)
         ;; Artist found
         (:artist_id (first query-res))
-        (:artist_id (kc/insert artists
-                               (kc/values {:name artist-name})))))
+        (:artist_id (first (j/insert! db-jdbc
+                                      :artists
+                                      {:name (s/trim artist-name)})))))
     (catch org.postgresql.util.PSQLException pge
       (.printStackTrace pge)
       -1)))
@@ -89,17 +84,24 @@
     (if (pos? artist-id)
       ;; Got a valid ID
       (try
-        (let [query-res (kc/select tracks
-                                   (kc/fields :track_id)
-                                   (kc/where {:artist_id artist-id
-                                              :name [like
-                                                     (:track track-json)]}))]
+        (let [query-res (j/query db-jdbc
+                                 (sql/format
+                                  (sql/build :select :track_id
+                                             :from :tracks
+                                             :where
+                                             [:and [:= :artist_id
+                                                    artist-id]
+                                              [:like :name
+                                               (s/trim (:track
+                                                        track-json))]])))]
           (if (= (count query-res) 1)
             ;; Track found
             (:track_id (first query-res))
-            (:track_id (kc/insert tracks
-                                  (kc/values {:artist_id artist-id
-                                              :name (:track track-json)})))))
+            (:track_id (first (j/insert! db-jdbc
+                                         :tracks
+                                         {:artist_id artist-id
+                                          :name (s/trim (:track track-json))})))
+            ))
         (catch org.postgresql.util.PSQLException pge
           (.printStackTrace pge)
           -1))
@@ -120,10 +122,11 @@
                      nil)]
     (if (pos? track-id)
       (try
-        (:ep_tr_id (kc/insert episode_tracks
-                              (kc/values {:ep_id episode-id
-                                          :track_id track-id
-                                          :feature_id feature-id})))
+        (:ep_tr_id (first (j/insert! db-jdbc
+                                     :episode_tracks
+                                     {:ep_id episode-id
+                                      :track_id track-id
+                                      :feature_id feature-id})))
         (catch org.postgresql.util.PSQLException pge
           (.printStackTrace pge)
           -1))
@@ -133,58 +136,57 @@
   "Inserts a KTRA episode into the episodes table. Returns a map containing the
   status of the insert operation."
   [date ep-name tracklist-json]
-  (transaction
-   (try
-     (let [ep-name-parts (re-matches
-                          #"KTRA Episode (\d+).+" ep-name)]
-       (if-not (= (count ep-name-parts) 2)
-         {:status "error"
-          :cause "invalid-name"}
-         (let [date-str-to-sql-date (fn [date] (c/to-sql-date
-                                                (t/from-time-zone
-                                                 (f/parse date-formatter date)
-                                                 (t/time-zone-for-id
-                                                  (cfg/get-conf-value
-                                                   :time-zone)))))
-               insert-res (kc/insert episodes
-                                     (kc/values [{:number (Integer/parseInt
-                                                           (ep-name-parts 1))
-                                                  :name ep-name
-                                                  :date (date-str-to-sql-date
-                                                         date)}]))
-               episode-id (:ep_id insert-res)]
-           (if (every? pos? (for [track-json tracklist-json]
-                              (insert-episode-track episode-id track-json)))
-             {:status "success"}
-             (do
-               (rollback)
-               {:status "error"
-                :cause "general-error"})))))
-     (catch org.postgresql.util.PSQLException pge
-       (rollback)
-       (.printStackTrace pge)
-       (if (re-find #"violates unique constraint" (.getMessage pge))
-         {:status "error"
-          :cause "duplicate-episode"}
-         {:status "error"
-          :cause "general-error"})))))
+  (try
+    (let [ep-name-parts (re-matches
+                         #"KTRA Episode (\d+)\.?\s?.+" ep-name)]
+      (if-not (= (count ep-name-parts) 2)
+        {:status "error"
+         :cause "invalid-name"}
+        (let [date-str-to-sql-date (fn [date] (c/to-sql-date
+                                               (t/from-time-zone
+                                                (f/parse date-formatter date)
+                                                (t/time-zone-for-id
+                                                 (cfg/get-conf-value
+                                                  :time-zone)))))
+              insert-res (first (j/insert! db-jdbc
+                                           :episodes
+                                           {:number (Integer/parseInt
+                                                     (ep-name-parts 1))
+                                            :name ep-name
+                                            :date (date-str-to-sql-date
+                                                   date)}))
+              episode-id (:ep_id insert-res)]
+          (if (every? pos? (for [track-json tracklist-json]
+                             (insert-episode-track episode-id track-json)))
+            {:status "success"}
+            {:status "error"
+             :cause "general-error"}))))
+    (catch org.postgresql.util.PSQLException pge
+      (.printStackTrace pge)
+      (if (re-find #"violates unique constraint" (.getMessage pge))
+        {:status "error"
+         :cause "duplicate-episode"}
+        {:status "error"
+         :cause "general-error"}))))
 
 (defn insert-additional-tracks
   "Adds additional tracks on an existing episode. Returns a map containing the
   status of the insert operation."
   [episode-number tracklist-json]
-  (let [ep-id (:ep_id (first (kc/select episodes
-                                        (kc/fields :ep_id)
-                                        (kc/where {:number
-                                                   (Integer/parseInt
-                                                    episode-number)}))))]
-    (transaction
-     (if (every? pos? (for [track-json tracklist-json]
-                        (insert-episode-track ep-id track-json)))
-       {:status "success"}
-       (do
-         (rollback)
-         {:status "error"})))))
+  (let [ep-id (:ep_id (first (j/query db-jdbc
+                                      (sql/format
+                                       (sql/build :select :ep_id
+                                                  :from :episodes
+                                                  :where [:= :number
+                                                          (Integer/parseInt
+                                                           episode-number)])))
+                             ))]
+    (j/db-transaction* db-jdbc
+                       (if (every? pos? (for [track-json tracklist-json]
+                                          (insert-episode-track ep-id
+                                                                track-json)))
+                         {:status "success"}
+                         {:status "error"}))))
 
 (defn format-as-local-date
   "Returns the given SQL date as a formatted string in local time"
@@ -192,7 +194,7 @@
   (binding [l/*local-formatters* {:local
                                   (DateTimeFormat/forPattern "d.M.y")}]
     (l/format-local-time (t/to-time-zone
-                          (c/from-sql-date sql-date)
+                          sql-date
                           (t/time-zone-for-id (cfg/get-conf-value
                                                :time-zone)))
                          :local)))
@@ -201,9 +203,11 @@
   "Returns all the episodes in the database. Returns episode number, name
   date."
   []
-  (let [results (kc/select episodes
-                           (kc/fields :number :name :date)
-                           (kc/order :number :DESC))
+  (let [results (j/query db-jdbc
+                         (sql/format
+                          (sql/build :select [:number :name :date]
+                                     :from :episodes
+                                     :order-by [[:number :desc]])))
         format-date (fn [row]
                       (update-in row [:date] format-as-local-date))]
     (map format-date results)))
@@ -212,10 +216,12 @@
   "Returns the basic data (name and date) of the episode with
   the provided number."
   [episode-number]
-  (let [results (kc/select episodes
-                           (kc/fields :name :date)
-                           (kc/where {:number (Integer/parseInt
-                                               episode-number)}))
+  (let [results (j/query db-jdbc
+                         (sql/format
+                          (sql/build :select [:name :date]
+                                     :from :episodes
+                                     :where [:= :number (Integer/parseInt
+                                                         episode-number)])))
         format-date (fn [row]
                       (update-in row [:date] format-as-local-date))]
     (first (map format-date results))))
@@ -251,9 +257,11 @@
 (defn get-all-artists
   "Returns all artists' names from the database."
   []
-  (let [result (kc/select artists
-                          (kc/fields :name)
-                          (kc/order :name :ASC))]
+  (let [result (j/query db-jdbc
+                        (sql/format
+                         (sql/build :select :name
+                                    :from :artists
+                                    :order-by [[:name :asc]])))]
     (map :name result)))
 
 (defn get-episodes-with-track

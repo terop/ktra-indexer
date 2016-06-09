@@ -97,9 +97,9 @@
            (resp/redirect "/"))))
   (GET "/tracks" [artist]
        (let [artist (s/replace artist "&amp ;" "&")]
-       (render-file "templates/tracks.html"
-                    {:artist artist
-                     :tracks (db/get-tracks-by-artist artist)})))
+         (render-file "templates/tracks.html"
+                      {:artist artist
+                       :tracks (db/get-tracks-by-artist artist)})))
   (GET "/track-episodes" [track-field]
        (let [track-name (s/replace track-field "&amp;" "&")]
          (render-file "templates/track-episodes.html"
@@ -113,12 +113,13 @@
                                             (parse-string
                                              (:tracklist form-params) true))]
           (render-file "templates/add.html" {:insert-status insert-res})))
-    (POST "/add-tracks" request
+  (POST "/add-tracks" request
         (let [form-params (:params request)
               insert-res (db/insert-additional-tracks
                           (:episode-id form-params)
                           (parse-string (:tracklist form-params) true))]
-          (render-file "templates/add-tracks.html" {:insert-status insert-res})))
+          (render-file "templates/add-tracks.html"
+                       {:insert-status insert-res})))
   (POST "/login" [] login-authenticate)
   ;; Serve static files
   (route/files "/" {:root "resources"})
