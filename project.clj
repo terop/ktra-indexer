@@ -11,7 +11,6 @@
                  [selmer "1.0.4"]
                  [cheshire "5.6.1"]
                  [org.postgresql/postgresql "9.4.1207"]
-                 [korma "0.4.2"]
                  [org.clojure/java.jdbc "0.6.1"]
                  [honeysql "0.7.0"]
                  [clj-time "0.12.0"]
