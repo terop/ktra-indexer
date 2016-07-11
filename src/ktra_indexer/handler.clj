@@ -15,7 +15,8 @@
             [ktra-indexer.db :as db]
             [ktra-indexer.config :refer [get-conf-value]])
   (:import (com.yubico.client.v2 ResponseStatus VerificationResponse
-                                 YubicoClient)))
+                                 YubicoClient))
+  (:gen-class))
 
 (defn login-authenticate
   "Check request username and OTP value against the recorded Yubikeys for the
