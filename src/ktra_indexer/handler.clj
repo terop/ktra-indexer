@@ -3,8 +3,9 @@
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults
                                               secure-site-defaults]]
+            [ring.middleware.stacktrace :refer [wrap-stacktrace]]
             [ring.util.response :as resp]
-            [immutant.web :refer [run run-dmc]]
+            [immutant.web :as web]
             [selmer.parser :refer :all]
             [cheshire.core :refer [parse-string]]
             [buddy.auth :refer [authenticated? throw-unauthorized]]
@@ -123,7 +124,7 @@
                        {:insert-status insert-res})))
   (POST "/login" [] login-authenticate)
   ;; Serve static files
-  (route/files "/" {:root "resources"})
+  (route/resources "/" )
   (route/not-found "404 Not Found"))
 
 (def app
@@ -147,5 +148,5 @@
         production? (get-conf-value :in-production)
         opts {:host ip :port port}]
     (if production?
-      (run app opts)
-      (run-dmc app opts))))
+      (web/run app opts)
+      (web/run (wrap-stacktrace app) opts))))
