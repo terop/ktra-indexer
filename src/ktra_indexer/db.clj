@@ -13,20 +13,19 @@
            org.apache.commons.lang3.text.StrTokenizer))
 
 (let [db-host (get (System/getenv)
-                   "OPENSHIFT_POSTGRESQL_DB_HOST"
+                   "POSTGRESQL_DB_HOST"
                    (cfg/db-conf :host))
       db-port (get (System/getenv)
-                   "OPENSHIFT_POSTGRESQL_DB_PORT"
+                   "POSTGRESQL_DB_PORT"
                    (cfg/db-conf :port))
-      db-name (if (get (System/getenv)
-                       "OPENSHIFT_POSTGRESQL_DB_PORT")
-                (cfg/db-conf :db-openshift)
-                (cfg/db-conf :db))
+      db-name (get (System/getenv)
+                   "POSTGRESQL_DB_NAME"
+                   (cfg/db-conf :db))
       db-user (get (System/getenv)
-                   "OPENSHIFT_POSTGRESQL_DB_USERNAME"
+                   "POSTGRESQL_DB_USERNAME"
                    (cfg/db-conf :user))
       db-password (get (System/getenv)
-                       "OPENSHIFT_POSTGRESQL_DB_PASSWORD"
+                       "POSTGRESQL_DB_PASSWORD"
                        (cfg/db-conf :password))]
   (def db-jdbc {:classname "org.postgresql.Driver"
                 :subprotocol "postgresql"

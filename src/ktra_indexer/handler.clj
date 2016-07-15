@@ -142,9 +142,9 @@
 (defn -main
   "Starts the web server."
   []
-  (let [ip (get (System/getenv) "OPENSHIFT_CLOJURE_HTTP_IP" "localhost")
+  (let [ip (get (System/getenv) "APP_IP" "0.0.0.0")
         port (Integer/parseInt (get (System/getenv)
-                                    "OPENSHIFT_CLOJURE_HTTP_PORT" "8080"))
+                                    "APP_PORT" "8080"))
         production? (get-conf-value :in-production)
         opts {:host ip :port port}]
     (if production?
