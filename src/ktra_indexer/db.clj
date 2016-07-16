@@ -1,4 +1,5 @@
 (ns ktra-indexer.db
+  "Namespace containing database functions"
   (:require [honeysql.core :as sql]
             [honeysql.helpers :refer :all]
             [clojure.java.jdbc :as j]

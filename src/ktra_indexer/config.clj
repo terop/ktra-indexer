@@ -1,4 +1,5 @@
 (ns ktra-indexer.config
+  "Namespace for configuration reading functions"
   (:require [clojure.edn :as edn]))
 
 (defn load-config

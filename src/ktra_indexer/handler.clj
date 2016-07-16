@@ -1,4 +1,5 @@
 (ns ktra-indexer.handler
+  "The main namespace of the application"
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults
