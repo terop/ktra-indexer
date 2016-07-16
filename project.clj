@@ -10,7 +10,7 @@
                  [org.immutant/web "2.1.5"]
                  [selmer "1.0.7"]
                  [cheshire "5.6.3"]
-                 [org.postgresql/postgresql "9.4.1207"]
+                 [org.postgresql/postgresql "9.4.1209"]
                  [org.clojure/java.jdbc "0.6.1"]
                  [honeysql "0.7.0"]
                  [clj-time "0.12.0"]
