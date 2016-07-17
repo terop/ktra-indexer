@@ -38,8 +38,8 @@
 (def date-formatter (f/formatter "d.M.Y"))
 
 ;; User handling
-(defn get-user-data
-  "Returns the Yubikey ID of the user with the given username.
+(defn get-yubikey-id
+  "Returns the Yubikey ID(s) of the user with the given username.
   Returns nil if the user is not found."
   [username]
   (let [key-rs (j/query db-jdbc

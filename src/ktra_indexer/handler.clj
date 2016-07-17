@@ -29,7 +29,7 @@
   (let [username (get-in request [:form-params "username"])
         otp (get-in request [:form-params "otp"])
         session (:session request)
-        user-data (db/get-user-data username)]
+        user-data (db/get-yubikey-id username)]
     (if (if-not (YubicoClient/isValidOTPFormat otp)
           false
           (let [client
