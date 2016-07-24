@@ -138,7 +138,7 @@
      (assoc-in site-defaults [:security :anti-forgery] false)
      (assoc (assoc-in secure-site-defaults
                       [:security :anti-forgery] false)
-            :proxy true))))
+            :proxy (get-conf-value :use-proxy)))))
 
 (defn -main
   "Starts the web server."
