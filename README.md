@@ -13,9 +13,14 @@ is needed. Database definitions can be found in `db-def.sql` and
 a database with the required tables must exist before the application
 can be started.
 
-This application is configured by editing the `resources/config.edn`
-file. Users and their Yubikey ID(s) are directly added the to the
-`users` and `yubikeys` tables respectively. Some settings can be overridden
+[leiningen]: https://github.com/technomancy/leiningen
+
+## Configuration
+
+A sample configuration can be found in the `resources/config.edn_sample` file.
+Copy or rename this file to `config.edn` in the `resources` directory and edit
+it to fit your configuration. Users and their Yubikey ID(s) are directly added
+the to the `users` and `yubikeys` tables respectively. Some settings can be overridden
 with environment variables. Accepted environment variables are described below.
 * __APP_IP__: The IP address to which the application will be bound to. The
 default IP address is `0.0.0.0`.
@@ -27,9 +32,7 @@ The default port is `8080`.
 * __POSTGRESQL_DB_USERNAME__: Username of the database user.
 * __POSTGRESQL_DB_PASSWORD__: Password of the database user.
 
-_NOTE_! The first variables are not defined in config.edn.
-
-[leiningen]: https://github.com/technomancy/leiningen
+_NOTE_! The two first variables are not defined in `config.edn`.
 
 ## Running
 ### Locally
