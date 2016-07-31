@@ -1,5 +1,5 @@
 
-/* Parses a feature, that is, checks whether the current line reprents a
+/* Parses a feature, that is, checks whether the current line represents a
  * show feature.
  */
 var parseFeature = function (line, featureStatus) {
