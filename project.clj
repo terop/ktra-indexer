@@ -12,7 +12,7 @@
                  [cheshire "5.6.3"]
                  [org.postgresql/postgresql "9.4.1209"]
                  [org.clojure/java.jdbc "0.6.1"]
-                 [honeysql "0.7.0"]
+                 [honeysql "0.8.0"]
                  [clj-time "0.12.0"]
                  [buddy/buddy-auth "1.1.0"]
                  [com.yubico/yubico-validation-client2 "3.0.1"]

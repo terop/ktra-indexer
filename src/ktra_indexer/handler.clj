@@ -4,9 +4,9 @@
             [compojure.route :as route]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults
                                               secure-site-defaults]]
-            [ring.middleware.stacktrace :refer [wrap-stacktrace]]
             [ring.util.response :as resp]
             [immutant.web :as web]
+            [immutant.web.middleware :refer [wrap-development]]
             [selmer.parser :refer :all]
             [cheshire.core :refer [parse-string]]
             [buddy.auth :refer [authenticated? throw-unauthorized]]
@@ -150,4 +150,4 @@
         opts {:host ip :port port}]
     (if production?
       (web/run app opts)
-      (web/run (wrap-stacktrace app) opts))))
+      (web/run (wrap-development app) opts))))
