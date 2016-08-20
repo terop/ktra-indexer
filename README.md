@@ -7,7 +7,7 @@ track and artist search.
 
 ## Prerequisites
 
-To run this application you will need [Leiningen][] 2.0.0 or
+To build and run this application locally you will need [Leiningen][] 2.0.0 or
 above installed. Additionally, a PostgreSQL server instance
 is needed. Database definitions can be found in `db-def.sql` and
 a database with the required tables must exist before the application
@@ -48,11 +48,11 @@ or
 
 This application can be also be run in a Docker container. To build the
 container call `make build` from root directory of the application.
-The container will be called `ktra-indexer`. The .jar file run in in the
+The container will be called `ktra-indexer`. The .jar file to run in in the
 container can be executed with the `java -jar <name>.jar` command.
 
 ## License
 
 See the MIT licsense in the LICENSE file.
 
-Copyright © 2016 Tero Paloheimo
+Copyright © 2015-2016 Tero Paloheimo
