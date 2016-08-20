@@ -8,10 +8,16 @@
         <title>KTRA indexer - add episode</title>
 
         <!-- Bootstrap -->
-        <link href="/css/bootstrap.min.css" rel="stylesheet">
-        <link href="/css/bootstrap-theme.min.css" rel="stylesheet">
-        <link href="/css/bootstrap-datepicker3.min.css" rel="stylesheet">
-        <link href="/css/common.css" rel="stylesheet">
+        <link rel="stylesheet"
+              href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+              integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+              crossorigin="anonymous">
+        <link rel="stylesheet"
+              href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+              integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+              crossorigin="anonymous">
+        <link href="css/bootstrap-datepicker3.min.css" rel="stylesheet">
+        <link href="css/common.css" rel="stylesheet">
 
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -43,11 +49,11 @@
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li><a href="/">Home</a></li>
+                        <li><a href="/{{ url-path }}">Home</a></li>
                         <li class="active"><a href="#">Add</a></li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="/logout">Logout</a></li>
+                        <li><a href="logout">Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -57,7 +63,7 @@
             {% if not insert-status %}
                 <h3>Add episode</h3>
 
-                <form method="post" action="/add">
+                <form method="post" action="add">
                     <label for="date">Episode date</label>
                     <input type="text" class="form-control" id="date" name="date" required>
                     <br>
@@ -91,11 +97,15 @@
 
         {% if not insert-status %}
             <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-            <script src="/js/jquery-3.1.0.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.1.0.min.js"
+	            integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="
+	            crossorigin="anonymous"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.1/jquery.validate.min.js"></script>
-            <script src="/js/bootstrap.min.js"></script>
-            <script src="/js/bootstrap-datepicker.min.js"></script>
-            <script src="/js/parser.js"></script>
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+                    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+                    crossorigin="anonymous"></script>
+            <script src="js/bootstrap-datepicker.min.js"></script>
+            <script src="js/parser.js"></script>
             <script>
                 $('form').validate();
 

@@ -40,7 +40,8 @@
                      (contains? (:yubikey-ids user-data)
                                 (YubicoClient/getPublicId otp)))
               true false)))
-      (let [next-url (get-in request [:params :next] "/add")
+      (let [next-url (get-in request [:params :next]
+                             (str (get-conf-value :url-path) "/add"))
             updated-session (assoc session :identity (keyword username))]
         (assoc (resp/redirect next-url) :session updated-session))
       (render-file "templates/login.html"
@@ -50,12 +51,13 @@
 (defn logout
   "Logs out the user and redirects her to the front page."
   [request]
-  (assoc (resp/redirect "/") :session {}))
+  (assoc (resp/redirect (str "/" (get-conf-value :url-path)))
+         :session {}))
 
 (defn unauthorized-response
   "The response sent when a request is unauthorized."
   []
-  (resp/redirect "/login"))
+  (resp/redirect (str (get-conf-value :url-path) "/login")))
 
 (defn unauthorized-handler
   "Handles unauthorized requests."
@@ -71,14 +73,17 @@
                    {:unauthorized-handler unauthorized-handler}))
 
 (defroutes app-routes
-  (GET "/" [] (render-file "templates/index.html"
-                           {:episodes (db/get-episodes)
-                            :artists (db/get-all-artists)}))
+  (GET "/" request
+       (render-file "templates/index.html"
+                    {:episodes (db/get-episodes)
+                     :artists (db/get-all-artists)
+                     :logged-in (authenticated? request)}))
   (GET "/login" [] (render-file "templates/login.html" {}))
   (GET "/logout" [] logout)
   (GET "/add" request
        (if (authenticated? request)
-         (render-file "templates/add.html" {})
+         (render-file "templates/add.html"
+                      {:url-path (get-conf-value :url-path)})
          (unauthorized-response)))
   (GET "/add-tracks" request
        (let [id (:id (:params request))]
@@ -86,7 +91,8 @@
            (if (authenticated? request)
              (render-file "templates/add-tracks.html"
                           {:episode-id id
-                           :data (db/get-episode-basic-data id)})
+                           :data (db/get-episode-basic-data id)
+                           :url-path (get-conf-value :url-path)})
              (unauthorized-response))
            (resp/redirect "/"))))
   (GET "/view" request
@@ -96,18 +102,21 @@
                         {:tracks (db/get-episode-tracks id)
                          :basic-data (db/get-episode-basic-data id)
                          :is-authenticated? (authenticated? request)
-                         :episode-id id})
+                         :episode-id id
+                         :url-path (get-conf-value :url-path)})
            (resp/redirect "/"))))
   (GET "/tracks" [artist]
        (let [artist (s/replace artist "&amp ;" "&")]
          (render-file "templates/tracks.html"
                       {:artist artist
-                       :tracks (db/get-tracks-by-artist artist)})))
+                       :tracks (db/get-tracks-by-artist artist)
+                       :url-path (get-conf-value :url-path)})))
   (GET "/track-episodes" [track-field]
        (let [track-name (s/replace track-field "&amp;" "&")]
          (render-file "templates/track-episodes.html"
                       {:track track-name
-                       :episodes (db/get-episodes-with-track track-name)})))
+                       :episodes (db/get-episodes-with-track track-name)
+                       :url-path (get-conf-value :url-path)})))
   ;; Form submissions
   (POST "/add" request
         (let [form-params (:params request)
