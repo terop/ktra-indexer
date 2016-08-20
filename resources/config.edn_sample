@@ -10,7 +10,9 @@
  ;; Yubico OTP parameters
  :yubico-client-id "12345"
  :yubico-secret-key "/xyz="
- ;; Toggle development or production mode
+ ;; Toggle development or production mode (TLS is enforced)
  :in-production true
  ;; Use through proxy (usually needed when a reverse proxy is used)
- :use-proxy true}
+ :use-proxy true
+ ;; Enable or disable HSTS; disable if a HSTS configured reverse proxy is used
+ :use-hsts true}

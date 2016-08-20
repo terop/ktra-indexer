@@ -136,8 +136,9 @@
    (if-not (get-conf-value :in-production)
      ;; TODO fix CSRF tokens
      (assoc-in site-defaults [:security :anti-forgery] false)
-     (assoc (assoc-in secure-site-defaults
-                      [:security :anti-forgery] false)
+     (assoc (assoc-in (assoc-in secure-site-defaults
+                                [:security :anti-forgery] false)
+                      [:security :hsts] (get-conf-value :use-hsts))
             :proxy (get-conf-value :use-proxy)))))
 
 (defn -main

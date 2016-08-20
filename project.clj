@@ -21,6 +21,5 @@
   :aot [ktra-indexer.handler]
   :plugins [[lein-environ "1.0.3"]]
   :profiles
-  {:dev {:dependencies [[ring/ring-mock "0.3.0"]]
-         :resource-paths ["resources"]
+  {:dev {:resource-paths ["resources"]
          :env {:squiggly {:checkers [:eastwood :kibit :typed]}}}})
