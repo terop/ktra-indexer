@@ -123,15 +123,20 @@
               insert-res (db/insert-episode (:date form-params)
                                             (:name form-params)
                                             (parse-string
-                                             (:tracklist form-params) true))]
-          (render-file "templates/add.html" {:insert-status insert-res})))
+                                             (:encodedTracklist form-params)
+                                             true))]
+          (render-file "templates/add.html" {:insert-status insert-res
+                                             :url-path (get-conf-value
+                                                        :url-path)})))
   (POST "/add-tracks" request
         (let [form-params (:params request)
               insert-res (db/insert-additional-tracks
                           (:episode-id form-params)
-                          (parse-string (:tracklist form-params) true))]
+                          (parse-string (:encodedTracklist form-params)
+                                        true))]
           (render-file "templates/add-tracks.html"
-                       {:insert-status insert-res})))
+                       {:insert-status insert-res
+                        :url-path (get-conf-value :url-path)})))
   (POST "/login" [] login-authenticate)
   ;; Serve static files
   (route/resources "/" )

@@ -66,6 +66,7 @@
                     <h3>Add tracks to episode number {{episode-id}}</h3>
 
                     <form method="post" action="add-tracks">
+                        <input type="hidden" id="encodedTracklist">
                         <label for="tracklist">New tracklist</label>
                         <textarea id="tracklist" class="form-control required" name="tracklist" cols="80"
                                   rows="20" required></textarea>
@@ -112,7 +113,7 @@
                             event.preventDefault();
                             return;
                         }
-                        tracklistTa.value = JSON.stringify(encodedTracklist);
+                        document.getElementById('encodedTracklist').value = JSON.stringify(encodedTracklist);
                     }
                 };
 
