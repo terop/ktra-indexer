@@ -106,7 +106,7 @@
                          :url-path (get-conf-value :url-path)})
            (resp/redirect "/"))))
   (GET "/tracks" [artist]
-       (let [artist (s/replace artist "&amp ;" "&")]
+       (let [artist (s/replace artist "&amp;" "&")]
          (render-file "templates/tracks.html"
                       {:artist artist
                        :tracks (db/get-tracks-by-artist artist)

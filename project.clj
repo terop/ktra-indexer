@@ -1,4 +1,4 @@
-(defproject ktra-indexer "0.1.0"
+(defproject ktra-indexer "0.1.1-SNAPSHOT"
   :description "A simple application for indexing and searching KTRA track
   listings"
   :url "https://github.com/terop/ktra-indexer"
@@ -12,7 +12,7 @@
                  [cheshire "5.6.3"]
                  [org.postgresql/postgresql "9.4.1209"]
                  [org.clojure/java.jdbc "0.6.1"]
-                 [honeysql "0.8.0"]
+                 [honeysql "0.8.1"]
                  [clj-time "0.12.0"]
                  [buddy/buddy-auth "1.1.0"]
                  [com.yubico/yubico-validation-client2 "3.0.1"]
