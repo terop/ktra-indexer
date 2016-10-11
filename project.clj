@@ -8,18 +8,18 @@
                  [ring/ring-defaults "0.2.1"]
                  [ring/ring-devel "1.5.0"]
                  [org.immutant/web "2.1.5"]
-                 [selmer "1.0.7"]
+                 [selmer "1.10.0"]
                  [cheshire "5.6.3"]
-                 [org.postgresql/postgresql "9.4.1209"]
+                 [org.postgresql/postgresql "9.4.1211"]
                  [org.clojure/java.jdbc "0.6.1"]
                  [honeysql "0.8.1"]
                  [clj-time "0.12.0"]
-                 [buddy/buddy-auth "1.1.0"]
+                 [buddy/buddy-auth "1.2.0"]
                  [com.yubico/yubico-validation-client2 "3.0.1"]
                  [org.apache.commons/commons-lang3 "3.4"]]
   :main ktra-indexer.handler
   :aot [ktra-indexer.handler]
-  :plugins [[lein-environ "1.0.3"]]
+  :plugins [[lein-environ "1.1.0"]]
   :profiles
   {:dev {:resource-paths ["resources"]
          :env {:squiggly {:checkers [:eastwood :kibit :typed]}}}})
