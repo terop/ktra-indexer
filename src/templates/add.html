@@ -141,6 +141,9 @@
                         }
                         document.getElementById('encodedTracklist').value = JSON.stringify(encodedTracklist);
                     }
+
+                    // Trim name to prevent name validation error
+                    document.getElementById('name').value = document.getElementById('name').value.trim();
                 };
 
                 document.getElementById('submitBtn').addEventListener('click', clickHandler, false);
