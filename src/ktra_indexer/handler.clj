@@ -67,7 +67,7 @@
     ;; is authenticated but permission denied is raised.
     (assoc (resp/response "403 Forbidden") :status 403)
     ;; In other cases, redirect it user to login
-    (resp/redirect "/login")))
+    (resp/redirect (str (get-conf-value :url-path) "/login"))))
 
 (def auth-backend (session-backend
                    {:unauthorized-handler unauthorized-handler}))
