@@ -28,9 +28,6 @@
             .form-control {
                 width: 60%;
             }
-            .error {
-                color: red;
-            }
         </style>
     </head>
     <body>
@@ -76,9 +73,9 @@
                     </form>
                 {% else %}
                     {% ifequal insert-status.status "success" %}
-                        <h3>Successfully added new tracks!</h3>
+                        <h3 class="bg-success result">Successfully added new tracks</h3>
                     {% else %}
-                        <h3 class="error">Adding of tracks failed</h3>
+                        <h3 class="bg-warning text-danger result">Error: failed to add tracks</h3>
                     {% endifequal %}
                 {% endif %}
             {% endif %}

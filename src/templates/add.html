@@ -29,9 +29,6 @@
             .form-control {
                 width: 60%;
             }
-            .error {
-                color: red;
-            }
         </style>
     </head>
     <body>
@@ -79,9 +76,9 @@
                 </form>
             {% else %}
                 {% ifequal insert-status.status "success" %}
-                    <h3>Successfully inserted episode!</h3>
+                    <h3 class="bg-success result">Successfully inserted episode</h3>
                 {% else %}
-                    <h3 class="error">
+                    <h3 class="bg-warning text-danger result">
                         {% ifequal insert-status.cause "duplicate-episode" %}
                             Error: duplicate episode insert attempted
                         {% else %}
