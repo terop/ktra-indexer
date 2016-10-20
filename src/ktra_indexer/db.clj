@@ -7,7 +7,6 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.coerce :as c]
-            [clj-time.local :as l]
             [clj-time.jdbc]
             [ktra-indexer.config :as cfg])
   (:import org.joda.time.format.DateTimeFormat
@@ -142,18 +141,22 @@
       (if-not (= (count ep-name-parts) 2)
         {:status "error"
          :cause "invalid-name"}
-        (let [date-str-to-sql-date (fn [date] (c/to-sql-date
-                                               (t/from-time-zone
-                                                (f/parse date-formatter date)
-                                                (t/time-zone-for-id
-                                                 (cfg/get-conf-value
-                                                  :time-zone)))))
+        (let [date-str-to-sql-time
+              ;; Converts the input date string to a SQL timestamp. Twelve hours
+              ;; are added to the timestamp before SQL timestamp conversion.
+              (fn
+                [date-str]
+                (c/to-sql-time (t/plus (t/from-time-zone
+                                        (f/parse date-formatter date-str)
+                                        (t/time-zone-for-id
+                                         (cfg/get-conf-value :time-zone)))
+                                       (t/hours 12))))
               insert-res (first (j/insert! db-jdbc
                                            :episodes
                                            {:number (Integer/parseInt
                                                      (ep-name-parts 1))
                                             :name ep-name
-                                            :date (date-str-to-sql-date
+                                            :date (date-str-to-sql-time
                                                    date)}))
               episode-id (:ep_id insert-res)]
           (if (every? pos? (for [track-json tracklist-json]
@@ -188,16 +191,13 @@
                          {:status "success"}
                          {:status "error"}))))
 
-(defn format-as-local-date
-  "Returns the given SQL date as a formatted string in local time"
-  [sql-date]
-  (binding [l/*local-formatters* {:local
-                                  (DateTimeFormat/forPattern "d.M.y")}]
-    (l/format-local-time (t/to-time-zone
-                          sql-date
-                          (t/time-zone-for-id (cfg/get-conf-value
-                                               :time-zone)))
-                         :local)))
+(defn sql-time-to-date-str
+  "Returns the given SQL timestamp as a dd.mm.yyyy formatted string."
+  [sql-time]
+  (f/unparse date-formatter (t/to-time-zone
+                             sql-time
+                             (t/time-zone-for-id (cfg/get-conf-value
+                                                  :time-zone)))))
 
 (defn get-episodes
   "Returns all the episodes in the database. Returns episode number, name
@@ -209,7 +209,7 @@
                                      :from :episodes
                                      :order-by [[:number :desc]])))
         format-date (fn [row]
-                      (update-in row [:date] format-as-local-date))]
+                      (update-in row [:date] sql-time-to-date-str))]
     (map format-date results)))
 
 (defn get-episode-basic-data
@@ -223,7 +223,7 @@
                                      :where [:= :number (Integer/parseInt
                                                          episode-number)])))
         format-date (fn [row]
-                      (update-in row [:date] format-as-local-date))]
+                      (update-in row [:date] sql-time-to-date-str))]
     (first (map format-date results))))
 
 (defn get-episode-tracks

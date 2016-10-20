@@ -1,5 +1,5 @@
 FROM java:8-jre-alpine
 MAINTAINER Tero Paloheimo <tero.paloheimo@iki.fi>
-ADD target/ktra-indexer-0.1.1-standalone.jar /usr/src/ktra.jar
+ADD target/ktra-indexer-0.1.2-SNAPSHOT.jar /usr/src/ktra.jar
 EXPOSE 8080
 CMD ["java", "-jar", "/usr/src/ktra.jar"]

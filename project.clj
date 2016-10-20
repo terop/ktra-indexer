@@ -1,4 +1,4 @@
-(defproject ktra-indexer "0.1.1"
+(defproject ktra-indexer "0.1.2-SNAPSHOT"
   :description "A simple application for indexing and searching KTRA track
   listings"
   :url "https://github.com/terop/ktra-indexer"
@@ -16,7 +16,7 @@
                  [clj-time "0.12.0"]
                  [buddy/buddy-auth "1.2.0"]
                  [com.yubico/yubico-validation-client2 "3.0.1"]
-                 [org.apache.commons/commons-lang3 "3.4"]]
+                 [org.apache.commons/commons-lang3 "3.5"]]
   :main ktra-indexer.handler
   :aot [ktra-indexer.handler]
   :plugins [[lein-environ "1.1.0"]]
