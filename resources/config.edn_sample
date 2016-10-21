@@ -3,8 +3,7 @@
             :db "ktra"
             :port "5432"
             :user "foobar"
-            :password "123"
-            }
+            :password "123"}
  ;; Time zone to use in database operations
  :time-zone "Europe/Helsinki"
  ;; Yubico OTP parameters
