@@ -251,7 +251,8 @@
                  "INNER JOIN episode_tracks et USING (track_id) "
                  "INNER JOIN episodes e ON e.ep_id = et.ep_id "
                  "WHERE artist_id = "
-                 "(SELECT artist_id FROM artists WHERE name LIKE ?)")
+                 "(SELECT artist_id FROM artists WHERE name LIKE ?) "
+                 "ORDER BY track_name ASC")
             artist]))
 
 (defn get-all-artists
@@ -275,5 +276,6 @@
                    "INNER JOIN artists a USING (artist_id) "
                    "INNER JOIN episode_tracks et USING (track_id) "
                    "INNER JOIN episodes e ON e.ep_id = et.ep_id "
-                   "WHERE to_tsvector(t.name) @@ to_tsquery(?)")
+                   "WHERE to_tsvector(t.name) @@ to_tsquery(?)"
+                   "ORDER BY ep_name ASC")
               (s/join " & " tokens)])))
