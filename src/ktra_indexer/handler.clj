@@ -9,7 +9,7 @@
             [immutant.web.middleware :refer [wrap-development]]
             [selmer.parser :refer :all]
             [cheshire.core :refer [parse-string]]
-            [buddy.auth :refer [authenticated? throw-unauthorized]]
+            [buddy.auth :refer [authenticated?]]
             [buddy.auth.backends.session :refer [session-backend]]
             [buddy.auth.middleware :refer [wrap-authentication
                                            wrap-authorization]]
