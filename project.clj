@@ -4,12 +4,12 @@
   :url "https://github.com/terop/ktra-indexer"
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [compojure "1.5.1"]
-                 [ring/ring-defaults "0.2.1"]
-                 [ring/ring-devel "1.5.0"]
-                 [org.immutant/web "2.1.5"]
+                 [compojure "1.5.2"]
+                 [ring/ring-defaults "0.2.2"]
+                 [ring/ring-devel "1.5.1"]
+                 [org.immutant/web "2.1.6"]
                  [selmer "1.10.5"]
-                 [cheshire "5.6.3"]
+                 [cheshire "5.7.0"]
                  [org.postgresql/postgresql "9.4.1212"]
                  [org.clojure/java.jdbc "0.6.1"]
                  [honeysql "0.8.2"]
