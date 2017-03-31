@@ -59,18 +59,23 @@
   returns the ID. Returns ID > 0 on success and -1 on error."
   [artist-name]
   (try
-    (let [query-res (j/query db-jdbc
+    (let [artist-name (s/trim artist-name)
+          match (re-find #"\d+\. (.+)" artist-name)
+          ;; Remove possible leading order numbers from the artist name
+          artist-name (if-not match
+                        artist-name
+                        (nth match 1))
+          query-res (j/query db-jdbc
                              (sql/format (sql/build :select :artist_id
                                                     :from :artists
                                                     :where [:like :name
-                                                            (s/trim
-                                                             artist-name)])))]
+                                                            artist-name])))]
       (if (= (count query-res) 1)
         ;; Artist found
         (:artist_id (first query-res))
         (:artist_id (first (j/insert! db-jdbc
                                       :artists
-                                      {:name (s/trim artist-name)})))))
+                                      {:name artist-name})))))
     (catch org.postgresql.util.PSQLException pge
       (.printStackTrace pge)
       -1)))
@@ -83,23 +88,22 @@
     (if (pos? artist-id)
       ;; Got a valid ID
       (try
-        (let [query-res (j/query db-jdbc
+        (let [track-name (s/trim (:track track-json))
+              query-res (j/query db-jdbc
                                  (sql/format
                                   (sql/build :select :track_id
                                              :from :tracks
                                              :where
                                              [:and [:= :artist_id
                                                     artist-id]
-                                              [:like :name
-                                               (s/trim (:track
-                                                        track-json))]])))]
+                                              [:like :name track-name]])))]
           (if (= (count query-res) 1)
             ;; Track found
             (:track_id (first query-res))
             (:track_id (first (j/insert! db-jdbc
                                          :tracks
                                          {:artist_id artist-id
-                                          :name (s/trim (:track track-json))})))
+                                          :name track-name})))
             ))
         (catch org.postgresql.util.PSQLException pge
           (.printStackTrace pge)
