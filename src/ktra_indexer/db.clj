@@ -48,8 +48,9 @@
                                                [:users [:= :users.user_id
                                                         :yubikeys.user_id]]
                                                :where [:= :users.username
-                                                       username])))
-        key-ids (set (for [id key-rs] (:yubikey_id id)))]
+                                                       username]))
+                        {:row-fn #(:yubikey_id %)})
+        key-ids (set key-rs)]
     (when (pos? (count key-ids))
       {:yubikey-ids key-ids})))
 
@@ -145,29 +146,32 @@
       (if-not (= (count ep-name-parts) 2)
         {:status "error"
          :cause "invalid-name"}
-        (let [date-str-to-sql-time
-              ;; Converts the input date string to a SQL timestamp.
-              (fn [date-str]
-                (c/to-sql-time (t/plus (t/from-time-zone
-                                        (f/parse date-formatter date-str)
-                                        (t/time-zone-for-id
-                                         (cfg/get-conf-value :time-zone)))
-                                       (t/hours 12))))
-              episode-id (:ep_id (first (j/insert! db-con
-                                                   :episodes
-                                                   {:number (Integer/parseInt
-                                                             (ep-name-parts 1))
-                                                    :name ep-name
-                                                    :date (date-str-to-sql-time
-                                                           date)})))]
-          (if (every? pos? (for [track-json tracklist-json]
-                             (insert-episode-track db-con
-                                                   episode-id
-                                                   track-json)))
-            {:status "success"}
-            ;; TODO add rollback on failure
-            {:status "error"
-             :cause "general-error"}))))
+        (j/with-db-transaction [t-con db-con]
+          (let [date-str-to-sql-time
+                ;; Converts the input date string to a SQL timestamp.
+                (fn [date-str]
+                  (c/to-sql-time (t/plus (t/from-time-zone
+                                          (f/parse date-formatter date-str)
+                                          (t/time-zone-for-id
+                                           (cfg/get-conf-value :time-zone)))
+                                         (t/hours 12))))
+                episode-id (:ep_id
+                            (first (j/insert! t-con
+                                              :episodes
+                                              {:number (Integer/parseInt
+                                                        (ep-name-parts 1))
+                                               :name ep-name
+                                               :date (date-str-to-sql-time
+                                                      date)})))]
+            (if (every? pos? (for [track-json tracklist-json]
+                               (insert-episode-track t-con
+                                                     episode-id
+                                                     track-json)))
+              {:status "success"}
+              (do
+                (j/db-set-rollback-only! t-con)
+                {:status "error"
+                 :cause "general-error"}))))))
     (catch org.postgresql.util.PSQLException pge
       (.printStackTrace pge)
       (if (re-find #"violates unique constraint" (.getMessage pge))
@@ -210,28 +214,24 @@
   "Returns all the episodes in the database. Returns episode number, name
   date."
   [db-con]
-  (let [results (j/query db-con
-                         (sql/format
-                          (sql/build :select [:number :name :date]
-                                     :from :episodes
-                                     :order-by [[:number :desc]])))
-        format-date (fn [row]
-                      (update-in row [:date] sql-ts-to-date-str))]
-    (map format-date results)))
+  (j/query db-con
+           (sql/format
+            (sql/build :select [:number :name :date]
+                       :from :episodes
+                       :order-by [[:number :desc]]))
+           {:row-fn #(merge % {:date (sql-ts-to-date-str (:date %))})}))
 
 (defn get-episode-basic-data
   "Returns the basic data (name and date) of the episode with
   the provided number."
   [db-con episode-number]
-  (let [results (j/query db-con
-                         (sql/format
-                          (sql/build :select [:name :date]
-                                     :from :episodes
-                                     :where [:= :number (Integer/parseInt
-                                                         episode-number)])))
-        format-date (fn [row]
-                      (update-in row [:date] sql-ts-to-date-str))]
-    (first (map format-date results))))
+  (first (j/query db-con
+                  (sql/format
+                   (sql/build :select [:name :date]
+                              :from :episodes
+                              :where [:= :number (Integer/parseInt
+                                                  episode-number)]))
+                  {:row-fn #(merge % {:date (sql-ts-to-date-str (:date %))})})))
 
 (defn get-episode-tracks
   "Returns the track name, artist and possible feature of each track in the
@@ -265,12 +265,12 @@
 (defn get-all-artists
   "Returns all artists' names from the database."
   [db-con]
-  (let [result (j/query db-con
-                        (sql/format
-                         (sql/build :select :name
-                                    :from :artists
-                                    :order-by [[:name :asc]])))]
-    (map :name result)))
+  (j/query db-con
+           (sql/format
+            (sql/build :select :name
+                       :from :artists
+                       :order-by [[:name :asc]]))
+           {:row-fn #(:name %)}))
 
 (defn get-episodes-with-track
   "Returns track name, artist, episode name and number of the provided track."
