@@ -2,10 +2,7 @@ language: clojure
 jdk:
   - oraclejdk8
 env:
-  - POSTGRESQL_DB_HOST=localhost
-  - POSTGRESQL_DB_PORT=5432
-  - POSTGRESQL_DB_USERNAME=postgres
-  - POSTGRESQL_DB_PASSWORD=
+  - POSTGRESQL_DB_HOST=localhost POSTGRESQL_DB_PORT=5432 POSTGRESQL_DB_USERNAME=postgres POSTGRESQL_DB_PASSWORD=
 services:
   - postgresql
 addons:
