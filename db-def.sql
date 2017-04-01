@@ -49,6 +49,6 @@ CREATE TABLE users (
 -- Yubikey ID table
 CREATE TABLE yubikeys (
     key_id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users (user_id),
+    user_id INTEGER REFERENCES users (user_id) ON DELETE CASCADE,
     yubikey_id VARCHAR(32) NOT NULL UNIQUE
 );

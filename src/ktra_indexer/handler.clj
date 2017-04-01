@@ -29,7 +29,7 @@
   (let [username (get-in request [:form-params "username"])
         otp (get-in request [:form-params "otp"])
         session (:session request)
-        user-data (db/get-yubikey-id username)]
+        user-data (db/get-yubikey-id db/postgres username)]
     (if (if-not (YubicoClient/isValidOTPFormat otp)
           false
           (let [client
@@ -75,8 +75,8 @@
 (defroutes app-routes
   (GET "/" request
        (render-file "templates/index.html"
-                    {:episodes (db/get-episodes)
-                     :artists (db/get-all-artists)
+                    {:episodes (db/get-episodes db/postgres)
+                     :artists (db/get-all-artists db/postgres)
                      :logged-in (authenticated? request)}))
   (GET "/login" [] (render-file "templates/login.html" {}))
   (GET "/logout" [] logout)
@@ -91,7 +91,7 @@
            (if (authenticated? request)
              (render-file "templates/add-tracks.html"
                           {:episode-id id
-                           :data (db/get-episode-basic-data id)
+                           :data (db/get-episode-basic-data db/postgres id)
                            :url-path (get-conf-value :url-path)})
              (unauthorized-response))
            (resp/redirect "/"))))
@@ -99,8 +99,8 @@
        (let [id (:id (:params request))]
          (if (re-find #"\d+" id)
            (render-file "templates/view.html"
-                        {:tracks (db/get-episode-tracks id)
-                         :basic-data (db/get-episode-basic-data id)
+                        {:tracks (db/get-episode-tracks db/postgres id)
+                         :basic-data (db/get-episode-basic-data db/postgres id)
                          :is-authenticated? (authenticated? request)
                          :episode-id id
                          :url-path (get-conf-value :url-path)})
@@ -109,18 +109,20 @@
        (let [artist (s/replace artist "&amp;" "&")]
          (render-file "templates/tracks.html"
                       {:artist artist
-                       :tracks (db/get-tracks-by-artist artist)
+                       :tracks (db/get-tracks-by-artist db/postgres artist)
                        :url-path (get-conf-value :url-path)})))
   (GET "/track-episodes" [track-field]
        (let [track-name (s/replace track-field "&amp;" "&")]
          (render-file "templates/track-episodes.html"
                       {:track track-name
-                       :episodes (db/get-episodes-with-track track-name)
+                       :episodes (db/get-episodes-with-track db/postgres
+                                                             track-name)
                        :url-path (get-conf-value :url-path)})))
   ;; Form submissions
   (POST "/add" request
         (let [form-params (:params request)
-              insert-res (db/insert-episode (:date form-params)
+              insert-res (db/insert-episode db/postgres
+                                            (:date form-params)
                                             (:name form-params)
                                             (parse-string
                                              (:encodedTracklist form-params)
@@ -131,9 +133,9 @@
   (POST "/add-tracks" request
         (let [form-params (:params request)
               insert-res (db/insert-additional-tracks
+                          db/postgres
                           (:episode-id form-params)
-                          (parse-string (:encodedTracklist form-params)
-                                        true))]
+                          (parse-string (:encodedTracklist form-params) true))]
           (render-file "templates/add-tracks.html"
                        {:insert-status insert-res
                         :url-path (get-conf-value :url-path)})))
