@@ -60,6 +60,10 @@
       (is (pos? artist-id))
       (is (= artist-id (get-or-insert-artist test-postgres
                                              "Art of Fighters")))
+      (is (= artist-id (get-or-insert-artist test-postgres
+                                             "Art Of Fighter")))
+      (is (= artist-id (get-or-insert-artist test-postgres
+                                             "Art Of Fighte")))
       (is (pos? (get-or-insert-artist test-postgres
                                       "3. Endymion")))
       (is (= 2 (first (j/query test-postgres
@@ -72,7 +76,10 @@
                       :track "Toxic Hotel"}
           track-id (get-or-insert-track test-postgres track-data)]
       (is (pos? track-id))
-      (is (= track-id (get-or-insert-track test-postgres track-data))))))
+      (is (= track-id (get-or-insert-track test-postgres track-data)))
+      (is (= track-id (get-or-insert-track test-postgres
+                                           (merge track-data
+                                                  {:track "Toxic hote"})))))))
 
 (deftest episode-track-insert
   (testing "Insert of a episode track"
@@ -166,3 +173,13 @@
   (testing "Query all artists"
     (is (= '("Art of Fighters" "Endymion")
            (get-all-artists test-postgres)))))
+
+(deftest edit-distance
+  (testing "Edit distance similarity"
+    (is (= {:value "Dune"
+            :distance 0}
+           (edit-distance-similarity "Dune" ["Dune"] 2)))
+    (is (= {:value "Dune"
+            :distance 1}
+           (edit-distance-similarity "Dun" ["Dune"] 2)))
+    (is (nil? (edit-distance-similarity "Dune" ["Endymion"] 2)))))

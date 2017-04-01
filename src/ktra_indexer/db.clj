@@ -11,7 +11,8 @@
             [clj-time.jdbc]
             [ktra-indexer.config :as cfg])
   (:import org.joda.time.format.DateTimeFormat
-           org.apache.commons.lang3.text.StrTokenizer))
+           org.apache.commons.lang3.text.StrTokenizer
+           org.apache.commons.lang3.StringUtils))
 
 (let [db-host (get (System/getenv)
                    "POSTGRESQL_DB_HOST"
@@ -55,6 +56,21 @@
     (when (pos? (count key-ids))
       {:yubikey-ids key-ids})))
 
+(defn edit-distance-similarity
+  "Returns the string and distance from coll which is most similar to reference
+  in a case-insensitive the edit distance comparison. threshold specifies the
+  maximum difference threshold in the edit distance comparison."
+  [reference coll threshold]
+  (let [lowercase-ref (s/lower-case reference)
+        distances (map (fn [value]
+                         {:value value
+                          :distance (StringUtils/getLevenshteinDistance
+                                     (s/lower-case value)
+                                     lowercase-ref
+                                     threshold)}) coll)]
+    (first (sort-by :distance <
+                    (filter #(>= (:distance %) 0) distances)))))
+
 ;; Artist, track and episode handling
 (defn get-or-insert-artist
   "Gets the ID of an artist if it exists. If not, it inserts it and
@@ -76,9 +92,34 @@
       (if (= (count query-res) 1)
         ;; Artist found
         (:artist_id (first query-res))
-        (:artist_id (first (j/insert! db-con
-                                      :artists
-                                      {:name artist-name})))))
+        (let [threshold 2
+              similar-artists (j/query db-con
+                                       (sql/format
+                                        (sql/build :select :name
+                                                   :from :artists
+                                                   :where [:like :name
+                                                           (str (nth artist-name
+                                                                     0)
+                                                                "%")]))
+                                       {:row-fn #(:name %)})
+              closest-artist (edit-distance-similarity artist-name
+                                                       similar-artists
+                                                       threshold)]
+          (if (or (nil? closest-artist)
+                  (and closest-artist
+                       (> (:distance closest-artist) threshold)))
+            ;; Distance is too big so insert the artist instead
+            (:artist_id (first (j/insert! db-con
+                                          :artists
+                                          {:name artist-name})))
+            (first (j/query db-con
+                            (sql/format (sql/build :select :artist_id
+                                                   :from :artists
+                                                   :where [:= :%lower.name
+                                                           (s/lower-case
+                                                            (:value
+                                                             closest-artist))]))
+                            {:row-fn #(:artist_id %)}))))))
     (catch org.postgresql.util.PSQLException pge
       (log/error (str "Failed to search or insert artist: " (.getMessage pge)))
       -1)))
@@ -104,11 +145,46 @@
           (if (= (count query-res) 1)
             ;; Track found
             (:track_id (first query-res))
-            (:track_id (first (j/insert! db-con
-                                         :tracks
-                                         {:artist_id artist-id
-                                          :name track-name})))
-            ))
+            (let [threshold 1
+                  similar-tracks (j/query db-con
+                                          (sql/format
+                                           (sql/build :select :name
+                                                      :from :tracks
+                                                      :where [:like :name
+                                                              (str (nth
+                                                                    track-name
+                                                                    0)
+                                                                   "%")]))
+                                          {:row-fn #(:name %)})
+                  closest-track (edit-distance-similarity track-name
+                                                          similar-tracks
+                                                          threshold)]
+              (if (or (nil? closest-track)
+                      (and closest-track
+                           (> (:distance closest-track) threshold)))
+                ;; Distance is too big so insert the track instead
+                (:track_id (first (j/insert! db-con
+                                             :tracks
+                                             {:artist_id artist-id
+                                              :name track-name})))
+                (or (first (j/query db-con
+                                    (sql/format
+                                     (sql/build :select :track_id
+                                                :from :tracks
+                                                :where
+                                                [:and [:= :artist_id
+                                                       artist-id]
+                                                 [:= :%lower.name
+                                                  (s/lower-case
+                                                   (:value
+                                                    closest-track))]]))
+                                    {:row-fn #(:track_id %)}))
+                    ;; A track with the same name but different artist exists
+                    ;; so therefore the new track is inserted
+                    (:track_id (first (j/insert! db-con
+                                                 :tracks
+                                                 {:artist_id artist-id
+                                                  :name track-name}))))))))
         (catch org.postgresql.util.PSQLException pge
           (log/error (str "Failed to search or insert track: "
                           (.getMessage pge)))
