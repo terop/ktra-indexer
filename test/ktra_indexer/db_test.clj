@@ -166,4 +166,3 @@
   (testing "Query all artists"
     (is (= '("Art of Fighters" "Endymion")
            (get-all-artists test-postgres)))))
-

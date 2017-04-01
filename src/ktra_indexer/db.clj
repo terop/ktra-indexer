@@ -1,6 +1,7 @@
 (ns ktra-indexer.db
   "Namespace containing database functions"
-  (:require [honeysql.core :as sql]
+  (:require [clojure.tools.logging :as log]
+            [honeysql.core :as sql]
             [honeysql.helpers :refer :all]
             [clojure.java.jdbc :as j]
             [clojure.string :as s]
@@ -78,7 +79,7 @@
                                       :artists
                                       {:name artist-name})))))
     (catch org.postgresql.util.PSQLException pge
-      (.printStackTrace pge)
+      (log/error (str "Failed to search or insert artist: " (.getMessage pge)))
       -1)))
 
 (defn get-or-insert-track
@@ -107,7 +108,8 @@
                                           :name track-name})))
             ))
         (catch org.postgresql.util.PSQLException pge
-          (.printStackTrace pge)
+          (log/error (str "Failed to search or insert track: "
+                          (.getMessage pge)))
           -1))
       -1)))
 
@@ -132,7 +134,7 @@
                                       :track_id track-id
                                       :feature_id feature-id})))
         (catch org.postgresql.util.PSQLException pge
-          (.printStackTrace pge)
+          (log/error (str "Failed to insert episode track: " (.getMessage pge)))
           -1))
       -1)))
 
@@ -173,7 +175,7 @@
                 {:status "error"
                  :cause "general-error"}))))))
     (catch org.postgresql.util.PSQLException pge
-      (.printStackTrace pge)
+      (log/error (str "Failed to insert episode: " (.getMessage pge)))
       (if (re-find #"violates unique constraint" (.getMessage pge))
         {:status "error"
          :cause "duplicate-episode"}
