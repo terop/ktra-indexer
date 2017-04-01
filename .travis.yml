@@ -9,5 +9,5 @@ addons:
   postgresql: "9.4"
 before_script:
   - psql -U postgres -c 'CREATE DATABASE ktra_test;'
-  - psql -U postgres < db-def.sql
+  - psql -U postgres ktra_test < db-def.sql
   - cp resources/config.edn_sample resources/config.edn
