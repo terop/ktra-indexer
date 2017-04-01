@@ -1,0 +1,14 @@
+language: clojure
+
+env:
+  - POSTGRESQL_DB_HOST=localhost
+  - POSTGRESQL_DB_PORT=5432
+  - POSTGRESQL_DB_USERNAME=postgres
+  - POSTGRESQL_DB_PASSWORD=
+services:
+  - postgresql
+addons:
+  postgresql: "9.6"
+before_script:
+  - psql -U postgres -c 'CREATE DATABASE ktra_test;'
+  - psql -U postgres < db-def.sql
