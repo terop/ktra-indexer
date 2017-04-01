@@ -70,8 +70,9 @@
           query-res (j/query db-con
                              (sql/format (sql/build :select :artist_id
                                                     :from :artists
-                                                    :where [:like :name
-                                                            artist-name])))]
+                                                    :where [:= :%lower.name
+                                                            (s/lower-case
+                                                             artist-name)])))]
       (if (= (count query-res) 1)
         ;; Artist found
         (:artist_id (first query-res))
@@ -98,7 +99,8 @@
                                              :where
                                              [:and [:= :artist_id
                                                     artist-id]
-                                              [:like :name track-name]])))]
+                                              [:= :%lower.name
+                                               (s/lower-case track-name)]])))]
           (if (= (count query-res) 1)
             ;; Track found
             (:track_id (first query-res))

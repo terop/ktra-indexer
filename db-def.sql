@@ -12,6 +12,7 @@ CREATE TABLE artists (
        artist_id SERIAL PRIMARY KEY,
        name VARCHAR(100) NOT NULL UNIQUE
 );
+CREATE INDEX artists_name_lower_idx ON artists (lower(name));
 
 -- Tracks table
 CREATE TABLE tracks (
@@ -20,6 +21,7 @@ CREATE TABLE tracks (
        name TEXT NOT NULL
 );
 CREATE INDEX tracks_name_idx ON tracks USING gin(to_tsvector('english', name));
+CREATE INDEX tracks_name_lower_idx ON tracks (lower(name));
 
 -- Features table
 CREATE TABLE features (
