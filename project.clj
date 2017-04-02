@@ -1,4 +1,4 @@
-(defproject ktra-indexer "0.1.3-SNAPSHOT"
+(defproject ktra-indexer "0.1.3"
   :description "A simple application for indexing and searching KTRA track
   listings"
   :url "https://github.com/terop/ktra-indexer"
