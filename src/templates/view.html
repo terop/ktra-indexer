@@ -16,6 +16,7 @@
               href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
               integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
               crossorigin="anonymous">
+        <link href="css/theme.bootstrap_3.min.css" rel="stylesheet">
         <link href="css/common.css" rel="stylesheet">
         <style type="text/css">
             td.artist {
@@ -59,7 +60,7 @@
 
                 {% if is-authenticated? %}
                     <input type="button" class="btn btn-primary" id="edit-btn" value="Add tracks"
-                    onclick="window.document.location='add-tracks?id={{episode-id}}'">
+                           onclick="window.document.location='add-tracks?id={{episode-id}}'">
                 {% endif %}
 
                 <table id="track-table" class="table" style="margin-top: 10px;">
@@ -86,12 +87,15 @@
 
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"
-		integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+                integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
                 crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
                 integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
                 crossorigin="anonymous"></script>
+        <script src="js/tablesort.js"></script>
         <script>
+            addTablesorter('#track-table');
+
             var artist_tds = document.getElementsByClassName('artist');
 
             // Click handler for track showing
