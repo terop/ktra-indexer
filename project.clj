@@ -7,7 +7,7 @@
                  [compojure "1.6.0"]
                  [ring/ring-defaults "0.3.0"]
                  [ring/ring-devel "1.6.1"]
-                 [org.immutant/web "2.1.7"]
+                 [org.immutant/web "2.1.8"]
                  [selmer "1.10.7"]
                  [cheshire "5.7.1"]
                  [org.postgresql/postgresql "42.1.1"]
