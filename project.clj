@@ -17,7 +17,7 @@
                  [buddy/buddy-auth "1.4.1"]
                  [com.yubico/yubico-validation-client2 "3.0.1"]
                  [org.apache.commons/commons-lang3 "3.5"]
-                 [org.clojure/tools.logging "0.3.1"]
+                 [org.clojure/tools.logging "0.4.0"]
                  [org.slf4j/slf4j-log4j12 "1.7.25"]]
   :main ktra-indexer.handler
   :aot [ktra-indexer.handler]
