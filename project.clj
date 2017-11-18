@@ -13,10 +13,10 @@
                  [org.postgresql/postgresql "42.1.4"]
                  [org.clojure/java.jdbc "0.7.3"]
                  [honeysql "0.9.1"]
-                 [clj-time "0.14.1"]
+                 [clj-time "0.14.2"]
                  [buddy/buddy-auth "2.1.0"]
                  [com.yubico/yubico-validation-client2 "3.0.1"]
-                 [org.apache.commons/commons-lang3 "3.6"]
+                 [org.apache.commons/commons-lang3 "3.7"]
                  [org.clojure/tools.logging "0.4.0"]
                  [org.slf4j/slf4j-log4j12 "1.7.25"]]
   :main ktra-indexer.handler
