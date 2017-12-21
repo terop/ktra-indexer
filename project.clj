@@ -3,7 +3,7 @@
   listings"
   :url "https://github.com/terop/ktra-indexer"
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
                  [compojure "1.6.0"]
                  [ring/ring-defaults "0.3.1"]
                  [ring/ring-devel "1.6.3"]
@@ -11,7 +11,7 @@
                  [selmer "1.11.3"]
                  [cheshire "5.8.0"]
                  [org.postgresql/postgresql "42.1.4"]
-                 [org.clojure/java.jdbc "0.7.3"]
+                 [org.clojure/java.jdbc "0.7.4"]
                  [honeysql "0.9.1"]
                  [clj-time "0.14.2"]
                  [buddy/buddy-auth "2.1.0"]
