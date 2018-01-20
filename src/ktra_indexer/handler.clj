@@ -81,8 +81,8 @@
            (render-file "templates/error.html"
                         {})
            (render-file "templates/index.html"
-                        {:episodes episodes
-                         :artists artists
+                        {:episodes (:episodes episodes)
+                         :artists (:artists artists)
                          :logged-in (authenticated? request)}))))
   (GET "/login" [] (render-file "templates/login.html" {}))
   (GET "/logout" [] logout)
@@ -93,7 +93,8 @@
          (unauthorized-response)))
   (GET "/add-tracks" request
        (let [id (:id (:params request))]
-         (if (re-find #"\d+" id)
+         (if (and id
+                  (re-find #"\d+" id))
            (if (authenticated? request)
              (render-file "templates/add-tracks.html"
                           {:episode-id id
@@ -103,7 +104,8 @@
            (resp/redirect "/"))))
   (GET "/view" request
        (let [id (:id (:params request))]
-         (if (re-find #"\d+" id)
+         (if (and id
+                  (re-find #"\d+" id))
            (render-file "templates/view.html"
                         {:tracks (db/get-episode-tracks db/postgres id)
                          :basic-data (db/get-episode-basic-data db/postgres id)

@@ -105,25 +105,26 @@
 
 (deftest episode-insert
   (testing "Insert of an episode"
-    (is (= {:status "error"
-            :cause "invalid-name"}
+    (is (= {:status :error
+            :cause :invalid-name}
            (insert-episode test-postgres
                            "1.4.2017"
                            "Another test episode"
                            [])))
-    (is (= {:status "success"} (insert-episode test-postgres
-                                               "1.4.2017"
-                                               "KTRA Episode 1 ft. Endymion"
-                                               [{:artist "Endymion"
-                                                 :track "Progress"
-                                                 :feature nil}
-                                                {:artist "Art of Fighters"
-                                                 :track "Guardians of Unlost"
-                                                 :feature nil}])))))
+    (is (= {:status :ok}
+           (insert-episode test-postgres
+                           "1.4.2017"
+                           "KTRA Episode 1 ft. Endymion"
+                           [{:artist "Endymion"
+                             :track "Progress"
+                             :feature nil}
+                            {:artist "Art of Fighters"
+                             :track "Guardians of Unlost"
+                             :feature nil}])))))
 
 (deftest additional-track-insert
   (testing "Insert of additional tracks"
-    (is (= {:status "success"}
+    (is (= {:status :ok}
            (insert-additional-tracks test-postgres
                                      "1"
                                      [{:artist "Unexist ft. Satronica"
@@ -132,9 +133,9 @@
 
 (deftest sql-timestamp-to-string
   (testing "Conversion of SQL timestamp to a string"
-    (is (= "1.4.2017" (sql-ts-to-date-str (f/parse (f/formatter
-                                                    :date-hour-minute)
-                                                   "2017-04-01T10:30"))))))
+    (is (= "1.4.2017"
+           (sql-ts-to-date-str (f/parse (f/formatter :date-hour-minute)
+                                        "2017-04-01T10:30"))))))
 
 (deftest episode-query
   (testing "Query of episodes and episode data"
@@ -144,7 +145,7 @@
                     [{:artist "Art of Fighters"
                       :track "Guardians of Unlost"
                       :feature nil}])
-    (let [episodes (get-episodes test-postgres)]
+    (let [episodes (:episodes (get-episodes test-postgres))]
       (is (= 1 (count episodes)))
       (is (= {:number 3
               :name "KTRA Episode 3 ft. Art of Fighters"
@@ -171,7 +172,8 @@
 
 (deftest all-artists
   (testing "Query all artists"
-    (is (= '("Art of Fighters" "Endymion")
+    (is (= {:status :ok
+            :artists '("Art of Fighters" "Endymion")}
            (get-all-artists test-postgres)))))
 
 (deftest edit-distance

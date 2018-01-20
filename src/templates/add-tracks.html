@@ -28,6 +28,10 @@
             .form-control {
                 width: 60%;
             }
+            div.alert {
+                margin-top: 15px;
+            }
+
         </style>
     </head>
     <body>
@@ -56,11 +60,11 @@
         </nav>
 
         <div class="container">
-            {% if not data %}
-                <h3 class="text-danger">The episode with the given number could not be found</h3>
-            {% else %}
-                {% if not insert-status %}
-                    <h3>Add tracks to episode number {{episode-id}}</h3>
+            {% if not insert-status %}
+                {% if not data %}
+                    <div class="alert alert-danger" role="alert">The given episode could not be found</div>
+                {% else  %}
+                    <h3>Add tracks to episode {{episode-id}}</h3>
 
                     <form method="post" action="add-tracks">
                         <input type="hidden" id="encodedTracklist" name="encodedTracklist">
@@ -71,13 +75,13 @@
                         <input type="hidden" name="episode-id" value="{{episode-id}}">
                         <input type="submit" id="submitBtn" class="btn btn-primary" value="Submit">
                     </form>
-                {% else %}
-                    {% ifequal insert-status.status "success" %}
-                        <h3 class="bg-success result">Successfully added new tracks</h3>
-                    {% else %}
-                        <h3 class="bg-warning text-danger result">Error: failed to add tracks</h3>
-                    {% endifequal %}
                 {% endif %}
+            {% else %}
+                {% ifequal insert-status.status :ok %}
+                    <div class="alert alert-success" role="alert">Successfully added new tracks</div>
+                {% else %}
+                    <div class="alert alert-danger" role="alert">Error: failed to add tracks</div>
+                {% endifequal %}
             {% endif %}
         </div>
 

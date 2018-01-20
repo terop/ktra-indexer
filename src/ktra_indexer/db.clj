@@ -122,7 +122,7 @@
                                                              closest-artist))]))
                             {:row-fn #(:artist_id %)}))))))
     (catch PSQLException pge
-      (log/error (str "Failed to search or insert artist: " (.getMessage pge)))
+      (log/error "Failed to search or insert artist: " (.getMessage pge))
       -1)))
 
 (defn get-or-insert-track
@@ -187,8 +187,7 @@
                                                  {:artist_id artist-id
                                                   :name track-name}))))))))
         (catch PSQLException pge
-          (log/error (str "Failed to search or insert track: "
-                          (.getMessage pge)))
+          (log/error "Failed to search or insert track: " (.getMessage pge))
           -1))
       -1)))
 
@@ -225,8 +224,8 @@
     (let [ep-name-parts (re-matches
                          #"KTRA Episode (\d+)\.?\s?.+" ep-name)]
       (if-not (= (count ep-name-parts) 2)
-        {:status "error"
-         :cause "invalid-name"}
+        {:status :error
+         :cause :invalid-name}
         (j/with-db-transaction [t-con db-con]
           (let [date-str-to-sql-time
                 ;; Converts the input date string to a SQL timestamp.
@@ -248,18 +247,18 @@
                                (insert-episode-track t-con
                                                      episode-id
                                                      track-json)))
-              {:status "success"}
+              {:status :ok}
               (do
                 (j/db-set-rollback-only! t-con)
-                {:status "error"
-                 :cause "general-error"}))))))
+                {:status :error
+                 :cause :general-error}))))))
     (catch PSQLException pge
       (log/error "Failed to insert episode: " (.getMessage pge))
       (if (re-find #"violates unique constraint" (.getMessage pge))
-        {:status "error"
-         :cause "duplicate-episode"}
-        {:status "error"
-         :cause "general-error"}))))
+        {:status :error
+         :cause :duplicate-episode}
+        {:status :error
+         :cause :general-error}))))
 
 (defn insert-additional-tracks
   "Adds additional tracks on an existing episode. Returns a map containing the
@@ -278,10 +277,10 @@
                          (insert-episode-track t-con
                                                ep-id
                                                track)))
-        {:status "success"}
+        {:status :ok}
         (do
           (j/db-set-rollback-only! t-con)
-          {:status "error"})))))
+          {:status :error})))))
 
 (defn sql-ts-to-date-str
   "Returns the given SQL timestamp as a dd.mm.yyyy formatted string."
