@@ -11,8 +11,8 @@
             [clj-time.jdbc]
             [ktra-indexer.config :as cfg])
   (:import org.joda.time.format.DateTimeFormat
-           org.apache.commons.lang3.text.StrTokenizer
-           org.apache.commons.lang3.StringUtils
+           org.apache.commons.text.StrTokenizer
+           org.apache.commons.text.similarity.LevenshteinDistance
            org.postgresql.util.PSQLException))
 
 (let [db-host (get (System/getenv)
@@ -71,10 +71,10 @@
   (let [lowercase-ref (s/lower-case reference)
         distances (map (fn [value]
                          {:value value
-                          :distance (StringUtils/getLevenshteinDistance
-                                     (s/lower-case value)
-                                     lowercase-ref
-                                     threshold)}) coll)]
+                          :distance (.apply (new LevenshteinDistance
+                                                 (int threshold))
+                                            (s/lower-case value)
+                                            lowercase-ref)}) coll)]
     (first (sort-by :distance <
                     (filter #(>= (:distance %) 0) distances)))))
 
