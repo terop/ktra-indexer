@@ -70,33 +70,37 @@
         <div class="container">
             <h3>KTRA episodes</h3>
 
-            <p>Search tracks for <strong>artist</strong>:
-                <input class="form-control" type="text" id="artist-field">
-            </p>
-            <p>Search episodes for <strong>track</strong>:</p>
-            <form method="get" action="track-episodes">
-                <input class="form-control" type="text" name="track-field">
-                <input class="btn btn-primary" style="margin: 10px 0 10px 0;"
-                       type="submit" value="Search">
-            </form>
+            {% if episodes|count > 0 %}
+                <p>Search tracks for <strong>artist</strong>:
+                    <input class="form-control" type="text" id="artist-field">
+                </p>
+                <p>Search episodes for <strong>track</strong>:</p>
+                <form method="get" action="track-episodes">
+                    <input class="form-control" type="text" name="track-field">
+                    <input class="btn btn-primary" style="margin: 10px 0 10px 0;"
+                           type="submit" value="Search">
+                </form>
 
-            <table id="episode-table" class="table">
-                <thead>
-                    <tr>
-                        <th>Episode #</th>
-                        <th>Name</th>
-                        <th>Date</th>
-                </thead>
-                <tbody>
-                    {% for ep in episodes %}
-                        <tr onclick="window.document.location='view?id={{ep.number}}';">
-                            <td>{{ep.number}}</td>
-                            <td>{{ep.name}}</td>
-                            <td>{{ep.date}}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                <table id="episode-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Episode #</th>
+                            <th>Name</th>
+                            <th>Date</th>
+                    </thead>
+                    <tbody>
+                        {% for ep in episodes %}
+                            <tr onclick="window.document.location='view?id={{ep.number}}';">
+                                <td>{{ep.number}}</td>
+                                <td>{{ep.name}}</td>
+                                <td>{{ep.date}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-warning" role="alert">There are no episodes yet</div>
+            {% endif %}
         </div>
 
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -107,18 +111,20 @@
                 integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
                 crossorigin="anonymous"></script>
         <script src="js/jquery-ui.min.js"></script>
-        <script src="js/jquery.tablesorter.combined.min.js"></script>
-        <script src="js/tablesort.js"></script>
-        <script>
-            $('#artist-field').autocomplete({
-                source: {{artists|json|safe}},
-                minLength: 2,
-                select: function(event, ui) {
-                    window.document.location = 'tracks?artist=' +
-                                               encodeURIComponent(ui.item.label);
-                }
-            });
-            addTablesorter('#episode-table');
-        </script>
+        {% if episodes|count > 0 %}
+            <script src="js/jquery.tablesorter.combined.min.js"></script>
+            <script src="js/tablesort.js"></script>
+            <script>
+                $('#artist-field').autocomplete({
+                    source: {{artists|json|safe}},
+                    minLength: 2,
+                    select: function(event, ui) {
+                        window.document.location = 'tracks?artist=' +
+                                                   encodeURIComponent(ui.item.label);
+                    }
+                });
+                addTablesorter('#episode-table');
+            </script>
+        {% endif %}
     </body>
 </html>
