@@ -12,7 +12,8 @@
             [ktra-indexer.config :as cfg])
   (:import org.joda.time.format.DateTimeFormat
            org.apache.commons.lang3.text.StrTokenizer
-           org.apache.commons.lang3.StringUtils))
+           org.apache.commons.lang3.StringUtils
+           org.postgresql.util.PSQLException))
 
 (let [db-host (get (System/getenv)
                    "POSTGRESQL_DB_HOST"
@@ -120,7 +121,7 @@
                                                             (:value
                                                              closest-artist))]))
                             {:row-fn #(:artist_id %)}))))))
-    (catch org.postgresql.util.PSQLException pge
+    (catch PSQLException pge
       (log/error (str "Failed to search or insert artist: " (.getMessage pge)))
       -1)))
 
@@ -185,7 +186,7 @@
                                                  :tracks
                                                  {:artist_id artist-id
                                                   :name track-name}))))))))
-        (catch org.postgresql.util.PSQLException pge
+        (catch PSQLException pge
           (log/error (str "Failed to search or insert track: "
                           (.getMessage pge)))
           -1))
@@ -211,8 +212,8 @@
                                      {:ep_id episode-id
                                       :track_id track-id
                                       :feature_id feature-id})))
-        (catch org.postgresql.util.PSQLException pge
-          (log/error (str "Failed to insert episode track: " (.getMessage pge)))
+        (catch PSQLException pge
+          (log/error "Failed to insert episode track: " (.getMessage pge))
           -1))
       -1)))
 
@@ -252,8 +253,8 @@
                 (j/db-set-rollback-only! t-con)
                 {:status "error"
                  :cause "general-error"}))))))
-    (catch org.postgresql.util.PSQLException pge
-      (log/error (str "Failed to insert episode: " (.getMessage pge)))
+    (catch PSQLException pge
+      (log/error "Failed to insert episode: " (.getMessage pge))
       (if (re-find #"violates unique constraint" (.getMessage pge))
         {:status "error"
          :cause "duplicate-episode"}
@@ -294,12 +295,18 @@
   "Returns all the episodes in the database. Returns episode number, name
   date."
   [db-con]
-  (j/query db-con
-           (sql/format
-            (sql/build :select [:number :name :date]
-                       :from :episodes
-                       :order-by [[:number :desc]]))
-           {:row-fn #(merge % {:date (sql-ts-to-date-str (:date %))})}))
+  (try
+    {:episodes (j/query db-con
+                        (sql/format
+                         (sql/build :select [:number :name :date]
+                                    :from :episodes
+                                    :order-by [[:number :desc]]))
+                        {:row-fn #(merge % {:date (sql-ts-to-date-str
+                                                   (:date %))})})
+     :status :ok}
+    (catch PSQLException pge
+      (log/error "Failed to get episodes: " (.getMessage pge))
+      {:status :error})))
 
 (defn get-episode-basic-data
   "Returns the basic data (name and date) of the episode with
@@ -345,12 +352,17 @@
 (defn get-all-artists
   "Returns all artists' names from the database."
   [db-con]
-  (j/query db-con
-           (sql/format
-            (sql/build :select :name
-                       :from :artists
-                       :order-by [[:name :asc]]))
-           {:row-fn #(:name %)}))
+  (try
+    {:artists  (j/query db-con
+                        (sql/format
+                         (sql/build :select :name
+                                    :from :artists
+                                    :order-by [[:name :asc]]))
+                        {:row-fn #(:name %)})
+     :status :ok}
+    (catch PSQLException pge
+      (log/error "Failed to get all artists: " (.getMessage pge))
+      {:status :error})))
 
 (defn get-episodes-with-track
   "Returns track name, artist, episode name and number of the provided track."

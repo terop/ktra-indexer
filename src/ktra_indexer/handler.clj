@@ -74,10 +74,16 @@
 
 (defroutes app-routes
   (GET "/" request
-       (render-file "templates/index.html"
-                    {:episodes (db/get-episodes db/postgres)
-                     :artists (db/get-all-artists db/postgres)
-                     :logged-in (authenticated? request)}))
+       (let [episodes (db/get-episodes db/postgres)
+             artists (db/get-all-artists db/postgres)]
+         (if (or (= :error (:status episodes))
+                 (= :error (:status artists)))
+           (render-file "templates/error.html"
+                        {})
+           (render-file "templates/index.html"
+                        {:episodes episodes
+                         :artists artists
+                         :logged-in (authenticated? request)}))))
   (GET "/login" [] (render-file "templates/login.html" {}))
   (GET "/logout" [] logout)
   (GET "/add" request
