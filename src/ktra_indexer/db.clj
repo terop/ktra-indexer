@@ -44,18 +44,24 @@
   "Returns the Yubikey ID(s) of the user with the given username.
   Returns nil if the user is not found."
   [db-con username]
-  (let [key-rs (j/query db-con
-                        (sql/format (sql/build :select :yubikey_id
-                                               :from :yubikeys
-                                               :join
-                                               [:users [:= :users.user_id
-                                                        :yubikeys.user_id]]
-                                               :where [:= :users.username
-                                                       username]))
-                        {:row-fn #(:yubikey_id %)})
-        key-ids (set key-rs)]
-    (when (pos? (count key-ids))
-      {:yubikey-ids key-ids})))
+  (try
+    (let [key-rs (j/query db-con
+                          (sql/format (sql/build :select :yubikey_id
+                                                 :from :yubikeys
+                                                 :join
+                                                 [:users [:= :users.user_id
+                                                          :yubikeys.user_id]]
+                                                 :where [:= :users.username
+                                                         username]))
+                          {:row-fn #(:yubikey_id %)})
+          key-ids (set key-rs)]
+      (when (pos? (count key-ids))
+        {:status :ok
+         :yubikey-ids key-ids}))
+    (catch PSQLException pge
+      (log/error (format "Could not get Yubikey ID for user \"%s\": %s"
+                         username (.getMessage pge)))
+      {:status :error})))
 
 (defn edit-distance-similarity
   "Returns the string and distance from coll which is most similar to reference
@@ -122,7 +128,7 @@
                                                              closest-artist))]))
                             {:row-fn #(:artist_id %)}))))))
     (catch PSQLException pge
-      (log/error "Failed to search or insert artist: " (.getMessage pge))
+      (log/error "Failed to search or insert artist:" (.getMessage pge))
       -1)))
 
 (defn get-or-insert-track
@@ -187,7 +193,7 @@
                                                  {:artist_id artist-id
                                                   :name track-name}))))))))
         (catch PSQLException pge
-          (log/error "Failed to search or insert track: " (.getMessage pge))
+          (log/error "Failed to search or insert track:" (.getMessage pge))
           -1))
       -1)))
 
@@ -212,7 +218,7 @@
                                       :track_id track-id
                                       :feature_id feature-id})))
         (catch PSQLException pge
-          (log/error "Failed to insert episode track: " (.getMessage pge))
+          (log/error "Failed to insert episode track:" (.getMessage pge))
           -1))
       -1)))
 
@@ -253,7 +259,7 @@
                 {:status :error
                  :cause :general-error}))))))
     (catch PSQLException pge
-      (log/error "Failed to insert episode: " (.getMessage pge))
+      (log/error "Failed to insert episode:" (.getMessage pge))
       (if (re-find #"violates unique constraint" (.getMessage pge))
         {:status :error
          :cause :duplicate-episode}
@@ -264,23 +270,27 @@
   "Adds additional tracks on an existing episode. Returns a map containing the
   status of the insert operation."
   [db-con episode-number tracklist]
-  (let [ep-id (first (j/query db-con
-                              (sql/format
-                               (sql/build :select :ep_id
-                                          :from :episodes
-                                          :where [:= :number
-                                                  (Integer/parseInt
-                                                   episode-number)]))
-                              {:row-fn #(:ep_id %)}))]
-    (j/with-db-transaction [t-con db-con]
-      (if (every? pos? (for [track tracklist]
-                         (insert-episode-track t-con
-                                               ep-id
-                                               track)))
-        {:status :ok}
-        (do
-          (j/db-set-rollback-only! t-con)
-          {:status :error})))))
+  (try
+    (let [ep-id (first (j/query db-con
+                                (sql/format
+                                 (sql/build :select :ep_id
+                                            :from :episodes
+                                            :where [:= :number
+                                                    (Integer/parseInt
+                                                     episode-number)]))
+                                {:row-fn #(:ep_id %)}))]
+      (j/with-db-transaction [t-con db-con]
+        (if (every? pos? (for [track tracklist]
+                           (insert-episode-track t-con
+                                                 ep-id
+                                                 track)))
+          {:status :ok}
+          (do
+            (j/db-set-rollback-only! t-con)
+            {:status :error}))))
+    (catch PSQLException pge
+      (log/error "Failed to insert additional tracks:" (.getMessage pge))
+      {:status :error})))
 
 (defn sql-ts-to-date-str
   "Returns the given SQL timestamp as a dd.mm.yyyy formatted string."
@@ -304,20 +314,27 @@
                                                    (:date %))})})
      :status :ok}
     (catch PSQLException pge
-      (log/error "Failed to get episodes: " (.getMessage pge))
+      (log/error "Failed to get episodes:" (.getMessage pge))
       {:status :error})))
 
 (defn get-episode-basic-data
   "Returns the basic data (name and date) of the episode with
   the provided number."
   [db-con episode-number]
-  (first (j/query db-con
-                  (sql/format
-                   (sql/build :select [:name :date]
-                              :from :episodes
-                              :where [:= :number (Integer/parseInt
-                                                  episode-number)]))
-                  {:row-fn #(merge % {:date (sql-ts-to-date-str (:date %))})})))
+  (try
+    {:status :ok
+     :data (first (j/query db-con
+                           (sql/format
+                            (sql/build :select [:name :date]
+                                       :from :episodes
+                                       :where [:= :number (Integer/parseInt
+                                                           episode-number)]))
+                           {:row-fn #(merge % {:date (sql-ts-to-date-str
+                                                      (:date %))})}))}
+    (catch PSQLException pge
+      (log/error (format "Could not get basic data for episode %s: %s"
+                         episode-number (.getMessage pge)))
+      {:status :error})))
 
 (defn get-episode-tracks
   "Returns the track name, artist and possible feature of each track in the
@@ -360,7 +377,7 @@
                         {:row-fn #(:name %)})
      :status :ok}
     (catch PSQLException pge
-      (log/error "Failed to get all artists: " (.getMessage pge))
+      (log/error "Failed to get all artists:" (.getMessage pge))
       {:status :error})))
 
 (defn get-episodes-with-track

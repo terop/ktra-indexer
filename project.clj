@@ -20,7 +20,8 @@
                  [org.clojure/tools.logging "0.4.0"]
                  [org.slf4j/slf4j-log4j12 "1.7.25"]]
   :main ktra-indexer.handler
-  :aot [ktra-indexer.handler]
+  :aot [ktra-indexer.handler
+        clojure.tools.logging.impl]
   :plugins [[lein-environ "1.1.0"]]
   :profiles
   {:dev {:resource-paths ["resources"]

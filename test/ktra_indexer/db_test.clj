@@ -5,7 +5,9 @@
             [clj-time.format :as f]
             [clj-time.jdbc]
             [ktra-indexer.config :refer [db-conf]]
-            [ktra-indexer.db :refer :all]))
+            [ktra-indexer.db :refer :all])
+  (:import (org.postgresql.util PSQLException
+                                PSQLState)))
 
 (let [db-host (get (System/getenv)
                    "POSTGRESQL_DB_HOST"
@@ -48,10 +50,19 @@
 (use-fixtures :once clean-test-database)
 
 (deftest yubikey-id
-  (testing "Query Yubikey ID"
+  (testing "Querying of Yubikey ID"
     (is (nil? (get-yubikey-id test-postgres "notfounduser")))
-    (is (= {:yubikey-ids #{"mykeyid"}} (get-yubikey-id test-postgres
-                                                       "test-user")))))
+    (is (= {:status :ok
+            :yubikey-ids #{"mykeyid"}}
+           (get-yubikey-id test-postgres
+                           "test-user")))
+    (with-redefs [j/query (fn [db query fn]
+                            (throw (PSQLException.
+                                    "Test exception"
+                                    (PSQLState/COMMUNICATION_ERROR))))]
+      (is (= {:status :error}
+             (get-yubikey-id test-postgres
+                             "test-user"))))))
 
 (deftest artist-query-or-insert
   (testing "Query and insert of artist"
@@ -68,7 +79,14 @@
                                       "3. Endymion")))
       (is (= 2 (first (j/query test-postgres
                                "SELECT COUNT(artist_id) AS count FROM artists"
-                               {:row-fn #(:count %)})))))))
+                               {:row-fn #(:count %)})))))
+    (with-redefs [j/query (fn [db query]
+                            (throw (PSQLException.
+                                    "Test exception"
+                                    (PSQLState/COMMUNICATION_ERROR))))]
+      (is (= -1
+             (get-or-insert-artist test-postgres
+                                   "Art of Fighters"))))))
 
 (deftest track-query-or-insert
   (testing "Query and insert of a single track"
@@ -79,7 +97,13 @@
       (is (= track-id (get-or-insert-track test-postgres track-data)))
       (is (= track-id (get-or-insert-track test-postgres
                                            (merge track-data
-                                                  {:track "Toxic hote"})))))))
+                                                  {:track "Toxic hote"}))))
+      (with-redefs [j/query (fn [db query]
+                              (throw (PSQLException.
+                                      "Test exception"
+                                      (PSQLState/COMMUNICATION_ERROR))))]
+        (is (= -1
+               (get-or-insert-track test-postgres track-data)))))))
 
 (deftest episode-track-insert
   (testing "Insert of a episode track"
@@ -101,7 +125,17 @@
       (is (= 6 (first (j/query test-postgres
                                (str "SELECT COUNT(ep_tr_id) AS count "
                                     "FROM episode_tracks")
-                               {:row-fn #(:count %)})))))))
+                               {:row-fn #(:count %)}))))
+      (with-redefs [j/insert! (fn [db table values]
+                                (throw (PSQLException.
+                                        "Test exception"
+                                        (PSQLState/COMMUNICATION_ERROR))))]
+        (is (= -1
+               (insert-episode-track test-postgres
+                                     episode-id
+                                     {:artist "Endymion"
+                                      :track "Progress"
+                                      :feature nil})))))))
 
 (deftest episode-insert
   (testing "Insert of an episode"
@@ -120,7 +154,17 @@
                              :feature nil}
                             {:artist "Art of Fighters"
                              :track "Guardians of Unlost"
-                             :feature nil}])))))
+                             :feature nil}])))
+    (with-redefs [j/insert! (fn [db table values]
+                              (throw (PSQLException.
+                                      "Test exception"
+                                      (PSQLState/COMMUNICATION_ERROR))))]
+      (is (= {:status :error
+              :cause :general-error}
+             (insert-episode test-postgres
+                             "20.1.2018"
+                             "KTRA Episode 2 ft. Mad Dog"
+                             []))))))
 
 (deftest additional-track-insert
   (testing "Insert of additional tracks"
@@ -129,7 +173,17 @@
                                      "1"
                                      [{:artist "Unexist ft. Satronica"
                                        :track "Fuck The System"
-                                       :feature nil}])))))
+                                       :feature nil}])))
+    (with-redefs [j/query (fn [db query fn]
+                            (throw (PSQLException.
+                                    "Test exception"
+                                    (PSQLState/COMMUNICATION_ERROR))))]
+      (is (= {:status :error}
+             (insert-additional-tracks test-postgres
+                                       "1"
+                                       [{:artist "Endymion"
+                                         :track "Save Me"
+                                         :feature nil}]))))))
 
 (deftest sql-timestamp-to-string
   (testing "Conversion of SQL timestamp to a string"
@@ -151,8 +205,9 @@
               :name "KTRA Episode 3 ft. Art of Fighters"
               :date "2.4.2017"}
              (first episodes))))
-    (is (= {:name "KTRA Episode 3 ft. Art of Fighters"
-            :date "2.4.2017"}
+    (is (= {:status :ok
+            :data {:name "KTRA Episode 3 ft. Art of Fighters"
+                   :date "2.4.2017"}}
            (get-episode-basic-data test-postgres "3")))
     (is (= {:track_name "Guardians of Unlost"
             :artist_name "Art of Fighters"
@@ -163,7 +218,13 @@
             :number 3
             :ep_name "KTRA Episode 3 ft. Art of Fighters"}
            (first (get-episodes-with-track test-postgres
-                                           "Guardians of Unlost"))))))
+                                           "Guardians of Unlost"))))
+    (with-redefs [j/query (fn [db query fn]
+                            (throw (PSQLException.
+                                    "Test exception"
+                                    (PSQLState/COMMUNICATION_ERROR))))]
+      (is (= {:status :error}
+             (get-episode-basic-data test-postgres "3"))))))
 
 (deftest tracks-by-artist
   (testing "Query all tracks by a given artist"
@@ -174,7 +235,13 @@
   (testing "Query all artists"
     (is (= {:status :ok
             :artists '("Art of Fighters" "Endymion")}
-           (get-all-artists test-postgres)))))
+           (get-all-artists test-postgres)))
+    (with-redefs [j/query (fn [db query fn]
+                            (throw (PSQLException.
+                                    "Test exception"
+                                    (PSQLState/COMMUNICATION_ERROR))))]
+      (is (= {:status :error}
+             (get-all-artists test-postgres))))))
 
 (deftest edit-distance
   (testing "Edit distance similarity"

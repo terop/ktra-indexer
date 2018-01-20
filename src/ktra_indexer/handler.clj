@@ -20,6 +20,22 @@
                                  YubicoClient))
   (:gen-class))
 
+(defn validate-yubikey-login
+  "Check that login using Yubikey is valid."
+  [username otp-value]
+  (let [user-data (db/get-yubikey-id db/postgres username)]
+    (if (or (not (YubicoClient/isValidOTPFormat otp-value))
+            (= :error (:status user-data)))
+      false
+      (let [client
+            (YubicoClient/getClient (Integer/parseInt (get-conf-value
+                                                       :yubico-client-id))
+                                    (get-conf-value :yubico-secret-key))]
+        (if (and (.isOk (.verify client otp-value))
+                 (contains? (:yubikey-ids user-data)
+                            (YubicoClient/getPublicId otp-value)))
+          true false)))))
+
 (defn login-authenticate
   "Check request username and OTP value against the recorded Yubikeys for the
   current user. On successful authentication, set appropriate user into the
@@ -27,21 +43,11 @@
   On failed authentication, renders the login page."
   [request]
   (let [username (get-in request [:form-params "username"])
-        otp (get-in request [:form-params "otp"])
-        session (:session request)
-        user-data (db/get-yubikey-id db/postgres username)]
-    (if (if-not (YubicoClient/isValidOTPFormat otp)
-          false
-          (let [client
-                (YubicoClient/getClient
-                 (Integer/parseInt (get-conf-value :yubico-client-id))
-                 (get-conf-value :yubico-secret-key))]
-            (if (and (.isOk (.verify client otp))
-                     (contains? (:yubikey-ids user-data)
-                                (YubicoClient/getPublicId otp)))
-              true false)))
+        otp-value (get-in request [:form-params "otp"])
+        session (:session request)]
+    (if (validate-yubikey-login username otp-value)
       (let [next-url (get-in request [:params :next]
-                             (str (get-conf-value :url-path) "/add"))
+                             (get-conf-value :url-path))
             updated-session (assoc session :identity (keyword username))]
         (assoc (resp/redirect next-url) :session updated-session))
       (render-file "templates/login.html"
@@ -96,23 +102,31 @@
          (if (and id
                   (re-find #"\d+" id))
            (if (authenticated? request)
-             (render-file "templates/add-tracks.html"
-                          {:episode-id id
-                           :data (db/get-episode-basic-data db/postgres id)
-                           :url-path (get-conf-value :url-path)})
+             (let [episode-data (db/get-episode-basic-data db/postgres id)]
+               (if (= :error (:status episode-data))
+                 (render-file "templates/error.html"
+                              {})
+                 (render-file "templates/add-tracks.html"
+                              {:episode-id id
+                               :data (:data episode-data)
+                               :url-path (get-conf-value :url-path)})))
              (unauthorized-response))
-           (resp/redirect "/"))))
+           (resp/redirect (str "/" (get-conf-value :url-path))))))
   (GET "/view" request
        (let [id (:id (:params request))]
          (if (and id
                   (re-find #"\d+" id))
-           (render-file "templates/view.html"
-                        {:tracks (db/get-episode-tracks db/postgres id)
-                         :basic-data (db/get-episode-basic-data db/postgres id)
-                         :is-authenticated? (authenticated? request)
-                         :episode-id id
-                         :url-path (get-conf-value :url-path)})
-           (resp/redirect "/"))))
+           (let [episode-data (db/get-episode-basic-data db/postgres id)]
+             (if (= :error (:status episode-data))
+               (render-file "templates/error.html"
+                            {})
+               (render-file "templates/view.html"
+                            {:tracks (db/get-episode-tracks db/postgres id)
+                             :basic-data (:data episode-data)
+                             :is-authenticated? (authenticated? request)
+                             :episode-id id
+                             :url-path (get-conf-value :url-path)})))
+           (resp/redirect (str "/" (get-conf-value :url-path))))))
   (GET "/tracks" [artist]
        (let [artist (s/replace artist "&amp;" "&")]
          (render-file "templates/tracks.html"
