@@ -148,7 +148,7 @@
     (is (= {:status :ok}
            (insert-episode test-postgres
                            "1.4.2017"
-                           "KTRA Episode 1 ft. Endymion"
+                           "Episode 1 ft. Endymion"
                            [{:artist "Endymion"
                              :track "Progress"
                              :feature nil}
@@ -163,7 +163,7 @@
               :cause :general-error}
              (insert-episode test-postgres
                              "20.1.2018"
-                             "KTRA Episode 2 ft. Mad Dog"
+                             "Episode 2 ft. Mad Dog"
                              []))))))
 
 (deftest additional-track-insert
@@ -195,18 +195,18 @@
   (testing "Query of episodes and episode data"
     (insert-episode test-postgres
                     "2.4.2017"
-                    "KTRA Episode 3 ft. Art of Fighters"
+                    "Episode 3 ft. Art of Fighters"
                     [{:artist "Art of Fighters"
                       :track "Guardians of Unlost"
                       :feature nil}])
     (let [episodes (:episodes (get-episodes test-postgres))]
       (is (= 1 (count episodes)))
       (is (= {:number 3
-              :name "KTRA Episode 3 ft. Art of Fighters"
+              :name "Episode 3 ft. Art of Fighters"
               :date "2.4.2017"}
              (first episodes))))
     (is (= {:status :ok
-            :data {:name "KTRA Episode 3 ft. Art of Fighters"
+            :data {:name "Episode 3 ft. Art of Fighters"
                    :date "2.4.2017"}}
            (get-episode-basic-data test-postgres "3")))
     (is (= {:track_name "Guardians of Unlost"
@@ -216,7 +216,7 @@
     (is (= {:track "Guardians of Unlost"
             :artist "Art of Fighters"
             :number 3
-            :ep_name "KTRA Episode 3 ft. Art of Fighters"}
+            :ep_name "Episode 3 ft. Art of Fighters"}
            (first (get-episodes-with-track test-postgres
                                            "Guardians of Unlost"))))
     (with-redefs [j/query (fn [db query fn]

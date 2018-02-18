@@ -228,7 +228,7 @@
   [db-con date ep-name tracklist-json]
   (try
     (let [ep-name-parts (re-matches
-                         #"KTRA Episode (\d+)\.?\s?.+" ep-name)]
+                         #"Episode (\d+)\.?\s?.+" ep-name)]
       (if-not (= (count ep-name-parts) 2)
         {:status :error
          :cause :invalid-name}
