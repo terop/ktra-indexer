@@ -8,7 +8,7 @@
                  [ring/ring-defaults "0.3.2"]
                  [ring/ring-devel "1.7.1"]
                  [org.immutant/web "2.1.10"]
-                 [selmer "1.12.3"]
+                 [selmer "1.12.5"]
                  [cheshire "5.8.1"]
                  [org.postgresql/postgresql "42.2.5"]
                  [org.clojure/java.jdbc "0.7.8"]
