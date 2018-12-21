@@ -22,7 +22,6 @@
   :main ktra-indexer.handler
   :aot [ktra-indexer.handler
         clojure.tools.logging.impl]
-  :plugins [[lein-environ "1.1.0"]]
   :profiles
   {:dev {:resource-paths ["resources"]
          :env {:squiggly {:checkers [:eastwood :kibit :typed]}}}})
