@@ -15,7 +15,7 @@
                  [honeysql "0.9.4"]
                  [clj-time "0.15.1"]
                  [buddy/buddy-auth "2.1.0"]
-                 [com.yubico/yubico-validation-client2 "3.0.2"]
+                 [com.yubico/yubico-validation-client2 "3.0.3"]
                  [org.apache.commons/commons-text "1.6"]
                  [org.clojure/tools.logging "0.4.1"]
                  [org.slf4j/slf4j-log4j12 "1.7.25"]]
