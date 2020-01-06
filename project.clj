@@ -2,7 +2,7 @@
   :description "A simple application for indexing and searching KTRA track
   listings"
   :url "https://github.com/terop/ktra-indexer"
-  :min-lein-version "2.0.0"
+  :license {:name "MIT"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [compojure "1.6.1"]
                  [ring/ring-defaults "0.3.2"]
@@ -19,9 +19,9 @@
                  [org.apache.commons/commons-text "1.8"]
                  [org.clojure/tools.logging "0.5.0"]
                  [org.slf4j/slf4j-log4j12 "1.7.30"]]
-  :main ktra-indexer.handler
-  :aot [ktra-indexer.handler
-        clojure.tools.logging.impl]
+  :main ^:skip-aot ktra-indexer.handler
+  :target-path "target/%s"
   :profiles
   {:dev {:resource-paths ["resources"]
-         :env {:squiggly {:checkers [:eastwood :kibit :typed]}}}})
+         :env {:squiggly {:checkers [:eastwood :kibit :typed]}}}
+   :uberjar {:aot :all}})
