@@ -11,14 +11,14 @@
                  [selmer "1.12.18"]
                  [cheshire "5.9.0"]
                  [org.postgresql/postgresql "42.2.9"]
-                 [org.clojure/java.jdbc "0.7.10"]
+                 [org.clojure/java.jdbc "0.7.11"]
                  [honeysql "0.9.8"]
                  [clj-time "0.15.2"]
                  [buddy/buddy-auth "2.2.0"]
                  [com.yubico/yubico-validation-client2 "3.0.5"]
                  [org.apache.commons/commons-text "1.8"]
                  [org.clojure/tools.logging "0.5.0"]
-                 [org.slf4j/slf4j-log4j12 "1.7.29"]]
+                 [org.slf4j/slf4j-log4j12 "1.7.30"]]
   :main ktra-indexer.handler
   :aot [ktra-indexer.handler
         clojure.tools.logging.impl]
