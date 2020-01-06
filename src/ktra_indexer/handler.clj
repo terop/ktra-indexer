@@ -1,24 +1,25 @@
 (ns ktra-indexer.handler
   "The main namespace of the application"
-  (:require [compojure.core :refer :all]
-            [compojure.route :as route]
-            [ring.middleware.defaults :refer [wrap-defaults site-defaults
-                                              secure-site-defaults]]
-            [ring.util.response :as resp]
+  (:gen-class)
+  (:require [buddy.auth :refer [authenticated?]]
+            [buddy.auth.backends.session :refer [session-backend]]
+            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
+            [cheshire.core :refer [parse-string]]
+            [clojure.string :as s]
+            [compojure
+             [core :refer :all]
+             [route :as route]]
             [immutant.web :as web]
             [immutant.web.middleware :refer [wrap-development]]
-            [selmer.parser :refer :all]
-            [cheshire.core :refer [parse-string]]
-            [buddy.auth :refer [authenticated?]]
-            [buddy.auth.backends.session :refer [session-backend]]
-            [buddy.auth.middleware :refer [wrap-authentication
-                                           wrap-authorization]]
-            [clojure.string :as s]
-            [ktra-indexer.db :as db]
-            [ktra-indexer.config :refer [get-conf-value]])
-  (:import (com.yubico.client.v2 ResponseStatus VerificationResponse
-                                 YubicoClient))
-  (:gen-class))
+            [ktra-indexer
+             [config :refer [get-conf-value]]
+             [db :as db]]
+            [ring.middleware.defaults
+             :refer
+             [secure-site-defaults site-defaults wrap-defaults]]
+            [ring.util.response :as resp]
+            [selmer.parser :refer :all])
+  (:import com.yubico.client.v2.YubicoClient))
 
 (defn validate-yubikey-login
   "Check that login using Yubikey is valid."

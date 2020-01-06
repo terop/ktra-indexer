@@ -1,18 +1,16 @@
 (ns ktra-indexer.db
   "Namespace containing database functions"
-  (:require [clojure.tools.logging :as log]
-            [honeysql.core :as sql]
-            [honeysql.helpers :refer :all]
+  (:require [clj-time
+             [coerce :as c]
+             [core :as t]
+             [format :as f]]
             [clojure.java.jdbc :as j]
             [clojure.string :as s]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clj-time.coerce :as c]
-            [clj-time.jdbc]
+            [clojure.tools.logging :as log]
+            [honeysql.core :as sql]
             [ktra-indexer.config :as cfg])
-  (:import org.joda.time.format.DateTimeFormat
+  (:import org.apache.commons.text.similarity.LevenshteinDistance
            org.apache.commons.text.StrTokenizer
-           org.apache.commons.text.similarity.LevenshteinDistance
            org.postgresql.util.PSQLException))
 
 (let [db-host (get (System/getenv)
