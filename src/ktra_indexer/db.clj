@@ -3,7 +3,8 @@
   (:require [clj-time
              [coerce :as c]
              [core :as t]
-             [format :as f]]
+             [format :as f]
+             [jdbc]]
             [clojure.java.jdbc :as j]
             [clojure.string :as s]
             [clojure.tools.logging :as log]
@@ -225,7 +226,8 @@
   status of the insert operation."
   [db-con date ep-name tracklist-json]
   (try
-    (let [ep-name-parts (re-matches
+    (let [ep-name (s/trim (s/replace ep-name "KTRA" ""))
+          ep-name-parts (re-matches
                          #"Episode (\d+)\.?\s?.+" ep-name)]
       (if-not (= (count ep-name-parts) 2)
         {:status :error
