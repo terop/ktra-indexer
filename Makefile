@@ -1,7 +1,7 @@
 
 build: update # build container
 	LEIN_SNAPSHOTS_IN_RELEASE=1 lein uberjar
-	docker build -t ktra-indexer:0.2.0 .
+	docker build -t ktra-indexer .
 
 clean:
 	lein clean
