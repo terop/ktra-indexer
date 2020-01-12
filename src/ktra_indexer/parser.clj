@@ -3,8 +3,7 @@
   (:refer-clojure :exclude [range iterate format max min])
   (:require [clojure.string :as s]
             [java-time :as t])
-  (:import java.time.format.DateTimeFormatter
-           java.time.DayOfWeek
+  (:import java.time.DayOfWeek
            org.jsoup.Jsoup))
 
 (defn get-friday-date
