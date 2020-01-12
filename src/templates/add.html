@@ -44,7 +44,7 @@
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li><a href="/{{ url-path }}">Home</a></li>
-                        <li class="active"><a href="#">Add</a></li>
+                        <li class="active"><a href="add">Add</a></li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li><a href="logout">Logout</a></li>
@@ -59,6 +59,11 @@
 
                 <form method="post" action="add">
                     <input type="hidden" id="encodedTracklist" name="encodedTracklist">
+                    <label for="scUrl">SoundCloud URL</label>
+                    <input type="url" class="form-control" id="scUrl" name="scUrl" pattern="https://.*" style="margin-bottom: 10px;">
+                    <input type="button" id="scFetchBtn" class="btn" value="Fetch data">
+                    <br>
+                    <br>
                     <label for="date">Episode date</label>
                     <input type="text" class="form-control" id="date" name="date" required>
                     <br>
@@ -93,8 +98,8 @@
         {% if not insert-status %}
             <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
             <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-	            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-	            crossorigin="anonymous"></script>
+                    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+                    crossorigin="anonymous"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js"></script>
             <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
                     integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
@@ -112,7 +117,7 @@
                 });
 
                 // Handler for the submit button click event
-                var clickHandler = function (event) {
+                var submitClickHandler = function (event) {
                     var tracklistTa = document.getElementById('tracklist'),
                         tlArrayWithEmptyLines = tracklistTa.value.split('\n');
                     var tlArray = tlArrayWithEmptyLines.filter(function (value) {
@@ -121,7 +126,7 @@
 
                     // Validate date
                     if (!/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(document.getElementById('date').value)) {
-                        alert('Error: episode date has invalid format!');
+                        alert('Error: episode date has invalid format');
                         event.preventDefault();
                         return;
                     }
@@ -129,7 +134,7 @@
                     if (tlArray.length > 0) {
                         var encodedTracklist = parseTracklist(tlArray);
                         if (encodedTracklist.length < 5) {
-                            alert('Error: tracklist is too short!');
+                            alert('Error: tracklist is too short');
                             event.preventDefault();
                             return;
                         }
@@ -140,7 +145,35 @@
                     document.getElementById('name').value = document.getElementById('name').value.trim();
                 };
 
-                document.getElementById('submitBtn').addEventListener('click', clickHandler, false);
+                document.getElementById('submitBtn').addEventListener('click', submitClickHandler, false);
+
+                // Handler for the SoundCloud fetch button click event
+                var scFetchBtnClickHandler = function (event) {
+                    var scUrl = document.getElementById('scUrl');
+                    if (scUrl.value === '') {
+                        alert('Error: the URL cannot be empty');
+                        event.preventDefault();
+                        return;
+                    }
+
+                    $.get('/{{ url-path }}/sc-fetch', {'sc-url': encodeURI(scUrl.value)},
+                          function(data) {
+                              var dataJson = JSON.parse(data);
+                              if (dataJson.status === 'ok') {
+                                  document.getElementById('date').value = dataJson.content.date;
+                                  document.getElementById('name').value = dataJson.content.title;
+                                  document.getElementById('tracklist').value = dataJson.content.tracklist;
+                              } else {
+                                  if (dataJson.cause === 'invalid-url') {
+                                      alert('Error: SoundCloud data fetch failed: invalid URL');
+                                  } else {
+                                      alert('Error: SoundCloud data fetch failed');
+                                  }
+                              }
+                    });
+                };
+
+                document.getElementById('scFetchBtn').addEventListener('click', scFetchBtnClickHandler, false);
             </script>
         {% endif %}
     </body>

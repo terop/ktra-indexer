@@ -16,4 +16,6 @@
  ;; Enable or disable HSTS; disable if a HSTS configured reverse proxy is used
  :use-hsts true
  ;; Path of the URL through which the application is accessed
- :url-path "ktra"}
+ :url-path "ktra"
+ ;; Prefix for KTRA SoundCloud page URL needed for SoundCloud URL validation
+ :ktra-sc-url-prefix "https://soundcloud.com/keepingtheravealive"}

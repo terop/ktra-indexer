@@ -18,7 +18,9 @@
                  [com.yubico/yubico-validation-client2 "3.0.5"]
                  [org.apache.commons/commons-text "1.8"]
                  [org.clojure/tools.logging "0.5.0"]
-                 [org.slf4j/slf4j-log4j12 "1.7.30"]]
+                 [org.slf4j/slf4j-log4j12 "1.7.30"]
+                 [org.jsoup/jsoup "1.12.1"]
+                 [clojure.java-time "0.3.2"]]
   :main ^:skip-aot ktra-indexer.handler
   :target-path "target/%s"
   :profiles

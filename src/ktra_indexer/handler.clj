@@ -3,8 +3,9 @@
   (:gen-class)
   (:require [buddy.auth :refer [authenticated?]]
             [buddy.auth.backends.session :refer [session-backend]]
-            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
-            [cheshire.core :refer [parse-string]]
+            [buddy.auth.middleware :refer [wrap-authentication
+                                           wrap-authorization]]
+            [cheshire.core :refer [generate-string parse-string]]
             [clojure.string :as s]
             [compojure
              [core :refer :all]
@@ -13,7 +14,8 @@
             [immutant.web.middleware :refer [wrap-development]]
             [ktra-indexer
              [config :refer [get-conf-value]]
-             [db :as db]]
+             [db :as db]
+             [parser :refer [parse-sc-tracklist]]]
             [ring.middleware.defaults
              :refer
              [secure-site-defaults site-defaults wrap-defaults]]
@@ -141,6 +143,12 @@
                        :episodes (db/get-episodes-with-track db/postgres
                                                              track-name)
                        :url-path (get-conf-value :url-path)})))
+  (GET "/sc-fetch" [sc-url]
+       (if-not (s/starts-with? sc-url (get-conf-value :ktra-sc-url-prefix))
+         (generate-string {:status "error"
+                           :cause "invalid-url"})
+         (generate-string {:status "ok"
+                           :content (parse-sc-tracklist sc-url)})))
   ;; Form submissions
   (POST "/add" request
         (let [form-params (:params request)
