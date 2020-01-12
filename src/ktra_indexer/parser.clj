@@ -30,7 +30,8 @@
                                              (.select document
                                                       "article > p > meta")))
                                            "content"))))]
-    {:title (s/replace (first (s/split (.title document) #" by")) "KTRA" "")
+    {:title (s/trim (s/replace (first (s/split (.title document) #" by"))
+                               "KTRA" ""))
      :tracklist (s/join "\n" tracklist-lines)
      :date (get-friday-date (.html
                              (first (.select document "header > time"))))}))
