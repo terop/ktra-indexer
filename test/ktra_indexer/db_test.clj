@@ -1,9 +1,7 @@
 (ns ktra-indexer.db-test
   (:require [clojure.test :refer :all]
             [clojure.java.jdbc :as j]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clj-time.jdbc]
+            [java-time :as t]
             [ktra-indexer.config :refer [db-conf]]
             [ktra-indexer.db :refer :all])
   (:import (org.postgresql.util PSQLException
@@ -111,7 +109,7 @@
                                                :episodes
                                                {:number 2
                                                 :name "Test episode"
-                                                :date (t/now)})))]
+                                                :date (t/local-date)})))]
       (is (pos? (insert-episode-track test-postgres
                                       episode-id
                                       {:artist "Endymion"
@@ -187,9 +185,8 @@
 
 (deftest sql-timestamp-to-string
   (testing "Conversion of SQL timestamp to a string"
-    (is (= "1.4.2017"
-           (sql-ts-to-date-str (f/parse (f/formatter :date-hour-minute)
-                                        "2017-04-01T10:30"))))))
+    (is (= "12.1.2020"
+           (sql-date-to-date-str (t/sql-date (t/local-date 2020 1 12)))))))
 
 (deftest episode-query
   (testing "Query of episodes and episode data"

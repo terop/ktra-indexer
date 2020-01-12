@@ -13,7 +13,6 @@
                  [org.postgresql/postgresql "42.2.9"]
                  [org.clojure/java.jdbc "0.7.11"]
                  [honeysql "0.9.8"]
-                 [clj-time "0.15.2"]
                  [buddy/buddy-auth "2.2.0"]
                  [com.yubico/yubico-validation-client2 "3.0.5"]
                  [org.apache.commons/commons-text "1.8"]

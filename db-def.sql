@@ -4,7 +4,7 @@ CREATE TABLE episodes (
        ep_id SERIAL PRIMARY KEY,
        number INTEGER NOT NULL UNIQUE,
        name VARCHAR(100) NOT NULL UNIQUE,
-       date TIMESTAMP WITH TIME ZONE NOT NULL
+       date DATE NOT NULL
 );
 
 -- Artists table

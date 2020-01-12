@@ -1,14 +1,10 @@
 (ns ktra-indexer.db
   "Namespace containing database functions"
-  (:require [clj-time
-             [coerce :as c]
-             [core :as t]
-             [format :as f]
-             [jdbc]]
-            [clojure.java.jdbc :as j]
+  (:require [clojure.java.jdbc :as j]
             [clojure.string :as s]
             [clojure.tools.logging :as log]
             [honeysql.core :as sql]
+            [java-time :as t]
             [ktra-indexer.config :as cfg])
   (:import org.apache.commons.text.similarity.LevenshteinDistance
            org.apache.commons.text.StrTokenizer
@@ -35,8 +31,6 @@
                                   db-host db-port db-name)
                  :user db-user
                  :password db-password}))
-
-(def date-formatter (f/formatter "d.M.Y"))
 
 ;; User handling
 (defn get-yubikey-id
@@ -233,22 +227,14 @@
         {:status :error
          :cause :invalid-name}
         (j/with-db-transaction [t-con db-con]
-          (let [date-str-to-sql-time
-                ;; Converts the input date string to a SQL timestamp.
-                (fn [date-str]
-                  (c/to-sql-time (t/plus (t/from-time-zone
-                                          (f/parse date-formatter date-str)
-                                          (t/time-zone-for-id
-                                           (cfg/get-conf-value :time-zone)))
-                                         (t/hours 12))))
-                episode-id (:ep_id
+          (let [episode-id (:ep_id
                             (first (j/insert! t-con
                                               :episodes
                                               {:number (Integer/parseInt
                                                         (ep-name-parts 1))
                                                :name ep-name
-                                               :date (date-str-to-sql-time
-                                                      date)})))]
+                                               :date (t/local-date "d.M.y"
+                                                                   date)})))]
             (if (every? pos? (for [track-json tracklist-json]
                                (insert-episode-track t-con
                                                      episode-id
@@ -292,13 +278,10 @@
       (log/error "Failed to insert additional tracks:" (.getMessage pge))
       {:status :error})))
 
-(defn sql-ts-to-date-str
-  "Returns the given SQL timestamp as a dd.mm.yyyy formatted string."
-  [sql-time]
-  (f/unparse date-formatter (t/to-time-zone
-                             sql-time
-                             (t/time-zone-for-id (cfg/get-conf-value
-                                                  :time-zone)))))
+(defn sql-date-to-date-str
+  "Returns the given SQL date as a dd.mm.yyyy formatted string."
+  [sql-date]
+  (t/format "d.M.y" (t/local-date sql-date)))
 
 (defn get-episodes
   "Returns all the episodes in the database. Returns episode number, name
@@ -310,7 +293,7 @@
                          (sql/build :select [:number :name :date]
                                     :from :episodes
                                     :order-by [[:number :desc]]))
-                        {:row-fn #(merge % {:date (sql-ts-to-date-str
+                        {:row-fn #(merge % {:date (sql-date-to-date-str
                                                    (:date %))})})
      :status :ok}
     (catch PSQLException pge
@@ -329,7 +312,7 @@
                                        :from :episodes
                                        :where [:= :number (Integer/parseInt
                                                            episode-number)]))
-                           {:row-fn #(merge % {:date (sql-ts-to-date-str
+                           {:row-fn #(merge % {:date (sql-date-to-date-str
                                                       (:date %))})}))}
     (catch PSQLException pge
       (log/error (format "Could not get basic data for episode %s: %s"
