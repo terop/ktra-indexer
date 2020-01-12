@@ -16,7 +16,7 @@
               href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
               integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
               crossorigin="anonymous">
-        <link href="css/theme.bootstrap_3.css" rel="stylesheet">
+        <link href="css/theme.bootstrap_3.min.css" rel="stylesheet">
         <link href="css/common.css" rel="stylesheet">
     </head>
     <body>
@@ -44,32 +44,32 @@
 
         <div class="container">
             {% ifunequal tracks|length 0 %}
-                <h3>Tracks by {{artist}}</h3>
+            <h3>Tracks by {{artist}}</h3>
 
-                <table id="track-table" class="table">
-                    <thead>
+            <table id="track-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Track</th>
+                        <th>Episode</th>
+                </thead>
+                <tbody>
+                    {% for tr in tracks %}
                         <tr>
-                            <th>Track</th>
-                            <th>Episode</th>
-                    </thead>
-                    <tbody>
-                        {% for tr in tracks %}
-                            <tr>
-                                <td>{{tr.track_name}}</td>
-                                <td><a href="view?id={{tr.number}}">{{tr.ep_name}}</a></td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            <td>{{tr.track_name}}</td>
+                            <td><a href="view?id={{tr.number}}">{{tr.ep_name}}</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
-                <h3 class="text-danger">Could not find any tracks by {{artist}}</h3>
+            <h3 class="text-danger">Could not find any tracks by {{artist}}</h3>
             {% endifunequal %}
         </div>
 
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-	        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-	        crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+		integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+		crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
                 integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
                 crossorigin="anonymous"></script>
