@@ -24,12 +24,13 @@
   on it."
   [sc-url]
   (let [document (.get (Jsoup/connect sc-url))
-        tracklist-lines (rest (rest (s/split-lines
-                                     (.get (.attributes
-                                            (.first
-                                             (.select document
-                                                      "article > p > meta")))
-                                           "content"))))]
+        ;; Remove description from tracklist start
+        tracklist-lines (drop 3 (s/split-lines
+                                 (.get (.attributes
+                                        (.first
+                                         (.select document
+                                                  "article > p > meta")))
+                                       "content")))]
     {:title (s/trim (s/replace (first (s/split (.title document) #" by"))
                                "KTRA" ""))
      :tracklist (s/join "\n" tracklist-lines)
