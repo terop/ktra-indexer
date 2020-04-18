@@ -98,7 +98,8 @@
   (GET "/add" request
        (if (authenticated? request)
          (render-file "templates/add.html"
-                      {:url-path (get-conf-value :url-path)})
+                      {:url-path (get-conf-value :url-path)
+                       :logged-in (authenticated? request)})
          (unauthorized-response)))
   (GET "/add-tracks" request
        (let [id (:id (:params request))]
@@ -160,7 +161,9 @@
                                              true))]
           (render-file "templates/add.html" {:insert-status insert-res
                                              :url-path (get-conf-value
-                                                        :url-path)})))
+                                                        :url-path)
+                                             :logged-in (authenticated?
+                                                         request)})))
   (POST "/add-tracks" request
         (let [form-params (:params request)
               insert-res (db/insert-additional-tracks
