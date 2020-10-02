@@ -9,14 +9,14 @@ env:
   - POSTGRESQL_DB_USERNAME=postgres
   - POSTGRESQL_DB_PASSWORD=
 addons:
-  postgresql: "12"
+  postgresql: "13"
   apt:
     packages:
-      - postgresql-12
+      - postgresql-13
 before_install:
   # Hack needed to have working authententication with the postgres user
-  - sudo sed -i -e '/local.*peer/s/postgres/all/' -e 's/peer\|md5/trust/g' /etc/postgresql/12/main/pg_hba.conf
-  - sudo systemctl restart postgresql@12-main.service
+  - sudo sed -i -e '/local.*peer/s/postgres/all/' -e 's/peer\|md5/trust/g' /etc/postgresql/13/main/pg_hba.conf
+  - sudo systemctl restart postgresql@13-main.service
 before_script:
   - psql -U postgres -c 'CREATE DATABASE ktra_test;'
   - psql -U postgres ktra_test < db-def.sql
