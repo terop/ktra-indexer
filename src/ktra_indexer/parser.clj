@@ -25,14 +25,17 @@
   [sc-url]
   (let [document (.get (Jsoup/connect sc-url))
         ;; Remove description from tracklist start
-        tracklist-lines (drop 3 (s/split-lines
-                                 (.get (.attributes
-                                        (.first
-                                         (.select document
-                                                  "article > p > meta")))
-                                       "content")))]
+        tracklist (s/join "\n" (s/split-lines
+                                (.get (.attributes
+                                       (.first
+                                        (.select document
+                                                 "article > p > meta")))
+                                      "content")))]
     {:title (s/trim (s/replace (first (s/split (.title document) #" by"))
                                "KTRA" ""))
-     :tracklist (s/join "\n" tracklist-lines)
+     :tracklist (if (s/index-of (s/lower-case tracklist) "tracklist")
+                  (s/triml (subs tracklist (+ (s/index-of tracklist "Tracklist")
+                                              (count "Tracklist"))))
+                  tracklist)
      :date (get-friday-date (.html
                              (first (.select document "header > time"))))}))

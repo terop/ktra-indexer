@@ -5,7 +5,7 @@
 var parseFeature = function (line, featureStatus) {
     if (line.search(/Sample Mania/i) !== -1) {
         featureStatus['sample-mania'] = true;
-    } else if (line.search(/Does It Sound Good at 170\?/i) !== -1) {
+    } else if (line.search(/Does It Sound Good at \d+\?/i) !== -1) {
         featureStatus['sound-good'] = true;
     } else if (line.search(/(?:The )?Hardest Record In The World/i) !== -1) {
         featureStatus['hardest-record'] = true;
