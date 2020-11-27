@@ -189,7 +189,9 @@
         (catch PSQLException pge
           (log/error "Failed to search or insert track:" (.getMessage pge))
           -1))
-      -1)))
+      (do
+        (log/error "Track insert failed for artist:" (:artist track-json))
+        -1))))
 
 (defn insert-episode-track
   "Inserts a track into the episode_tracks table. Returns the episode track's
