@@ -236,7 +236,7 @@
                                               {:number (Integer/parseInt
                                                         (ep-name-parts 1))
                                                :name ep-name
-                                               :date (t/local-date "d.M.y"
+                                               :date (t/local-date "y-M-d"
                                                                    date)})))]
             (if (every? pos? (for [track-json tracklist-json]
                                (insert-episode-track t-con

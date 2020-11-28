@@ -16,7 +16,7 @@
                                         (- (.getValue (DayOfWeek/FRIDAY))
                                            (.getValue (.getDayOfWeek
                                                        parsed-date)))))]
-    (t/format "d.M.y" friday)))
+    (t/format "y-M-d" friday)))
 
 (defn parse-sc-tracklist
   "Parse tracklist from SoundCloud and return date, title, and tracklist

@@ -140,12 +140,12 @@
     (is (= {:status :error
             :cause :invalid-name}
            (insert-episode test-postgres
-                           "1.4.2017"
+                           "2020-11-21"
                            "Another test episode"
                            [])))
     (is (= {:status :ok}
            (insert-episode test-postgres
-                           "1.4.2017"
+                           "2020-10-11"
                            "Episode 1 ft. Endymion"
                            [{:artist "Endymion"
                              :track "Progress"
@@ -160,7 +160,7 @@
       (is (= {:status :error
               :cause :general-error}
              (insert-episode test-postgres
-                             "20.1.2018"
+                             "2020-1-20"
                              "Episode 2 ft. Mad Dog"
                              []))))))
 
@@ -191,7 +191,7 @@
 (deftest episode-query
   (testing "Query of episodes and episode data"
     (insert-episode test-postgres
-                    "2.4.2017"
+                    "2020-4-2"
                     "Episode 3 ft. Art of Fighters"
                     [{:artist "Art of Fighters"
                       :track "Guardians of Unlost"
@@ -200,11 +200,11 @@
       (is (= 1 (count episodes)))
       (is (= {:number 3
               :name "Episode 3 ft. Art of Fighters"
-              :date "2.4.2017"}
+              :date "2.4.2020"}
              (first episodes))))
     (is (= {:status :ok
             :data {:name "Episode 3 ft. Art of Fighters"
-                   :date "2.4.2017"}}
+                   :date "2.4.2020"}}
            (get-episode-basic-data test-postgres "3")))
     (is (= {:track_name "Guardians of Unlost"
             :artist_name "Art of Fighters"
