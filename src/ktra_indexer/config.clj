@@ -1,6 +1,7 @@
 (ns ktra-indexer.config
   "Namespace for configuration reading functions"
-  (:require [clojure.edn :as edn]))
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :refer [resource]]))
 
 (defn load-config
   "Given a filename, load and return a config file."
@@ -13,10 +14,9 @@
                :or {k nil
                     use-sample false}}]
   (let [config (load-config
-                (clojure.java.io/resource
-                 (if use-sample
-                   "config.edn_sample"
-                   "config.edn")))]
+                (resource (if use-sample
+                            "config.edn_sample"
+                            "config.edn")))]
     (if k
       (k (property config))
       (property config))))
