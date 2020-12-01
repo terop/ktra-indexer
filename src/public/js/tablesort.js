@@ -16,7 +16,6 @@ var addTablesorter = function (tableId) {
 
     $(tableId).tablesorter({
         theme: 'bootstrap',
-        widgets: ['uitheme'],
         usNumberFormat: 'false',
         dateFormat: 'dd.mm.yyyy',
         headers: {

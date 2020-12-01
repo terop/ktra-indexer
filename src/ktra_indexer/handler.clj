@@ -137,8 +137,8 @@
                       {:artist artist
                        :tracks (db/get-tracks-by-artist db/postgres artist)
                        :url-path (get-conf-value :url-path)})))
-  (GET "/track-episodes" [track-field]
-       (let [track-name (s/replace track-field "&amp;" "&")]
+  (GET "/track-episodes" [track]
+       (let [track-name (s/replace track "&amp;" "&")]
          (render-file "templates/track-episodes.html"
                       {:track track-name
                        :episodes (db/get-episodes-with-track db/postgres
