@@ -7,7 +7,6 @@
             [java-time :as t]
             [ktra-indexer.config :as cfg])
   (:import org.apache.commons.text.similarity.LevenshteinDistance
-           org.apache.commons.text.StrTokenizer
            org.postgresql.util.PSQLException))
 
 (let [db-host (get (System/getenv)
@@ -369,14 +368,18 @@
 (defn get-episodes-with-track
   "Returns track name, artist, episode name and number of the provided track."
   [db-con track-name]
-  (let [tokenizer (new StrTokenizer (s/replace track-name #"[()&;\-{2}\']" ""))
-        tokens (.getTokenArray tokenizer)]
-    (j/query db-con
-             [(str "SELECT t.name AS track, a.name AS artist, e.number, "
-                   "e.name AS ep_name FROM tracks t "
-                   "INNER JOIN artists a USING (artist_id) "
-                   "INNER JOIN episode_tracks et USING (track_id) "
-                   "INNER JOIN episodes e ON e.ep_id = et.ep_id "
-                   "WHERE to_tsvector(t.name) @@ to_tsquery(?)"
-                   "ORDER BY ep_name ASC")
-              (s/join " & " tokens)])))
+  (j/query db-con
+           (sql/format (sql/build :select [[:t.name :track]
+                                           [:a.name :artist]
+                                           :e.number
+                                           [:e.name :ep_name]]
+                                  :from [[:tracks :t]]
+                                  :join [[:artists :a]
+                                         [:= :a.artist_id :t.artist_id]
+                                         [:episode_tracks :et]
+                                         [:= :t.track_id :et.track_id]
+                                         [:episodes :e]
+                                         [:= :e.ep_id :et.ep_id]]
+                                  :where (sql/raw
+                                          ["t.name LIKE '%" track-name "%'"])
+                                  :order-by [[:ep_name :asc]]))))
