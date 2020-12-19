@@ -113,7 +113,7 @@
                     input: input,
                     fetch: function(text, update) {
                         text = text.toLowerCase();
-                        var suggestions = artists.filter(n => n.toLowerCase().startsWith(text))
+                        var suggestions = artists.filter(n => n.toLowerCase().startsWith(text));
                         update(suggestions);
                     },
                     render: function(item, value) {
