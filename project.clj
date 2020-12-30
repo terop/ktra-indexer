@@ -21,7 +21,7 @@
                  [org.jsoup/jsoup "1.13.1"]
                  [clojure.java-time "0.3.2"]]
   :main ^:skip-aot ktra-indexer.handler
-  :target-path "target/%s"
+  :target-path "target/%s/"
   :profiles
   {:dev {:resource-paths ["resources"]
          :env {:squiggly {:checkers [:eastwood :kibit :typed]}}}
