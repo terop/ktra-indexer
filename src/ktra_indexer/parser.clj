@@ -16,7 +16,7 @@
                                         (- (.getValue (DayOfWeek/FRIDAY))
                                            (.getValue (.getDayOfWeek
                                                        parsed-date)))))]
-    (t/format "y-M-d" friday)))
+    (t/format "y-MM-d" friday)))
 
 (defn parse-sc-tracklist
   "Parse tracklist from SoundCloud and return date, title, and tracklist
@@ -37,5 +37,4 @@
                   (s/triml (subs tracklist (+ (s/index-of tracklist "Tracklist")
                                               (count "Tracklist"))))
                   tracklist)
-     :date (get-friday-date (.html
-                             (first (.select document "header > time"))))}))
+     :date (get-friday-date (.text (first (.select document "time"))))}))
