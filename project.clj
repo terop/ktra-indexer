@@ -3,15 +3,15 @@
   listings"
   :url "https://github.com/terop/ktra-indexer"
   :license {:name "MIT"}
-  :dependencies [[org.clojure/clojure "1.10.1"]
+  :dependencies [[org.clojure/clojure "1.10.2"]
                  [compojure "1.6.2"]
                  [ring/ring-defaults "0.3.2"]
-                 [ring/ring-devel "1.8.2"]
+                 [ring/ring-devel "1.9.0"]
                  [org.immutant/web "2.1.10"]
-                 [selmer "1.12.31"]
+                 [selmer "1.12.33"]
                  [cheshire "5.10.0"]
                  [org.postgresql/postgresql "42.2.18"]
-                 [org.clojure/java.jdbc "0.7.11"]
+                 [org.clojure/java.jdbc "0.7.12"]
                  [honeysql "1.0.444"]
                  [buddy/buddy-auth "2.2.0"]
                  [com.yubico/yubico-validation-client2 "3.1.0"]
