@@ -3,7 +3,7 @@
   listings"
   :url "https://github.com/terop/ktra-indexer"
   :license {:name "MIT"}
-  :dependencies [[org.clojure/clojure "1.10.2"]
+  :dependencies [[org.clojure/clojure "1.10.3"]
                  [compojure "1.6.2"]
                  [ring/ring-defaults "0.3.2"]
                  [ring/ring-devel "1.9.1"]
