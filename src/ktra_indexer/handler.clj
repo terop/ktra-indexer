@@ -10,15 +10,14 @@
             [compojure
              [core :refer :all]
              [route :as route]]
-            [immutant.web :as web]
-            [immutant.web.middleware :refer [wrap-development]]
             [ktra-indexer
              [config :refer [get-conf-value]]
              [db :as db]
              [parser :refer [parse-sc-tracklist]]]
-            [ring.middleware.defaults
-             :refer
+            [ring.middleware.defaults :refer
              [secure-site-defaults site-defaults wrap-defaults]]
+            [ring.middleware.reload :refer [wrap-reload]]
+            [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.response :as resp]
             [selmer.parser :refer :all])
   (:import com.yubico.client.v2.YubicoClient))
@@ -194,11 +193,10 @@
 (defn -main
   "Starts the web server."
   []
-  (let [ip (get (System/getenv) "APP_IP" "0.0.0.0")
-        port (Integer/parseInt (get (System/getenv)
+  (let [port (Integer/parseInt (get (System/getenv)
                                     "APP_PORT" "8080"))
         production? (get-conf-value :in-production)
-        opts {:host ip :port port}]
-    (if production?
-      (web/run app opts)
-      (web/run (wrap-development app) opts))))
+        opts {:port port}]
+    (run-jetty (if production?
+                 app
+                 (wrap-reload app)) opts)))

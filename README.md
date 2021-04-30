@@ -22,8 +22,6 @@ Copy or rename this file to `config.edn` in the `resources` directory and edit
 it to fit your configuration. Users and their Yubikey ID(s) are directly added
 the to the `users` and `yubikeys` tables respectively. Some settings can be overridden
 with environment variables. Accepted environment variables are described below.
-* __APP_IP__: The IP address to which the application will be bound to. The
-default IP address is `0.0.0.0`.
 * __APP_PORT__: The port which the application will be accessible through.
 The default port is `8080`.
 * __POSTGRESQL_DB_HOST__: Hostname of the database server.
@@ -32,7 +30,7 @@ The default port is `8080`.
 * __POSTGRESQL_DB_USERNAME__: Username of the database user.
 * __POSTGRESQL_DB_PASSWORD__: Password of the database user.
 
-_NOTE_! The two first variables are not defined in `config.edn`.
+_NOTE_! The first variable is not defined in `config.edn`.
 
 ## Running
 ### Locally
