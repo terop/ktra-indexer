@@ -126,7 +126,7 @@
                (render-file "templates/view.html"
                             {:tracks (db/get-episode-tracks db/postgres id)
                              :basic-data (:data episode-data)
-                             :is-authenticated? (authenticated? request)
+                             :logged-in (authenticated? request)
                              :episode-id id
                              :url-path (get-conf-value :url-path)})))
            (resp/redirect (str "/" (get-conf-value :url-path))))))

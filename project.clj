@@ -12,7 +12,7 @@
                  [org.postgresql/postgresql "42.2.20"]
                  [org.clojure/java.jdbc "0.7.12"]
                  [honeysql "1.0.461"]
-                 [buddy/buddy-auth "2.2.0"]
+                 [buddy/buddy-auth "3.0.1"]
                  [com.yubico/yubico-validation-client2 "3.1.0"]
                  [org.apache.commons/commons-text "1.9"]
                  [org.clojure/tools.logging "1.1.0"]
