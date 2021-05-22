@@ -83,8 +83,8 @@
                     integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
             <script src="https://cdn.jsdelivr.net/npm/luxon@1.27.0/build/global/luxon.min.js"
                     integrity="sha256-cJnCTPRTD3OUjTD4Ml0WEMsmTiLl71arKaZ9DEZJk0o=" crossorigin="anonymous"></script>
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-                    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"
+                    integrity="sha256-JLmknTdUZeZZ267LP9qB+/DT7tvxOOKctSKeUC2KT6E=" crossorigin="anonymous"></script>
             <script src="js/parser.js"></script>
             <script>
                 // Set max date for datepicker
@@ -130,21 +130,29 @@
                         return;
                     }
 
-                    $.get('/{{ url-path }}/sc-fetch', {'sc-url': encodeURI(scUrl.value)},
-                          function(data) {
-                              var dataJson = JSON.parse(data);
-                              if (dataJson.status === 'ok') {
-                                  document.getElementById('date').value = dataJson.content.date;
-                                  document.getElementById('name').value = dataJson.content.title;
-                                  document.getElementById('tracklist').value = dataJson.content.tracklist;
-                              } else {
-                                  if (dataJson.cause === 'invalid-url') {
-                                      alert('Error: SoundCloud data fetch failed: invalid URL');
-                                  } else {
-                                      alert('Error: SoundCloud data fetch failed');
-                                  }
-                              }
-                    });
+                    axios.get('/{{ url-path }}/sc-fetch', {
+                        params: {
+                            'sc-url': encodeURI(scUrl.value)
+                        }
+                    })
+                         .then(function (response) {
+                             const data = response.data;
+                             if (response.data.status === 'ok') {
+                                 document.getElementById('date').value = data.content.date;
+                                 document.getElementById('name').value = data.content.title;
+                                 document.getElementById('tracklist').value = data.content.tracklist;
+                             } else {
+                                 if (data.cause === 'invalid-url') {
+                                     alert('Error: SoundCloud data fetch failed: invalid URL');
+                                 } else {
+                                     alert('Error: SoundCloud data fetch failed');
+                                 }
+                             }
+                         })
+                         .catch(function (error) {
+                             console.log(error);
+                             alert('Error: SoundCloud data fetch failed');
+                         });
                 };
 
                 document.getElementById('scFetchBtn').addEventListener('click', scFetchBtnClickHandler, false);
