@@ -6,11 +6,10 @@
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
               integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/css/theme.bootstrap_4.min.css"
-              integrity="sha512-2C6AmJKgt4B+bQc08/TwUeFKkq8CsBNlTaNcNgUmsDJSU1Fg+R6azDbho+ZzuxEkJnCjLZQMozSq3y97ZmgwjA==" crossorigin="anonymous" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autocompleter@6.1.0/autocomplete.min.css"
               integrity="sha256-RE4QHv/bJw5Ru6minjSDVjbuM+I3lsun27cgBN9K/90=" crossorigin="anonymous">
         <link href="css/common.css" rel="stylesheet">
+        <link href="css/tablesort.css" rel="stylesheet">
         <style type="text/css">
             #episode-table > tbody > tr {
                 cursor: pointer;
@@ -75,7 +74,7 @@
                         <tr>
                             <th>Episode #</th>
                             <th>Name</th>
-                            <th>Date</th>
+                            <th data-sort-method="date">Date</th>
                     </thead>
                     <tbody>
                         {% for ep in episodes %}
@@ -94,16 +93,14 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
-                integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
         {% if episodes|count > 0 %}
             <script src="https://cdn.jsdelivr.net/npm/autocompleter@6.1.0/autocomplete.min.js"
                     integrity="sha256-1XYcmw0TH6CjCRYURPFdSAoms7VoCbH/WvA3HrYU3/8=" crossorigin="anonymous"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js"
-                    integrity="sha512-qzgd5cYSZcosqpzpn7zF2ZId8f/8CHmFKZ8j7mU4OUXTNRd5g+ZHBPsgKEwoqxCtdQvExE5LprwwPAgoicguNg==" crossorigin="anonymous"></script>
-            <script src="js/tablesort.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/tablesort@5.2.1/src/tablesort.min.js"></script>
+            <script src="js/tablesort.number.min.js"></script>
+            <script src="js/tablesort.date.js"></script>
             <script>
-                addTablesorter('#episode-table');
+                new Tablesort(document.getElementById('episode-table'));
 
                 const artists = {{ artists|json|safe }};
                 var input = document.getElementById('artistField');
