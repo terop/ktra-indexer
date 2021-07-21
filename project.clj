@@ -5,11 +5,11 @@
   :license {:name "MIT"}
   :dependencies [[org.clojure/clojure "1.10.3"]
                  [compojure "1.6.2"]
-                 [ring/ring "1.9.3"]
+                 [ring/ring "1.9.4"]
                  [ring/ring-defaults "0.3.3"]
-                 [selmer "1.12.40"]
-                 [cheshire "5.10.0"]
-                 [org.postgresql/postgresql "42.2.22"]
+                 [selmer "1.12.44"]
+                 [cheshire "5.10.1"]
+                 [org.postgresql/postgresql "42.2.23"]
                  [org.clojure/java.jdbc "0.7.12"]
                  [honeysql "1.0.461"]
                  [buddy/buddy-auth "3.0.1"]
@@ -19,8 +19,8 @@
                  ;; included by commons-text
                  [commons-codec/commons-codec "1.15"]
                  [org.clojure/tools.logging "1.1.0"]
-                 [org.slf4j/slf4j-log4j12 "1.7.31"]
-                 [org.jsoup/jsoup "1.13.1"]
+                 [org.slf4j/slf4j-log4j12 "1.7.32"]
+                 [org.jsoup/jsoup "1.14.1"]
                  [clojure.java-time "0.3.2"]]
   :main ^:skip-aot ktra-indexer.handler
   :target-path "target/%s/"
