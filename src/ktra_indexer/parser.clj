@@ -32,7 +32,7 @@
                                                  "article > p > meta")))
                                       "content")))]
     {:title (s/trim (s/replace (first (s/split (.title document) #" by"))
-                               "KTRA" ""))
+                               "Stream" ""))
      :tracklist (if (s/index-of (s/lower-case tracklist) "tracklist")
                   (s/triml (subs tracklist (+ (s/index-of tracklist "Tracklist")
                                               (count "Tracklist"))))
