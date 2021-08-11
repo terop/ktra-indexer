@@ -70,7 +70,9 @@
       (is (= artist-id (get-or-insert-artist test-postgres
                                              "Art of Fighters")))
       (is (= artist-id (get-or-insert-artist test-postgres
-                                             "Art Of Fighter")))
+                                             "Art Of Fighterss")))
+      (is (= artist-id (get-or-insert-artist test-postgres
+                                             "Art of Fighter")))
       (is (= artist-id (get-or-insert-artist test-postgres
                                              "Art Of Fighte")))
       (is (pos? (get-or-insert-artist test-postgres

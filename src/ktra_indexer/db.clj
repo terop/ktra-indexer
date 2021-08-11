@@ -3,11 +3,12 @@
   (:require [clojure.java.jdbc :as j]
             [clojure.string :as s]
             [clojure.tools.logging :as log]
-            [honeysql.core :as sql]
             [java-time :as t]
             [ktra-indexer.config :as cfg])
   (:import org.apache.commons.text.similarity.LevenshteinDistance
            org.postgresql.util.PSQLException))
+(refer-clojure :exclude '[filter for group-by into partition-by set update])
+(require '[honey.sql :as sql])
 
 (let [db-host (get (System/getenv)
                    "POSTGRESQL_DB_HOST"
@@ -38,13 +39,13 @@
   [db-con username]
   (try
     (let [key-rs (j/query db-con
-                          (sql/format (sql/build :select :yubikey_id
-                                                 :from :yubikeys
-                                                 :join
-                                                 [:users [:= :users.user_id
-                                                          :yubikeys.user_id]]
-                                                 :where [:= :users.username
-                                                         username]))
+                          (sql/format {:select :yubikey_id
+                                       :from :yubikeys
+                                       :join
+                                       [:users [:= :users.user_id
+                                                :yubikeys.user_id]]
+                                       :where [:= :users.username
+                                               username]})
                           {:row-fn #(:yubikey_id %)})
           key-ids (set key-rs)]
       (when (pos? (count key-ids))
@@ -83,23 +84,26 @@
                         artist-name
                         (nth match 1))
           query-res (j/query db-con
-                             (sql/format (sql/build :select :artist_id
-                                                    :from :artists
-                                                    :where [:= :%lower.name
-                                                            (s/lower-case
-                                                             artist-name)])))]
+                             (sql/format {:select :artist_id
+                                          :from :artists
+                                          :where [:= :%lower.name
+                                                  (s/lower-case
+                                                   artist-name)]}))]
       (if (= (count query-res) 1)
         ;; Artist found
         (:artist_id (first query-res))
-        (let [threshold 2
+        (let [threshold (if (< (count artist-name) 4)
+                          1 2)
+              artist-subs (s/lower-case (subs artist-name
+                                              0
+                                              (- (count artist-name)
+                                                 threshold)))
               similar-artists (j/query db-con
-                                       (sql/format
-                                        (sql/build :select :name
-                                                   :from :artists
-                                                   :where [:like :name
-                                                           (str (nth artist-name
-                                                                     0)
-                                                                "%")]))
+                                       (sql/format {:select :name
+                                                    :from :artists
+                                                    :where [:like :%lower.name
+                                                            (str artist-subs
+                                                                 "%")]})
                                        {:row-fn #(:name %)})
               closest-artist (edit-distance-similarity artist-name
                                                        similar-artists
@@ -112,12 +116,12 @@
                                           :artists
                                           {:name artist-name})))
             (first (j/query db-con
-                            (sql/format (sql/build :select :artist_id
-                                                   :from :artists
-                                                   :where [:= :%lower.name
-                                                           (s/lower-case
-                                                            (:value
-                                                             closest-artist))]))
+                            (sql/format {:select :artist_id
+                                         :from :artists
+                                         :where [:= :%lower.name
+                                                 (s/lower-case
+                                                  (:value
+                                                   closest-artist))]})
                             {:row-fn #(:artist_id %)}))))))
     (catch PSQLException pge
       (log/error "Failed to search or insert artist:" (.getMessage pge))
@@ -135,26 +139,29 @@
         (let [track-name (s/trim (:track track-json))
               query-res (j/query db-con
                                  (sql/format
-                                  (sql/build :select :track_id
-                                             :from :tracks
-                                             :where
-                                             [:and [:= :artist_id
-                                                    artist-id]
-                                              [:= :%lower.name
-                                               (s/lower-case track-name)]])))]
+                                  {:select :track_id
+                                   :from :tracks
+                                   :where
+                                   [:and [:= :artist_id
+                                          artist-id]
+                                    [:= :%lower.name
+                                     (s/lower-case track-name)]]}))]
           (if (= (count query-res) 1)
             ;; Track found
             (:track_id (first query-res))
-            (let [threshold 1
+            (let [threshold (if (< (count track-name) 5)
+                              1 2)
+                  track-name-subs (s/lower-case (subs track-name
+                                                      0
+                                                      (- (count track-name)
+                                                         threshold)))
                   similar-tracks (j/query db-con
                                           (sql/format
-                                           (sql/build :select :name
-                                                      :from :tracks
-                                                      :where [:like :name
-                                                              (str (nth
-                                                                    track-name
-                                                                    0)
-                                                                   "%")]))
+                                           {:select :name
+                                            :from :tracks
+                                            :where [:like :%lower.name
+                                                    (str track-name-subs
+                                                         "%")]})
                                           {:row-fn #(:name %)})
                   closest-track (edit-distance-similarity track-name
                                                           similar-tracks
@@ -168,16 +175,15 @@
                                              {:artist_id artist-id
                                               :name track-name})))
                 (or (first (j/query db-con
-                                    (sql/format
-                                     (sql/build :select :track_id
-                                                :from :tracks
-                                                :where
-                                                [:and [:= :artist_id
-                                                       artist-id]
-                                                 [:= :%lower.name
-                                                  (s/lower-case
-                                                   (:value
-                                                    closest-track))]]))
+                                    (sql/format {:select :track_id
+                                                 :from :tracks
+                                                 :where
+                                                 [:and [:= :artist_id
+                                                        artist-id]
+                                                  [:= :%lower.name
+                                                   (s/lower-case
+                                                    (:value
+                                                     closest-track))]]})
                                     {:row-fn #(:track_id %)}))
                     ;; A track with the same name but different artist exists
                     ;; so therefore the new track is inserted
@@ -260,12 +266,11 @@
   [db-con episode-number tracklist]
   (try
     (let [ep-id (first (j/query db-con
-                                (sql/format
-                                 (sql/build :select :ep_id
-                                            :from :episodes
-                                            :where [:= :number
-                                                    (Integer/parseInt
-                                                     episode-number)]))
+                                (sql/format {:select :ep_id
+                                             :from :episodes
+                                             :where [:= :number
+                                                     (Integer/parseInt
+                                                      episode-number)]})
                                 {:row-fn #(:ep_id %)}))]
       (j/with-db-transaction [t-con db-con]
         (if (every? pos? (for [track tracklist]
@@ -291,10 +296,9 @@
   [db-con]
   (try
     {:episodes (j/query db-con
-                        (sql/format
-                         (sql/build :select [:number :name :date]
-                                    :from :episodes
-                                    :order-by [[:number :desc]]))
+                        (sql/format {:select [:number :name :date]
+                                     :from :episodes
+                                     :order-by [[:number :desc]]})
                         {:row-fn #(merge % {:date (sql-date-to-date-str
                                                    (:date %))})})
      :status :ok}
@@ -309,11 +313,10 @@
   (try
     {:status :ok
      :data (first (j/query db-con
-                           (sql/format
-                            (sql/build :select [:name :date]
-                                       :from :episodes
-                                       :where [:= :number (Integer/parseInt
-                                                           episode-number)]))
+                           (sql/format {:select [:name :date]
+                                        :from :episodes
+                                        :where [:= :number (Integer/parseInt
+                                                            episode-number)]})
                            {:row-fn #(merge % {:date (sql-date-to-date-str
                                                       (:date %))})}))}
     (catch PSQLException pge
@@ -355,10 +358,9 @@
   [db-con]
   (try
     {:artists  (j/query db-con
-                        (sql/format
-                         (sql/build :select :name
-                                    :from :artists
-                                    :order-by [[:name :asc]]))
+                        (sql/format {:select :name
+                                     :from :artists
+                                     :order-by [[:name :asc]]})
                         {:row-fn #(:name %)})
      :status :ok}
     (catch PSQLException pge
@@ -369,17 +371,16 @@
   "Returns track name, artist, episode name and number of the provided track."
   [db-con track-name]
   (j/query db-con
-           (sql/format (sql/build :select [[:t.name :track]
-                                           [:a.name :artist]
-                                           :e.number
-                                           [:e.name :ep_name]]
-                                  :from [[:tracks :t]]
-                                  :join [[:artists :a]
-                                         [:= :a.artist_id :t.artist_id]
-                                         [:episode_tracks :et]
-                                         [:= :t.track_id :et.track_id]
-                                         [:episodes :e]
-                                         [:= :e.ep_id :et.ep_id]]
-                                  :where (sql/raw
-                                          ["t.name LIKE '%" track-name "%'"])
-                                  :order-by [[:ep_name :asc]]))))
+           (sql/format {:select [[:t.name :track]
+                                 [:a.name :artist]
+                                 :e.number
+                                 [:e.name :ep_name]]
+                        :from [[:tracks :t]]
+                        :join [[:artists :a]
+                               [:= :a.artist_id :t.artist_id]
+                               [:episode_tracks :et]
+                               [:= :t.track_id :et.track_id]
+                               [:episodes :e]
+                               [:= :e.ep_id :et.ep_id]]
+                        :where [[:raw (str "t.name LIKE '%" track-name "%'")]]
+                        :order-by [[:ep_name :asc]]})))
