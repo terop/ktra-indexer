@@ -145,7 +145,8 @@
                            "2020-11-21"
                            "Another test episode"
                            [])))
-    (is (= {:status :ok}
+    (is (= {:status :ok
+            :episode-number 1}
            (insert-episode test-postgres
                            "2020-10-11"
                            "Episode 1 ft. Endymion"

@@ -235,11 +235,11 @@
         {:status :error
          :cause :invalid-name}
         (j/with-db-transaction [t-con db-con]
-          (let [episode-id (:ep_id
+          (let [episode-number (Integer/parseInt (ep-name-parts 1))
+                episode-id (:ep_id
                             (first (j/insert! t-con
                                               :episodes
-                                              {:number (Integer/parseInt
-                                                        (ep-name-parts 1))
+                                              {:number episode-number
                                                :name ep-name
                                                :date (t/local-date "y-M-d"
                                                                    date)})))]
@@ -247,7 +247,8 @@
                                (insert-episode-track t-con
                                                      episode-id
                                                      track-json)))
-              {:status :ok}
+              {:status :ok
+               :episode-number episode-number}
               (do
                 (j/db-set-rollback-only! t-con)
                 {:status :error

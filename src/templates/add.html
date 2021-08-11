@@ -162,6 +162,15 @@
                                                                       },
                                                                       false);
             </script>
+        {% else %}
+            {% ifequal insert-status.status :ok %}
+                <script>
+                    const currentLoc = window.location;
+                    window.location = currentLoc.origin +
+                                      currentLoc.pathname.substr(0, currentLoc.pathname.indexOf('/', 1) + 1)
+                                    + 'view?id={{ insert-status.episode-number }}';
+                </script>
+            {% endifequal %}
         {% endif %}
     </body>
 </html>
