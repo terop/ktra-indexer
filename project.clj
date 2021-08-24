@@ -11,7 +11,7 @@
                  [cheshire "5.10.1"]
                  [org.postgresql/postgresql "42.2.23"]
                  [org.clojure/java.jdbc "0.7.12"]
-                 [com.github.seancorfield/honeysql "2.0.0-rc5"]
+                 [com.github.seancorfield/honeysql "2.0.783"]
                  [buddy/buddy-auth "3.0.1"]
                  [com.yubico/yubico-validation-client2 "3.1.0"]
                  [org.apache.commons/commons-text "1.9"]
@@ -20,7 +20,7 @@
                  [commons-codec/commons-codec "1.15"]
                  [org.clojure/tools.logging "1.1.0"]
                  [org.slf4j/slf4j-log4j12 "1.7.32"]
-                 [org.jsoup/jsoup "1.14.1"]
+                 [org.jsoup/jsoup "1.14.2"]
                  [clojure.java-time "0.3.2"]]
   :main ^:skip-aot ktra-indexer.handler
   :target-path "target/%s/"
