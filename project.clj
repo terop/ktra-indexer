@@ -21,7 +21,7 @@
                  [org.clojure/tools.logging "1.1.0"]
                  [org.slf4j/slf4j-log4j12 "1.7.32"]
                  [org.jsoup/jsoup "1.14.2"]
-                 [clojure.java-time "0.3.2"]]
+                 [clojure.java-time "0.3.3"]]
   :main ^:skip-aot ktra-indexer.handler
   :target-path "target/%s/"
   :profiles
