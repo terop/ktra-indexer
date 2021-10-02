@@ -9,9 +9,9 @@
                  [ring/ring-defaults "0.3.3"]
                  [selmer "1.12.44"]
                  [cheshire "5.10.1"]
-                 [org.postgresql/postgresql "42.2.23"]
+                 [org.postgresql/postgresql "42.2.24"]
                  [org.clojure/java.jdbc "0.7.12"]
-                 [com.github.seancorfield/honeysql "2.0.783"]
+                 [com.github.seancorfield/honeysql "2.0.813"]
                  [buddy/buddy-auth "3.0.1"]
                  [com.yubico/yubico-validation-client2 "3.1.0"]
                  [org.apache.commons/commons-text "1.9"]
@@ -20,7 +20,7 @@
                  [commons-codec/commons-codec "1.15"]
                  [org.clojure/tools.logging "1.1.0"]
                  [org.slf4j/slf4j-log4j12 "1.7.32"]
-                 [org.jsoup/jsoup "1.14.2"]
+                 [org.jsoup/jsoup "1.14.3"]
                  [clojure.java-time "0.3.3"]]
   :main ^:skip-aot ktra-indexer.handler
   :target-path "target/%s/"
