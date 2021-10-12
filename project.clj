@@ -11,7 +11,7 @@
                  [cheshire "5.10.1"]
                  [org.postgresql/postgresql "42.2.24"]
                  [org.clojure/java.jdbc "0.7.12"]
-                 [com.github.seancorfield/honeysql "2.0.813"]
+                 [com.github.seancorfield/honeysql "2.1.818"]
                  [buddy/buddy-auth "3.0.1"]
                  [com.yubico/yubico-validation-client2 "3.1.0"]
                  [org.apache.commons/commons-text "1.9"]
