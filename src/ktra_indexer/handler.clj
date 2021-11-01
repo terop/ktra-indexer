@@ -10,22 +10,23 @@
             [compojure
              [core :refer :all]
              [route :as route]]
-            [ktra-indexer
-             [config :refer [get-conf-value]]
-             [db :as db]
-             [parser :refer [parse-sc-tracklist]]]
+            [next.jdbc :as jdbc]
             [ring.middleware.defaults :refer
              [secure-site-defaults site-defaults wrap-defaults]]
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.response :as resp]
-            [selmer.parser :refer :all])
+            [selmer.parser :refer :all]
+            [ktra-indexer
+             [config :refer [get-conf-value]]
+             [db :as db]
+             [parser :refer [parse-sc-tracklist]]])
   (:import com.yubico.client.v2.YubicoClient))
 
 (defn validate-yubikey-login
   "Check that login using Yubikey is valid."
   [username otp-value]
-  (let [user-data (db/get-yubikey-id db/postgres username)]
+  (let [user-data (db/get-yubikey-id db/postgres-ds username)]
     (if (or (not (YubicoClient/isValidOTPFormat otp-value))
             (= :error (:status user-data)))
       false
@@ -82,16 +83,17 @@
 
 (defroutes app-routes
   (GET "/" request
-       (let [episodes (db/get-episodes db/postgres)
-             artists (db/get-all-artists db/postgres)]
-         (if (or (= :error (:status episodes))
-                 (= :error (:status artists)))
-           (render-file "templates/error.html"
-                        {})
-           (render-file "templates/index.html"
-                        {:episodes (:episodes episodes)
-                         :artists (:artists artists)
-                         :logged-in (authenticated? request)}))))
+       (with-open [con (jdbc/get-connection db/postgres-ds)]
+         (let [episodes (db/get-episodes con)
+               artists (db/get-all-artists con)]
+           (if (or (= :error (:status episodes))
+                   (= :error (:status artists)))
+             (render-file "templates/error.html"
+                          {})
+             (render-file "templates/index.html"
+                          {:episodes (:episodes episodes)
+                           :artists (:artists artists)
+                           :logged-in (authenticated? request)})))))
   (GET "/login" [] (render-file "templates/login.html" {}))
   (GET "/logout" [] logout)
   (GET "/add" request
@@ -105,7 +107,7 @@
          (if (and id
                   (re-find #"\d+" id))
            (if (authenticated? request)
-             (let [episode-data (db/get-episode-basic-data db/postgres id)]
+             (let [episode-data (db/get-episode-basic-data db/postgres-ds id)]
                (if (= :error (:status episode-data))
                  (render-file "templates/error.html"
                               {})
@@ -119,12 +121,12 @@
        (let [id (:id (:params request))]
          (if (and id
                   (re-find #"\d+" id))
-           (let [episode-data (db/get-episode-basic-data db/postgres id)]
+           (let [episode-data (db/get-episode-basic-data db/postgres-ds id)]
              (if (= :error (:status episode-data))
                (render-file "templates/error.html"
                             {})
                (render-file "templates/view.html"
-                            {:tracks (db/get-episode-tracks db/postgres id)
+                            {:tracks (db/get-episode-tracks db/postgres-ds id)
                              :basic-data (:data episode-data)
                              :logged-in (authenticated? request)
                              :episode-id id
@@ -134,13 +136,13 @@
        (let [artist (s/replace artist "&amp;" "&")]
          (render-file "templates/tracks.html"
                       {:artist artist
-                       :tracks (db/get-tracks-by-artist db/postgres artist)
+                       :tracks (db/get-tracks-by-artist db/postgres-ds artist)
                        :url-path (get-conf-value :url-path)})))
   (GET "/track-episodes" [track]
        (let [track-name (s/replace track "&amp;" "&")]
          (render-file "templates/track-episodes.html"
                       {:track track-name
-                       :episodes (db/get-episodes-with-track db/postgres
+                       :episodes (db/get-episodes-with-track db/postgres-ds
                                                              track-name)
                        :url-path (get-conf-value :url-path)})))
   (GET "/sc-fetch" [sc-url]
@@ -152,7 +154,7 @@
   ;; Form submissions
   (POST "/add" request
         (let [form-params (:params request)
-              insert-res (db/insert-episode db/postgres
+              insert-res (db/insert-episode db/postgres-ds
                                             (:date form-params)
                                             (:name form-params)
                                             (parse-string
@@ -166,7 +168,7 @@
   (POST "/add-tracks" request
         (let [form-params (:params request)
               insert-res (db/insert-additional-tracks
-                          db/postgres
+                          db/postgres-ds
                           (:episode-id form-params)
                           (parse-string (:encodedTracklist form-params) true))]
           (render-file "templates/add-tracks.html"
