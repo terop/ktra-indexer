@@ -2,6 +2,8 @@
 /lib
 /classes
 /checkouts
+/.clj-kondo
+/.eastwood
 pom.xml
 pom.xml.asc
 *.jar
@@ -9,7 +11,4 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 bower_components
-GPATH
-GRTAGS
-GTAGS
 resources/config.edn

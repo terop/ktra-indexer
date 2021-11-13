@@ -8,7 +8,7 @@
             [cheshire.core :refer [generate-string parse-string]]
             [clojure.string :as s]
             [compojure
-             [core :refer :all]
+             [core :refer [defroutes GET POST]]
              [route :as route]]
             [next.jdbc :as jdbc]
             [ring.middleware.defaults :refer
@@ -16,7 +16,7 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.response :as resp]
-            [selmer.parser :refer :all]
+            [selmer.parser :refer [render-file]]
             [ktra-indexer
              [config :refer [get-conf-value]]
              [db :as db]
@@ -59,7 +59,7 @@
 
 (defn logout
   "Logs out the user and redirects her to the front page."
-  [request]
+  [_]
   (assoc (resp/redirect (str "/" (get-conf-value :url-path)))
          :session {}))
 
@@ -70,7 +70,7 @@
 
 (defn unauthorized-handler
   "Handles unauthorized requests."
-  [request metadata]
+  [request _]
   (if (authenticated? request)
     ;; If request is authenticated, raise 403 instead of 401 as the user
     ;; is authenticated but permission denied is raised.

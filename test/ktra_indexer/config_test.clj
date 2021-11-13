@@ -1,5 +1,5 @@
 (ns ktra-indexer.config-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [ktra-indexer.config :refer [get-conf-value db-conf]]))
 
 (deftest read-configuration-value

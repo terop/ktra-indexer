@@ -1,10 +1,8 @@
 (ns ktra-indexer.db-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing use-fixtures]]
             [java-time :as t]
             [next.jdbc :as jdbc]
-            [next.jdbc
-             [result-set :as rs]
-             [sql :as js]]
+            [next.jdbc.sql :as js]
             [ktra-indexer.config :refer [db-conf]]
             [ktra-indexer.db :refer :all])
   (:import (org.postgresql.util PSQLException
@@ -28,6 +26,7 @@
   (def test-postgres {:dbtype "postgresql"
                       :dbname db-name
                       :host db-host
+                      :port db-port
                       :user db-user
                       :password db-password}))
 

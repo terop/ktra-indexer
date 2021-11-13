@@ -31,6 +31,7 @@
   (def postgres {:dbtype "postgresql"
                  :dbname db-name
                  :host db-host
+                 :port db-port
                  :user db-user
                  :password db-password}))
 (def postgres-ds (jdbc/get-datasource postgres))
