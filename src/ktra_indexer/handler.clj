@@ -83,100 +83,100 @@
 
 (defroutes app-routes
   (GET "/" request
-       (with-open [con (jdbc/get-connection db/postgres-ds)]
-         (let [episodes (db/get-episodes con)
-               artists (db/get-all-artists con)]
-           (if (or (= :error (:status episodes))
-                   (= :error (:status artists)))
-             (render-file "templates/error.html"
-                          {})
-             (render-file "templates/index.html"
-                          {:episodes (:episodes episodes)
-                           :artists (:artists artists)
-                           :logged-in (authenticated? request)})))))
+    (with-open [con (jdbc/get-connection db/postgres-ds)]
+      (let [episodes (db/get-episodes con)
+            artists (db/get-all-artists con)]
+        (if (or (= :error (:status episodes))
+                (= :error (:status artists)))
+          (render-file "templates/error.html"
+                       {})
+          (render-file "templates/index.html"
+                       {:episodes (:episodes episodes)
+                        :artists (:artists artists)
+                        :logged-in (authenticated? request)})))))
   (GET "/login" [] (render-file "templates/login.html" {}))
   (GET "/logout" [] logout)
   (GET "/add" request
-       (if (authenticated? request)
-         (render-file "templates/add.html"
-                      {:url-path (get-conf-value :url-path)
-                       :logged-in (authenticated? request)})
-         (unauthorized-response)))
+    (if (authenticated? request)
+      (render-file "templates/add.html"
+                   {:url-path (get-conf-value :url-path)
+                    :logged-in (authenticated? request)})
+      (unauthorized-response)))
   (GET "/add-tracks" request
-       (let [id (:id (:params request))]
-         (if (and id
-                  (re-find #"\d+" id))
-           (if (authenticated? request)
-             (let [episode-data (db/get-episode-basic-data db/postgres-ds id)]
-               (if (= :error (:status episode-data))
-                 (render-file "templates/error.html"
-                              {})
-                 (render-file "templates/add-tracks.html"
-                              {:episode-id id
-                               :data (:data episode-data)
-                               :url-path (get-conf-value :url-path)})))
-             (unauthorized-response))
-           (resp/redirect (str "/" (get-conf-value :url-path))))))
+    (let [id (:id (:params request))]
+      (if (and id
+               (re-find #"\d+" id))
+        (if (authenticated? request)
+          (let [episode-data (db/get-episode-basic-data db/postgres-ds id)]
+            (if (= :error (:status episode-data))
+              (render-file "templates/error.html"
+                           {})
+              (render-file "templates/add-tracks.html"
+                           {:episode-id id
+                            :data (:data episode-data)
+                            :url-path (get-conf-value :url-path)})))
+          (unauthorized-response))
+        (resp/redirect (str "/" (get-conf-value :url-path))))))
   (GET "/view" request
-       (let [id (:id (:params request))]
-         (if (and id
-                  (re-find #"\d+" id))
-           (let [episode-data (db/get-episode-basic-data db/postgres-ds id)]
-             (if (= :error (:status episode-data))
-               (render-file "templates/error.html"
-                            {})
-               (render-file "templates/view.html"
-                            {:tracks (db/get-episode-tracks db/postgres-ds id)
-                             :basic-data (:data episode-data)
-                             :logged-in (authenticated? request)
-                             :episode-id id
-                             :url-path (get-conf-value :url-path)})))
-           (resp/redirect (str "/" (get-conf-value :url-path))))))
+    (let [id (:id (:params request))]
+      (if (and id
+               (re-find #"\d+" id))
+        (let [episode-data (db/get-episode-basic-data db/postgres-ds id)]
+          (if (= :error (:status episode-data))
+            (render-file "templates/error.html"
+                         {})
+            (render-file "templates/view.html"
+                         {:tracks (db/get-episode-tracks db/postgres-ds id)
+                          :basic-data (:data episode-data)
+                          :logged-in (authenticated? request)
+                          :episode-id id
+                          :url-path (get-conf-value :url-path)})))
+        (resp/redirect (str "/" (get-conf-value :url-path))))))
   (GET "/tracks" [artist]
-       (let [artist (s/replace artist "&amp;" "&")]
-         (render-file "templates/tracks.html"
-                      {:artist artist
-                       :tracks (db/get-tracks-by-artist db/postgres-ds artist)
-                       :url-path (get-conf-value :url-path)})))
+    (let [artist (s/replace artist "&amp;" "&")]
+      (render-file "templates/tracks.html"
+                   {:artist artist
+                    :tracks (db/get-tracks-by-artist db/postgres-ds artist)
+                    :url-path (get-conf-value :url-path)})))
   (GET "/track-episodes" [track]
-       (let [track-name (s/replace track "&amp;" "&")]
-         (render-file "templates/track-episodes.html"
-                      {:track track-name
-                       :episodes (db/get-episodes-with-track db/postgres-ds
-                                                             track-name)
-                       :url-path (get-conf-value :url-path)})))
+    (let [track-name (s/replace track "&amp;" "&")]
+      (render-file "templates/track-episodes.html"
+                   {:track track-name
+                    :episodes (db/get-episodes-with-track db/postgres-ds
+                                                          track-name)
+                    :url-path (get-conf-value :url-path)})))
   (GET "/sc-fetch" [sc-url]
-       (if-not (s/starts-with? sc-url (get-conf-value :ktra-sc-url-prefix))
-         (generate-string {:status "error"
-                           :cause "invalid-url"})
-         (generate-string {:status "ok"
-                           :content (parse-sc-tracklist sc-url)})))
+    (if-not (s/starts-with? sc-url (get-conf-value :ktra-sc-url-prefix))
+      (generate-string {:status "error"
+                        :cause "invalid-url"})
+      (generate-string {:status "ok"
+                        :content (parse-sc-tracklist sc-url)})))
   ;; Form submissions
   (POST "/add" request
-        (let [form-params (:params request)
-              insert-res (db/insert-episode db/postgres-ds
-                                            (:date form-params)
-                                            (:name form-params)
-                                            (parse-string
-                                             (:encodedTracklist form-params)
-                                             true))]
-          (render-file "templates/add.html" {:insert-status insert-res
-                                             :url-path (get-conf-value
-                                                        :url-path)
-                                             :logged-in (authenticated?
-                                                         request)})))
+    (let [form-params (:params request)
+          insert-res (db/insert-episode db/postgres-ds
+                                        (:date form-params)
+                                        (:name form-params)
+                                        (parse-string
+                                         (:encodedTracklist form-params)
+                                         true))]
+      (render-file "templates/add.html" {:insert-status insert-res
+                                         :url-path (get-conf-value
+                                                    :url-path)
+                                         :logged-in (authenticated?
+                                                     request)})))
   (POST "/add-tracks" request
-        (let [form-params (:params request)
-              insert-res (db/insert-additional-tracks
-                          db/postgres-ds
-                          (:episode-id form-params)
-                          (parse-string (:encodedTracklist form-params) true))]
-          (render-file "templates/add-tracks.html"
-                       {:insert-status insert-res
-                        :url-path (get-conf-value :url-path)})))
+    (let [form-params (:params request)
+          insert-res (db/insert-additional-tracks
+                      db/postgres-ds
+                      (:episode-id form-params)
+                      (parse-string (:encodedTracklist form-params) true))]
+      (render-file "templates/add-tracks.html"
+                   {:insert-status insert-res
+                    :url-path (get-conf-value :url-path)})))
   (POST "/login" [] login-authenticate)
   ;; Serve static files
-  (route/resources "/" )
+  (route/resources "/")
   (route/not-found "404 Not Found"))
 
 (def app
