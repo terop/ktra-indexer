@@ -4,6 +4,7 @@
   :url "https://github.com/terop/ktra-indexer"
   :license {:name "MIT"}
   :dependencies [[org.clojure/clojure "1.10.3"]
+                 [org.clojure/tools.logging "1.2.1"]
                  [compojure "1.6.2"]
                  [ring/ring "1.9.4"]
                  [ring/ring-defaults "0.3.3"]
@@ -18,7 +19,6 @@
                  ;; Needed to fix problem with old version of commons-codec
                  ;; included by commons-text
                  [commons-codec/commons-codec "1.15"]
-                 [org.clojure/tools.logging "1.1.0"]
                  [org.slf4j/slf4j-log4j12 "1.7.32"]
                  [org.jsoup/jsoup "1.14.3"]
                  [clojure.java-time "0.3.3"]]
