@@ -253,10 +253,10 @@
       (if-not (= (count ep-name-parts) 2)
         {:status :error
          :cause :invalid-name}
-        (jdbc/with-transaction [t-con db-con]
+        (jdbc/with-transaction [tx db-con]
           (let [episode-number (Integer/parseInt (ep-name-parts 1))
                 episode-id (:ep-id
-                            (js/insert! t-con
+                            (js/insert! tx
                                         :episodes
                                         {:number episode-number
                                          :name ep-name
@@ -264,13 +264,13 @@
                                                              date)}
                                         rs-opts))]
             (if (every? pos? (for [track-json tracklist-json]
-                               (insert-episode-track t-con
+                               (insert-episode-track tx
                                                      episode-id
                                                      track-json)))
               {:status :ok
                :episode-number episode-number}
               (do
-                (.rollback t-con)
+                (.rollback tx)
                 {:status :error
                  :cause :general-error}))))))
     (catch PSQLException pge
@@ -294,14 +294,14 @@
                                               (Integer/parseInt
                                                episode-number)]})
                          rs-opts))]
-      (jdbc/with-transaction [t-con db-con]
+      (jdbc/with-transaction [tx db-con]
         (if (every? pos? (for [track tracklist]
-                           (insert-episode-track t-con
+                           (insert-episode-track tx
                                                  ep-id
                                                  track)))
           {:status :ok}
           (do
-            (.rollback t-con)
+            (.rollback tx)
             {:status :error}))))
     (catch PSQLException pge
       (log/error "Failed to insert additional tracks:" (.getMessage pge))
