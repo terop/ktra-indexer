@@ -1,6 +1,6 @@
 (ns ktra-indexer.parser-test
-  (:require [clojure.test :refer :all]
-            [ktra-indexer.parser :refer :all]))
+  (:require [clojure.test :refer [deftest is testing]]
+            [ktra-indexer.parser :refer [get-friday-date]]))
 
 (deftest get-friday-date-test
   (testing "Getting the date of Friday"

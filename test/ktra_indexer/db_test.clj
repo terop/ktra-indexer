@@ -4,7 +4,21 @@
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
             [ktra-indexer.config :refer [db-conf]]
-            [ktra-indexer.db :refer :all])
+            [ktra-indexer.db :refer [edit-distance-similarity
+                                     get-all-artists
+                                     get-episode-basic-data
+                                     get-episode-tracks
+                                     get-episodes
+                                     get-episodes-with-track
+                                     get-or-insert-artist
+                                     get-or-insert-track
+                                     get-tracks-by-artist
+                                     get-yubikey-id
+                                     insert-additional-tracks
+                                     insert-episode
+                                     insert-episode-track
+                                     rs-opts
+                                     sql-date-to-date-str]])
   (:import (org.postgresql.util PSQLException
                                 PSQLState)))
 (refer-clojure :exclude '[filter for group-by into partition-by set update])
@@ -59,7 +73,7 @@
             :yubikey-ids #{"mykeyid"}}
            (get-yubikey-id test-postgres
                            "test-user")))
-    (with-redefs [jdbc/plan (fn [db query]
+    (with-redefs [jdbc/plan (fn [_ _]
                               (throw (PSQLException.
                                       "Test exception"
                                       (PSQLState/COMMUNICATION_ERROR))))]
@@ -87,7 +101,7 @@
                                            {:select [:%count.artist_id]
                                             :from :artists})
                                           rs-opts)))))
-    (with-redefs [jdbc/plan (fn [db query]
+    (with-redefs [jdbc/plan (fn [_ _]
                               (throw (PSQLException.
                                       "Test exception"
                                       (PSQLState/COMMUNICATION_ERROR))))]
@@ -105,7 +119,7 @@
       (is (= track-id (get-or-insert-track test-postgres
                                            (merge track-data
                                                   {:track "Toxic hote"}))))
-      (with-redefs [jdbc/plan (fn [db query]
+      (with-redefs [jdbc/plan (fn [_ _]
                                 (throw (PSQLException.
                                         "Test exception"
                                         (PSQLState/COMMUNICATION_ERROR))))]
@@ -135,7 +149,7 @@
                                            {:select [:%count.ep_tr_id]
                                             :from :episode_tracks})
                                           rs-opts))))
-      (with-redefs [js/insert! (fn [db table values opts]
+      (with-redefs [js/insert! (fn [_ _ _ _]
                                  (throw (PSQLException.
                                          "Test exception"
                                          (PSQLState/COMMUNICATION_ERROR))))]
@@ -165,7 +179,7 @@
                             {:artist "Art of Fighters"
                              :track "Guardians of Unlost"
                              :feature nil}])))
-    (with-redefs [js/insert! (fn [db table values opts]
+    (with-redefs [js/insert! (fn [_ _ _ _]
                                (throw (PSQLException.
                                        "Test exception"
                                        (PSQLState/COMMUNICATION_ERROR))))]
@@ -185,7 +199,7 @@
                                        :track "Fuck The System"
                                        :feature nil}])))
     (with-redefs [jdbc/execute-one!
-                  (fn [db query opts]
+                  (fn [_ _ _]
                     (throw (PSQLException.
                             "Test exception"
                             (PSQLState/COMMUNICATION_ERROR))))]
@@ -230,7 +244,7 @@
            (first (get-episodes-with-track test-postgres
                                            "Guardians of Unlost"))))
     (with-redefs [jdbc/execute-one!
-                  (fn [db query opts]
+                  (fn [_ _ _]
                     (throw (PSQLException.
                             "Test exception"
                             (PSQLState/COMMUNICATION_ERROR))))]
@@ -247,7 +261,7 @@
     (is (= {:status :ok
             :artists '("Art of Fighters" "Endymion")}
            (get-all-artists test-postgres)))
-    (with-redefs [jdbc/plan (fn [db query]
+    (with-redefs [jdbc/plan (fn [_ _]
                               (throw (PSQLException.
                                       "Test exception"
                                       (PSQLState/COMMUNICATION_ERROR))))]
