@@ -1,7 +1,7 @@
 (ns ktra-indexer.db
   "Namespace containing database functions"
   (:require [clojure.string :as s]
-            [clojure.tools.logging :as log]
+            [taoensso.timbre :refer [error]]
             [java-time :as t]
             [next.jdbc :as jdbc]
             [next.jdbc
@@ -57,8 +57,8 @@
         {:status :ok
          :yubikey-ids key-ids}))
     (catch PSQLException pge
-      (log/error (format "Could not get Yubikey ID for user \"%s\": %s"
-                         username (.getMessage pge)))
+      (error pge
+             (format "Could not get Yubikey ID for user '%s'" username))
       {:status :error})))
 
 (defn edit-distance-similarity
@@ -135,7 +135,7 @@
                                                 closest-artist))]})
                          rs-opts))))))
     (catch PSQLException pge
-      (log/error "Failed to search or insert artist:" (.getMessage pge))
+      (error pge "Failed to search or insert artist")
       -1)))
 
 (defn get-or-insert-track
@@ -210,10 +210,10 @@
                                             :name track-name}
                                            rs-opts)))))))
         (catch PSQLException pge
-          (log/error "Failed to search or insert track:" (.getMessage pge))
+          (error pge "Failed to search or insert track")
           -1))
       (do
-        (log/error "Track insert failed for artist:" (:artist track-json))
+        (error "Track insert failed for artist:" (:artist track-json))
         -1))))
 
 (defn insert-episode-track
@@ -238,7 +238,7 @@
                                 :feature_id feature-id}
                                rs-opts))
         (catch PSQLException pge
-          (log/error "Failed to insert episode track:" (.getMessage pge))
+          (error pge "Failed to insert episode track")
           -1))
       -1)))
 
@@ -274,7 +274,7 @@
                 {:status :error
                  :cause :general-error}))))))
     (catch PSQLException pge
-      (log/error "Failed to insert episode:" (.getMessage pge))
+      (error pge "Failed to insert episode")
       (if (re-find #"violates unique constraint" (.getMessage pge))
         {:status :error
          :cause :duplicate-episode}
@@ -304,7 +304,7 @@
             (.rollback tx)
             {:status :error}))))
     (catch PSQLException pge
-      (log/error "Failed to insert additional tracks:" (.getMessage pge))
+      (error pge "Failed to insert additional tracks")
       {:status :error})))
 
 (defn sql-date-to-date-str
@@ -328,7 +328,7 @@
                  (merge row {:date (sql-date-to-date-str (:date row))}))
      :status :ok}
     (catch PSQLException pge
-      (log/error "Failed to get episodes:" (.getMessage pge))
+      (error pge "Failed to get episodes")
       {:status :error})))
 
 (defn get-episode-basic-data
@@ -346,8 +346,9 @@
                                         rs-opts)]
              (assoc row :date (sql-date-to-date-str (:date row))))}
     (catch PSQLException pge
-      (log/error (format "Could not get basic data for episode %s: %s"
-                         episode-number (.getMessage pge)))
+      (error pge
+             (format "Could not get basic data for episode '%s'"
+                     episode-number))
       {:status :error})))
 
 (defn get-episode-tracks
@@ -393,7 +394,7 @@
                                             :order-by [[:name :asc]]})))
      :status :ok}
     (catch PSQLException pge
-      (log/error "Failed to get all artists:" (.getMessage pge))
+      (error pge "Failed to get all artists")
       {:status :error})))
 
 (defn get-episodes-with-track
