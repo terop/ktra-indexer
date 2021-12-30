@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
-# This a script for cleaning up the ktra-indexer database from similar
-# artists names.
+"""This a script for cleaning up the ktra-indexer database from similar
+artists names."""
 
 import argparse
 import sys
 from collections import OrderedDict
 
-import editdistance
+import editdistance  # pylint: disable=import-error
 import psycopg2
 
 
-class DbCleaner(object):
+class DbCleaner:
     """A class for performing the actual cleaning."""
 
     def __init__(self, db_name, db_user, db_password):
@@ -35,7 +35,7 @@ class DbCleaner(object):
         self.get_artists()
 
         print('Press \'q\' to quit')
-        print('Using an edit distance of {}'.format(edit_distance))
+        print(f'Using an edit distance of {edit_distance}')
 
         while self._artists:
             keys = list(self._artists.keys())
@@ -47,9 +47,10 @@ class DbCleaner(object):
                 self._artists.pop(filtered[0][0])
                 continue
 
-            print('Artists similar to "{}":'.format(filtered[0][0]))
+            print(f'Artists similar to "{filtered[0][0]}":')
             print('0. Retain all')
             for index, artist in enumerate(filtered):
+                # pylint: disable=consider-using-f-string
                 print('{}. {} (edit distance {})'.format(index + 1, artist[0], artist[1]))
 
             choice = input('Choose option: ')
@@ -59,7 +60,7 @@ class DbCleaner(object):
                 break
             choice = int(choice)
             if choice > len(filtered):
-                choice = input('Please choose an option between 0 and {}: '.format(len(filtered)))
+                choice = input(f'Please choose an option between 0 and {len(filtered)}: ')
                 choice = int(choice.rstrip('.'))
 
             if choice == 0:
@@ -81,7 +82,7 @@ class DbCleaner(object):
                     self._cursor.execute('DELETE FROM artists WHERE artist_id = %s', (old_id,))
                 except psycopg2.DatabaseError as dbe:
                     self._cursor.rollback()
-                    print('Error: got a database error: {}'.format(dbe.pgerror), file=sys.stderr)
+                    print(f'Error: got a database error: {dbe.pgerror}', file=sys.stderr)
                     return False
 
                 self._artists.pop(filtered[index][0])
