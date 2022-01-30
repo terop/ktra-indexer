@@ -4,7 +4,8 @@
   (:require [clojure.string :as s]
             [java-time :as t])
   (:import java.time.DayOfWeek
-           org.jsoup.Jsoup))
+           org.jsoup.Jsoup
+           org.jsoup.nodes.Element))
 
 (defn get-friday-date
   "Returns the date of the same week's Friday formatted as dd.mm.yyyy.
@@ -37,4 +38,5 @@
                   (s/triml (subs tracklist (+ (s/index-of tracklist "Tracklist")
                                               (count "Tracklist"))))
                   tracklist)
-     :date (get-friday-date (.text (first (.select document "time"))))}))
+     :date (get-friday-date (.text ^Element (first
+                                             (.select document "time"))))}))

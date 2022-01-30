@@ -42,3 +42,5 @@ jobs:
             cp resources/config.edn_sample resources/config.edn
 
       - run: clojure -T:build ci
+
+      - run: clojure -M:eastwood
