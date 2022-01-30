@@ -3,13 +3,13 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: circleci/clojure:lein-bullseye
+      - image: cimg/clojure:1.10
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
         environment:
           TEST_DATABASE_URL: postgresql://postgres@localhost/ktra_test
-      - image: circleci/postgres:13-bullseye-ram
+      - image: cimg/postgres:14.1
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
@@ -20,8 +20,8 @@ jobs:
 
     working_directory: ~/repo
 
+    resource_class: small
     environment:
-      LEIN_ROOT: "true"
       JVM_OPTS: -Xmx3200m
       POSTGRESQL_DB_USERNAME: postgres
       POSTGRESQL_DB_PASSWORD: testpwd
@@ -32,25 +32,13 @@ jobs:
       - run:
           name: database setup
           command: |
+            sleep 5
             sudo apt install -y postgresql-client || true
-            psql -d ${TEST_DATABASE_URL} ktra_test < db-def.sql
+            psql -d ${TEST_DATABASE_URL} < db-def.sql
 
       - run:
           name: setup config
           command: |
             cp resources/config.edn_sample resources/config.edn
 
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "project.clj" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
-      - run: lein deps
-
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: v1-dependencies-{{ checksum "project.clj" }}
-
-      - run: lein test
+      - run: clojure -T:build ci

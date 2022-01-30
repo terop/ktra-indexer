@@ -1,5 +1,7 @@
 # ktra-indexer
 
+[![CircleCI](https://circleci.com/gh/terop/ktra-indexer/tree/master.svg?style=svg)](https://circleci.com/gh/terop/ktra-indexer/tree/master)
+
 KTRA indexer is a simple Web application for listing and searching
 artists and tracks from DJ Kutski's Keeping The Rave Alive (KTRA)
 podcast. The application features episodes listing as well as both
@@ -7,13 +9,10 @@ track and artist search.
 
 ## Prerequisites
 
-To build and run this application locally you will need [Leiningen][] 2.0.0 or
-above installed. Additionally, a PostgreSQL server instance
-is needed. Database definitions can be found in `db-def.sql` and
-a database with the required tables must exist before the application
-can be started.
-
-[leiningen]: https://github.com/technomancy/leiningen
+To build and run this application locally you need a recent Clojure version.
+Additionally, a PostgreSQL server instance is needed. Database definitions can
+be found in `db-def.sql` and a database with the required tables must exist
+before the application can be started.
 
 ## Configuration
 
@@ -34,17 +33,11 @@ _NOTE_! The first variable is not defined in `config.edn`.
 
 ## Running
 ### Locally
-To start a web server for the application, run:
+To start the application locally run `clojure -M:run`.
 
-    lein run
+### Docker / podman
 
-or
-
-    lein trampoline run
-
-### Docker
-
-This application can be also be run in a Docker container. To build the
+This application can be also be run in a Docker or podman container. To build the
 container call `make build` from root directory of the application.
 The container will be called `ktra-indexer`. The .jar file to run in in the
 container can be executed with the `java -jar <name>.jar` command.
@@ -53,4 +46,4 @@ container can be executed with the `java -jar <name>.jar` command.
 
 See the MIT license in the LICENSE file.
 
-Copyright © 2015-2019 Tero Paloheimo
+Copyright © 2015-2022 Tero Paloheimo

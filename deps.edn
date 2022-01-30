@@ -1,0 +1,34 @@
+{:paths ["src" "resources"]
+ :deps {org.clojure/clojure {:mvn/version "1.10.3"}
+        ring/ring {:mvn/version "1.9.5"}
+        ring/ring-defaults {:mvn/version "0.3.3"}
+        io.github.terop/clojure.java-time
+        {:sha "8e883f6bb3f940ba4b66fe8bfe414f6732ed508a"}
+        compojure/compojure {:mvn/version "1.6.2"}
+        selmer/selmer {:mvn/version "1.12.50"}
+        cheshire/cheshire {:mvn/version "5.10.2"}
+        org.postgresql/postgresql {:mvn/version "42.3.1"}
+        com.github.seancorfield/honeysql {:mvn/version "2.2.858"}
+        com.github.seancorfield/next.jdbc {:mvn/version "1.2.761"}
+        buddy/buddy-auth {:mvn/version "3.0.323"}
+        com.taoensso/timbre {:mvn/version "5.1.2"}
+        com.fzakaria/slf4j-timbre {:mvn/version "0.3.21"}
+        com.yubico/yubico-validation-client2 {:mvn/version "3.1.0"}
+        org.apache.commons/commons-text {:mvn/version "1.9"}
+        org.jsoup/jsoup {:mvn/version "1.14.3"}}
+ :aliases
+ {:run {:main-opts ["-m" "ktra-indexer.handler"]}
+  :build {:deps {io.github.seancorfield/build-clj
+                 {:git/tag "v0.6.7" :git/sha "22c2d09"
+                  ;; since we're building an app uberjar, we do not
+                  ;; need deps-deploy for clojars.org deployment:
+                  :deps/root "slim"}}
+          :ns-default build}
+  :test {:extra-paths ["test"]
+         :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}
+                      io.github.cognitect-labs/test-runner
+                      {:git/tag "v0.5.0" :git/sha "48c3c67"}}}
+  :eastwood {:main-opts ["-m" "eastwood.lint"
+                         ;; Any Eastwood options can be passed here as edn:
+                         {}]
+             :extra-deps {jonase/eastwood {:mvn/version "1.2.2"}}}}}
