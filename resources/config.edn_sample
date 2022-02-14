@@ -4,9 +4,14 @@
             :port "5432"
             :user "foobar"
             :password "123"}
- ;; Yubico OTP parameters
- :yubico-client-id "12345"
- :yubico-secret-key "/xyz="
+ ;; Time zone to use in database operations
+ :time-zone "Europe/Helsinki"
+ ;; Hostname where the application is hosted
+ :hostname "localhost"
+ ;; Switch to allow access to the register page unauthenticated
+ ;; WARNING! Major security risk, only keep enabled when no WebAuthn
+ ;; authenticator is registered
+ :allow-register-page-access false
  ;; Toggle development or production mode (TLS is enforced)
  :in-production true
  ;; Use through proxy (usually needed when a reverse proxy is used)

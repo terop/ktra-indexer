@@ -1,4 +1,3 @@
-
 -- Episodes table
 CREATE TABLE episodes (
        ep_id SERIAL PRIMARY KEY,
@@ -48,9 +47,13 @@ CREATE TABLE users (
        username VARCHAR(100) NOT NULL UNIQUE
 );
 
--- Yubikey ID table
-CREATE TABLE yubikeys (
-    key_id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users (user_id) ON DELETE CASCADE,
-    yubikey_id VARCHAR(32) NOT NULL UNIQUE
+-- WebAuthn authenticator table
+CREATE TABLE webauthn_authenticators (
+       authn_id SERIAL PRIMARY KEY,
+       user_id INTEGER REFERENCES users (user_id) ON DELETE CASCADE,
+       name VARCHAR(40),
+       counter INTEGER NOT NULL,
+       attested_credential VARCHAR(500) NOT NULL,
+       attestation_statement VARCHAR(2000) NOT NULL,
+       login_count INTEGER NOT NULL
 );

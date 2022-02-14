@@ -6,8 +6,7 @@
   (testing "Basic configuration value reading"
     (is (nil? (get-conf-value :foo :use-sample true)))
     (is (true? (get-conf-value :in-production :use-sample true)))
-    (is (true? (get-conf-value :use-proxy :use-sample true)))
-    (is (= "12345" (get-conf-value :yubico-client-id :use-sample true)))))
+    (is (true? (get-conf-value :use-proxy :use-sample true)))))
 
 (deftest read-database-configuration
   (testing "Database configuration reading"

@@ -38,29 +38,32 @@
 (def rs-opts {:builder-fn rs/as-unqualified-kebab-maps})
 
 ;; User handling
-(defn get-yubikey-id
-  "Returns the Yubikey ID(s) of the user with the given username.
-  Returns nil if the user is not found."
+(defn get-user-id
+  "Returns the user ID of the user with the given username.
+  Returns nil if the user is not found or an error map in case of an error."
   [db-con username]
   (try
-    (let [key-ids (into #{}
-                        (map :yubikey_id)
-                        (jdbc/plan db-con
-                                   (sql/format {:select :yubikey_id
-                                                :from :yubikeys
-                                                :join
-                                                [:users [:= :users.user_id
-                                                         :yubikeys.user_id]]
-                                                :where [:= :users.username
-                                                        username]})))]
-      (when (pos? (count key-ids))
-        {:status :ok
-         :yubikey-ids key-ids}))
+    (:user-id (jdbc/execute-one! db-con
+                                 (sql/format {:select :user_id
+                                              :from :users
+                                              :where [:= :username username]})
+                                 rs-opts))
     (catch PSQLException pge
       (error pge
-             (format "Could not get Yubikey ID for user '%s'" username))
+             (format "Could not get user ID for user '%s'" username))
       {:status :error})))
 
+(defn get-username
+  "Returns the username of the user with the smallest user ID.
+  Returns nil if there are no users."
+  [db-con]
+  (:username (jdbc/execute-one! db-con
+                                (sql/format {:select :username
+                                             :from :users
+                                             :order-by [[:user_id :desc]]})
+                                rs-opts)))
+
+;; Misc functions
 (defn edit-distance-similarity
   "Returns the string and distance from coll which is most similar to reference
   in a case-insensitive the edit distance comparison. threshold specifies the

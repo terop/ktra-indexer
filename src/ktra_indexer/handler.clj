@@ -2,84 +2,26 @@
   "The main namespace of the application"
   (:gen-class)
   (:require [buddy.auth :refer [authenticated?]]
-            [buddy.auth.backends.session :refer [session-backend]]
             [buddy.auth.middleware :refer [wrap-authentication
                                            wrap-authorization]]
             [cheshire.core :refer [generate-string parse-string]]
             [clojure.string :as s]
             [compojure
-             [core :refer [defroutes GET POST]]
+             [core :refer [defroutes context GET POST]]
              [route :as route]]
             [next.jdbc :as jdbc]
             [ring.middleware.defaults :refer
              [secure-site-defaults site-defaults wrap-defaults]]
             [ring.middleware.reload :refer [wrap-reload]]
+            [ring.middleware.json :refer [wrap-json-params wrap-json-response]]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.response :as resp]
             [selmer.parser :refer [render-file]]
             [ktra-indexer
+             [authentication :as auth]
              [config :refer [get-conf-value]]
              [db :as db]
-             [parser :refer [parse-sc-tracklist]]])
-  (:import com.yubico.client.v2.YubicoClient))
-
-(defn validate-yubikey-login
-  "Check that login using Yubikey is valid."
-  [username otp-value]
-  (let [user-data (db/get-yubikey-id db/postgres-ds username)]
-    (if (or (not (YubicoClient/isValidOTPFormat otp-value))
-            (= :error (:status user-data)))
-      false
-      (let [client
-            (YubicoClient/getClient (Integer/parseInt (get-conf-value
-                                                       :yubico-client-id))
-                                    (get-conf-value :yubico-secret-key))]
-        (if (and (.isOk (.verify client otp-value))
-                 (contains? (:yubikey-ids user-data)
-                            (YubicoClient/getPublicId otp-value)))
-          true false)))))
-
-(defn login-authenticate
-  "Check request username and OTP value against the recorded Yubikeys for the
-  current user. On successful authentication, set appropriate user into the
-  session and  redirect to the value of (:query-params (:next request)).
-  On failed authentication, renders the login page."
-  [request]
-  (let [username (get-in request [:form-params "username"])
-        otp-value (get-in request [:form-params "otp"])
-        session (:session request)]
-    (if (validate-yubikey-login username otp-value)
-      (let [next-url (get-in request [:params :next]
-                             (get-conf-value :url-path))
-            updated-session (assoc session :identity (keyword username))]
-        (assoc (resp/redirect next-url) :session updated-session))
-      (render-file "templates/login.html"
-                   {:error "Error: an invalid OTP value was provided"
-                    :username username}))))
-
-(defn logout
-  "Logs out the user and redirects her to the front page."
-  [_]
-  (assoc (resp/redirect (str "/" (get-conf-value :url-path)))
-         :session {}))
-
-(defn unauthorized-response
-  "The response sent when a request is unauthorized."
-  []
-  (resp/redirect (str (get-conf-value :url-path) "/login")))
-
-(defn unauthorized-handler
-  "Handles unauthorized requests."
-  [request _]
-  (if (authenticated? request)
-    ;; If request is authenticated, raise 403 instead of 401 as the user
-    ;; is authenticated but permission denied is raised.
-    (assoc (resp/response "403 Forbidden") :status 403)
-    ;; In other cases, redirect it user to login
-    (resp/redirect (str (get-conf-value :url-path) "/login"))))
-
-(def auth-backend (session-backend
-                   {:unauthorized-handler unauthorized-handler}))
+             [parser :refer [parse-sc-tracklist]]]))
 
 (defroutes app-routes
   (GET "/" request
@@ -94,14 +36,17 @@
                        {:episodes (:episodes episodes)
                         :artists (:artists artists)
                         :logged-in (authenticated? request)})))))
-  (GET "/login" [] (render-file "templates/login.html" {}))
-  (GET "/logout" [] logout)
+  (GET "/login" request
+    (if-not (authenticated? request)
+      (render-file "templates/login.html" {})
+      (resp/redirect (str (get-conf-value :url-path) "/"))))
+  (GET "/logout" [] auth/logout)
   (GET "/add" request
     (if (authenticated? request)
       (render-file "templates/add.html"
                    {:url-path (get-conf-value :url-path)
                     :logged-in (authenticated? request)})
-      (unauthorized-response)))
+      (auth/unauthorized-response)))
   (GET "/add-tracks" request
     (let [id (:id (:params request))]
       (if (and id
@@ -115,7 +60,7 @@
                            {:episode-id id
                             :data (:data episode-data)
                             :url-path (get-conf-value :url-path)})))
-          (unauthorized-response))
+          (auth/unauthorized-response))
         (resp/redirect (str "/" (get-conf-value :url-path))))))
   (GET "/view" request
     (let [id (:id (:params request))]
@@ -174,16 +119,39 @@
       (render-file "templates/add-tracks.html"
                    {:insert-status insert-res
                     :url-path (get-conf-value :url-path)})))
-  (POST "/login" [] login-authenticate)
+  ;; WebAuthn routes
+  (GET "/register" request
+    (if (or (authenticated? request)
+            (get-conf-value :allow-register-page-access))
+      (let [username (if (authenticated? request)
+                       (name (get-in request
+                                     [:session :identity]))
+                       (db/get-username db/postgres-ds))]
+        (render-file "templates/register.html"
+                     {:username username}))
+      auth/response-unauthorized))
+  (context "/webauthn" []
+    (GET "/register" [] auth/wa-prepare-register)
+    (POST "/register" [] auth/wa-register)
+    (GET "/login" [] auth/wa-prepare-login)
+    (POST "/login" [] auth/wa-login)
+    (GET "/auth-count" request
+      (resp/response
+       (str (auth/get-authenticator-count
+             db/postgres-ds
+             (get-in request [:params
+                              :username]))))))
   ;; Serve static files
   (route/resources "/")
   (route/not-found "404 Not Found"))
 
 (def app
   (wrap-defaults
-   (-> app-routes
-       (wrap-authorization auth-backend)
-       (wrap-authentication auth-backend))
+   (as-> app-routes $
+     (wrap-authorization $ auth/auth-backend)
+     (wrap-authentication $ auth/auth-backend)
+     (wrap-json-response $ {:pretty false})
+     (wrap-json-params $ {:keywords? true}))
    (if-not (get-conf-value :in-production)
      ;; TODO fix CSRF tokens
      (assoc-in site-defaults [:security :anti-forgery] false)

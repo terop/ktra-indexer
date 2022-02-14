@@ -14,13 +14,28 @@ Additionally, a PostgreSQL server instance is needed. Database definitions can
 be found in `db-def.sql` and a database with the required tables must exist
 before the application can be started.
 
+## Authentication
+
+This application only supports WebAuthn as the authentication method.
+To register the first authenticator for a user set the `:allow-register-page-access`
+value to `true` in the config. This allows you to register an authenticator by
+navigating to the `<app url>/register` page. After registering the authenticator
+change the config value back to `false`.
+Further authenticators can be registered on the same page when being logged in
+to the application.
+
+Note that WebAuthn login offers the login challenge for one authenticator at a
+time so using the authenticator multiple times is needed if multiple authenticators
+are registered. A challenge for the most used authenticator(s) is offered first.
+
 ## Configuration
+
+Users are directly added the to the `users` table.
 
 A sample configuration can be found in the `resources/config.edn_sample` file.
 Copy or rename this file to `config.edn` in the `resources` directory and edit
-it to fit your configuration. Users and their Yubikey ID(s) are directly added
-the to the `users` and `yubikeys` tables respectively. Some settings can be overridden
-with environment variables. Accepted environment variables are described below.
+it to fit your configuration. Some settings can be overridden with environment
+variables. Accepted environment variables are described below.
 * __APP_PORT__: The port which the application will be accessible through.
 The default port is `8080`.
 * __POSTGRESQL_DB_HOST__: Hostname of the database server.
@@ -33,7 +48,9 @@ _NOTE_! The first variable is not defined in `config.edn`.
 
 ## Running
 ### Locally
-To start the application locally run `clojure -M:run`.
+To start the application locally run `clojure -M:run`. If the `target/classes`
+directory does not exist then you need to run the `clojure -T:build build-java`
+command to create the required Java .class file.
 
 ### Docker / podman
 
