@@ -1,5 +1,5 @@
 build: update # build container
-	podman build -t ktra-indexer .
+	podman build -t ktra-indexer:0.3.0 .
 
 update: # update runtime base image
 	podman pull gcr.io/distroless/java17-debian11:latest

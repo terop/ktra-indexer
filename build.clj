@@ -4,7 +4,7 @@
             [badigeon.javac :as javac]))
 
 (def lib 'com.github.terop/ktra-indexer)
-(def version "0.2.1-SNAPSHOT")
+(def version "0.3.0")
 (def main 'ktra-indexer.handler)
 
 (defn clean "Do cleanup." [opts]
