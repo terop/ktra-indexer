@@ -15,7 +15,6 @@
                                      unauthorized-handler
                                      unauthorized-response
                                      logout]]
-             ;; [config :refer [get-conf-value]]
              [db :refer [rs-opts]]
              [db-test :refer [test-ds]]])
   (:import com.webauthn4j.authenticator.AuthenticatorImpl

@@ -41,8 +41,8 @@
                 integrity="sha256-nec3W3r9OG4DeHKjWvWqWOCJmGz+nl4seDl2Uo77Xy8=" crossorigin="anonymous"></script>
         <script>
             var authenticatorCount = 0,
-                attemptCount = 0;
-            var username = '';
+                attemptCount = 0,
+                username = '';
 
             {% if error %}
             document.getElementById('errorBox').innerHTML = '{{ error }}';

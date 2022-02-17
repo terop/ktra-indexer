@@ -1,6 +1,5 @@
 (ns ktra-indexer.handler
   "The main namespace of the application"
-  (:gen-class)
   (:require [buddy.auth :refer [authenticated?]]
             [buddy.auth.middleware :refer [wrap-authentication
                                            wrap-authorization]]
@@ -12,8 +11,9 @@
             [next.jdbc :as jdbc]
             [ring.middleware.defaults :refer
              [secure-site-defaults site-defaults wrap-defaults]]
-            [ring.middleware.reload :refer [wrap-reload]]
-            [ring.middleware.json :refer [wrap-json-params wrap-json-response]]
+            [ring.middleware
+             [reload :refer [wrap-reload]]
+             [json :refer [wrap-json-params wrap-json-response]]]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.response :as resp]
             [selmer.parser :refer [render-file]]
@@ -21,7 +21,8 @@
              [authentication :as auth]
              [config :refer [get-conf-value]]
              [db :as db]
-             [parser :refer [parse-sc-tracklist]]]))
+             [parser :refer [parse-sc-tracklist]]])
+  (:gen-class))
 
 (defroutes app-routes
   (GET "/" request
@@ -145,28 +146,30 @@
   (route/resources "/")
   (route/not-found "404 Not Found"))
 
-(def app
-  (wrap-defaults
-   (as-> app-routes $
-     (wrap-authorization $ auth/auth-backend)
-     (wrap-authentication $ auth/auth-backend)
-     (wrap-json-response $ {:pretty false})
-     (wrap-json-params $ {:keywords? true}))
-   (if-not (get-conf-value :in-production)
-     ;; TODO fix CSRF tokens
-     (assoc-in site-defaults [:security :anti-forgery] false)
-     (assoc (assoc-in (assoc-in secure-site-defaults
-                                [:security :anti-forgery] false)
-                      [:security :hsts] (get-conf-value :use-hsts))
-            :proxy (get-conf-value :use-proxy)))))
-
 (defn -main
   "Starts the web server."
   []
   (let [port (Integer/parseInt (get (System/getenv)
                                     "APP_PORT" "8080"))
         production? (get-conf-value :in-production)
-        opts {:port port}]
+        opts {:port port}
+        config-no-csrf (assoc-in (if production?
+                                   secure-site-defaults
+                                   site-defaults)
+                                 [:security :anti-forgery] false)
+        defaults-config (if-not production?
+                          config-no-csrf
+                          (assoc (assoc-in config-no-csrf
+                                           [:security :hsts]
+                                           (get-conf-value :use-hsts))
+                                 :proxy (get-conf-value :use-proxy)))
+        handler (as-> app-routes $
+                  (wrap-authorization $ auth/auth-backend)
+                  (wrap-authentication $ auth/auth-backend)
+                  (wrap-json-response $ {:pretty false})
+                  (wrap-json-params $ {:keywords? true})
+                  (wrap-defaults $ defaults-config))]
     (run-jetty (if production?
-                 app
-                 (wrap-reload app)) opts)))
+                 handler
+                 (wrap-reload handler))
+               opts)))
