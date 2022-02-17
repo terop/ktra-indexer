@@ -135,13 +135,7 @@
     (GET "/register" [] auth/wa-prepare-register)
     (POST "/register" [] auth/wa-register)
     (GET "/login" [] auth/wa-prepare-login)
-    (POST "/login" [] auth/wa-login)
-    (GET "/auth-count" request
-      (resp/response
-       (str (auth/get-authenticator-count
-             db/postgres-ds
-             (get-in request [:params
-                              :username]))))))
+    (POST "/login" [] auth/wa-login))
   ;; Serve static files
   (route/resources "/")
   (route/not-found "404 Not Found"))

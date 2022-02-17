@@ -34,7 +34,6 @@
      :host (get-conf-value :hostname)}))
 
 (def authenticator-name (atom ""))
-(def current-authn-number (atom 0))
 
 ;; Helper functions
 (defn save-authenticator
@@ -64,8 +63,7 @@
                                                    (.writeValueAsBytes
                                                     (.getCborConverter
                                                      object-converter)
-                                                    envelope))
-                           :login_count 0}
+                                                    envelope))}
                           db/rs-opts)]
       (pos? (:authn-id row)))
     (catch PSQLException pge
@@ -83,44 +81,23 @@
                                   object-converter)
         cbor-converter (.getCborConverter object-converter)]
     (for [row (jdbc/execute! db-con
-                             (sql/format {:select [:authn_id
-                                                   :counter
+                             (sql/format {:select [:counter
                                                    :attested_credential
                                                    :attestation_statement]
                                           :from [:webauthn_authenticators]
-                                          :where [:= :user_id user-id]
-                                          :order-by [[:login_count :desc]]})
+                                          :where [:= :user_id user-id]})
                              db/rs-opts)]
-      {:authn (new AuthenticatorImpl
-                   (.convert credential-converter
-                             (bytes (b64/decode-binary
-                                     (:attested-credential row))))
-                   (.getAttestationStatement
-                    ^AttestationStatementEnvelope
-                    (.readValue cbor-converter
-                                (bytes (b64/decode-binary
-                                        (:attestation-statement row)))
-                                AttestationStatementEnvelope))
-                   (:counter row))
-       :id (:authn-id row)})))
-
-(defn get-authenticator-count
-  "Returns the number of the user's registered authenticators."
-  [db-con username]
-  (let [user-id (db/get-user-id db-con username)]
-    (:count (jdbc/execute-one! db-con
-                               (sql/format {:select [:%count.counter]
-                                            :from :webauthn_authenticators
-                                            :where [:= :user_id user-id]})
-                               db/rs-opts))))
-
-(defn inc-login-count
-  "Increments login count for the given authenticator."
-  [db-con authenticator-id]
-  (jdbc/execute-one! db-con
-                     (sql/format {:update :webauthn_authenticators
-                                  :set {:login_count [:+ :login_count 1]}
-                                  :where [:= :authn_id authenticator-id]})))
+      (new AuthenticatorImpl
+           (.convert credential-converter
+                     (bytes (b64/decode-binary
+                             (:attested-credential row))))
+           (.getAttestationStatement
+            ^AttestationStatementEnvelope
+            (.readValue cbor-converter
+                        (bytes (b64/decode-binary
+                                (:attestation-statement row)))
+                        AttestationStatementEnvelope))
+           (:counter row)))))
 
 (defn register-user!
   "Callback function for user registration."
@@ -153,12 +130,8 @@
   [request db-con]
   (let [username (get-in request [:params :username])
         authenticators (get-authenticators db-con username)]
-    (when (> @current-authn-number (dec (count authenticators)))
-      (reset! current-authn-number 0))
     (if-let [resp (webauthn/prepare-login username
-                                          #(:authn
-                                            (nth authenticators
-                                                 @current-authn-number) %))]
+                                          (fn [_] authenticators))]
       (resp/response (generate-string resp))
       (resp/status 500))))
 
@@ -172,20 +145,16 @@
   [{session :session :as request}]
   (let [payload (:params request)]
     (if (empty? payload)
-      (do
-        (swap! current-authn-number inc)
-        (resp/status (resp/response
-                      (generate-string {:error "invalid-authenticator"})) 403))
+      (resp/status (resp/response
+                    (generate-string {:error "invalid-authenticator"})) 403)
       (let [username (b64/decode (:user-handle payload))
             authenticators (get-authenticators db/postgres-ds
-                                               username)
-            auth (nth authenticators @current-authn-number)]
-        (reset! current-authn-number 0)
-        (if (webauthn/login-user payload site-properties #(:authn auth %))
-          (do
-            (inc-login-count db/postgres-ds (:id auth))
-            (assoc (resp/response (str "/" (get-conf-value :url-path) "/"))
-                   :session (assoc session :identity (keyword username))))
+                                               username)]
+        (if (webauthn/login-user payload
+                                 site-properties
+                                 (fn [_] authenticators))
+          (assoc (resp/response (str "/" (get-conf-value :url-path) "/"))
+                 :session (assoc session :identity (keyword username)))
           (resp/status 500))))))
 
 ;; Other functions

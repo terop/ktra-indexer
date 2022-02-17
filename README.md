@@ -24,10 +24,6 @@ change the config value back to `false`.
 Further authenticators can be registered on the same page when being logged in
 to the application.
 
-Note that WebAuthn login offers the login challenge for one authenticator at a
-time so using the authenticator multiple times is needed if multiple authenticators
-are registered. A challenge for the most used authenticator(s) is offered first.
-
 ## Configuration
 
 Users are directly added the to the `users` table.
