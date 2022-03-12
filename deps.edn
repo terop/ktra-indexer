@@ -9,7 +9,7 @@
         selmer/selmer {:mvn/version "1.12.50"}
         cheshire/cheshire {:mvn/version "5.10.2"}
         org.postgresql/postgresql {:mvn/version "42.3.3"}
-        com.github.seancorfield/honeysql {:mvn/version "2.2.861"}
+        com.github.seancorfield/honeysql {:mvn/version "2.2.868"}
         com.github.seancorfield/next.jdbc {:mvn/version "1.2.772"}
         buddy/buddy-auth {:mvn/version "3.0.323"}
         com.taoensso/timbre {:mvn/version "5.1.2"}
@@ -17,11 +17,11 @@
         org.apache.commons/commons-text {:mvn/version "1.9"}
         org.jsoup/jsoup {:mvn/version "1.14.3"}
         io.github.terop/cljwebauthn
-        {:sha "985ee96e831f7484a0d9a76d2b4b668757f0a0bc"}}
+        {:sha "ccb1de26a510947103457449f877327dcd777ef6"}}
  :aliases
  {:run {:main-opts ["-m" "ktra-indexer.handler"]}
   :build {:deps {io.github.seancorfield/build-clj
-                 {:git/tag "v0.6.7" :git/sha "22c2d09"
+                 {:git/tag "v0.8.0" :git/sha "9bd8b8a"
                   ;; since we're building an app uberjar, we do not
                   ;; need deps-deploy for clojars.org deployment:
                   :deps/root "slim"}
@@ -35,4 +35,4 @@
   :eastwood {:main-opts ["-m" "eastwood.lint"
                          ;; Any Eastwood options can be passed here as edn:
                          {}]
-             :extra-deps {jonase/eastwood {:mvn/version "1.2.2"}}}}}
+             :extra-deps {jonase/eastwood {:mvn/version "1.2.3"}}}}}
