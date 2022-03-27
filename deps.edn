@@ -1,5 +1,5 @@
 {:paths ["src" "resources" "target/classes"]
- :deps {org.clojure/clojure {:mvn/version "1.10.3"}
+ :deps {org.clojure/clojure {:mvn/version "1.11.0"}
         ring/ring {:mvn/version "1.9.5"}
         ring/ring-defaults {:mvn/version "0.3.3"}
         ring/ring-json {:mvn/version "0.5.1"}
@@ -12,7 +12,7 @@
         com.github.seancorfield/honeysql {:mvn/version "2.2.868"}
         com.github.seancorfield/next.jdbc {:mvn/version "1.2.772"}
         buddy/buddy-auth {:mvn/version "3.0.323"}
-        com.taoensso/timbre {:mvn/version "5.1.2"}
+        com.taoensso/timbre {:mvn/version "5.2.1"}
         com.fzakaria/slf4j-timbre {:mvn/version "0.3.21"}
         org.apache.commons/commons-text {:mvn/version "1.9"}
         org.jsoup/jsoup {:mvn/version "1.14.3"}
