@@ -137,6 +137,8 @@
                          .then(function (response) {
                              const data = response.data;
                              if (response.data.status === 'ok') {
+                                 // Update max value in case episode date is later then the current date
+                                 document.getElementById('date').max = data.content.date;
                                  document.getElementById('date').value = data.content.date;
                                  document.getElementById('name').value = data.content.title;
                                  document.getElementById('tracklist').value = data.content.tracklist;
