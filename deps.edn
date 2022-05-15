@@ -5,7 +5,7 @@
         ring/ring-json {:mvn/version "0.5.1"}
         io.github.terop/clojure.java-time
         {:sha "8e883f6bb3f940ba4b66fe8bfe414f6732ed508a"}
-        compojure/compojure {:mvn/version "1.6.2"}
+        compojure/compojure {:mvn/version "1.6.3"}
         selmer/selmer {:mvn/version "1.12.50"}
         cheshire/cheshire {:mvn/version "5.10.2"}
         org.postgresql/postgresql {:mvn/version "42.3.5"}
@@ -15,7 +15,7 @@
         com.taoensso/timbre {:mvn/version "5.2.1"}
         com.fzakaria/slf4j-timbre {:mvn/version "0.3.21"}
         org.apache.commons/commons-text {:mvn/version "1.9"}
-        org.jsoup/jsoup {:mvn/version "1.14.3"}
+        org.jsoup/jsoup {:mvn/version "1.15.1"}
         io.github.terop/cljwebauthn
         {:sha "ccb1de26a510947103457449f877327dcd777ef6"}}
  :aliases
@@ -29,7 +29,7 @@
           :ns-default build}
   :test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
-                      {:git/tag "v0.5.0" :git/sha "48c3c67"}}
+                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
          :main-opts ["-m" "cognitect.test-runner"]
          :exec-fn cognitect.test-runner.api/test}
   :eastwood {:main-opts ["-m" "eastwood.lint"
