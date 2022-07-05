@@ -15,13 +15,13 @@
         com.taoensso/timbre {:mvn/version "5.2.1"}
         com.fzakaria/slf4j-timbre {:mvn/version "0.3.21"}
         org.apache.commons/commons-text {:mvn/version "1.9"}
-        org.jsoup/jsoup {:mvn/version "1.15.1"}
+        org.jsoup/jsoup {:mvn/version "1.15.2"}
         io.github.terop/cljwebauthn
-        {:sha "ccb1de26a510947103457449f877327dcd777ef6"}}
+        {:sha "bb262552d3e79bda6b975c71d06ec3d323d5580f"}}
  :aliases
  {:run {:main-opts ["-m" "ktra-indexer.handler"]}
   :build {:deps {io.github.seancorfield/build-clj
-                 {:git/tag "v0.8.2" :git/sha "0ffdb4c"
+                 {:git/tag "v0.8.3" :git/sha "7ac1f8d"
                   ;; since we're building an app uberjar, we do not
                   ;; need deps-deploy for clojars.org deployment:
                   :deps/root "slim"}
@@ -35,4 +35,6 @@
   :eastwood {:main-opts ["-m" "eastwood.lint"
                          ;; Any Eastwood options can be passed here as edn:
                          {}]
-             :extra-deps {jonase/eastwood {:mvn/version "1.2.4"}}}}}
+             :extra-deps {jonase/eastwood {:mvn/version "1.2.4"}}}
+  :kibit {:extra-deps {tvaughan/kibit-runner {:mvn/version "1.0.1"}}
+          :main-opts  ["-m" "kibit-runner.cmdline"]}}}
