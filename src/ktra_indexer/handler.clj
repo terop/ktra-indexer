@@ -5,6 +5,7 @@
                                            wrap-authorization]]
             [cheshire.core :refer [generate-string parse-string]]
             [clojure.string :as s]
+            [config.core :refer [env]]
             [compojure
              [core :refer [defroutes context GET POST]]
              [route :as route]]
@@ -19,7 +20,6 @@
             [selmer.parser :refer [render-file]]
             [ktra-indexer
              [authentication :as auth]
-             [config :refer [get-conf-value]]
              [db :as db]
              [parser :refer [parse-sc-tracklist]]])
   (:gen-class))
@@ -40,12 +40,12 @@
   (GET "/login" request
     (if-not (authenticated? request)
       (render-file "templates/login.html" {})
-      (resp/redirect (str (get-conf-value :url-path) "/"))))
+      (resp/redirect (str (:url-path env) "/"))))
   (GET "/logout" [] auth/logout)
   (GET "/add" request
     (if (authenticated? request)
       (render-file "templates/add.html"
-                   {:url-path (get-conf-value :url-path)
+                   {:url-path (:url-path env)
                     :logged-in (authenticated? request)})
       (auth/unauthorized-response)))
   (GET "/add-tracks" request
@@ -60,9 +60,9 @@
               (render-file "templates/add-tracks.html"
                            {:episode-id id
                             :data (:data episode-data)
-                            :url-path (get-conf-value :url-path)})))
+                            :url-path (:url-path env)})))
           (auth/unauthorized-response))
-        (resp/redirect (str "/" (get-conf-value :url-path))))))
+        (resp/redirect (str "/" (:url-path env))))))
   (GET "/view" request
     (let [id (:id (:params request))]
       (if (and id
@@ -76,23 +76,23 @@
                           :basic-data (:data episode-data)
                           :logged-in (authenticated? request)
                           :episode-id id
-                          :url-path (get-conf-value :url-path)})))
-        (resp/redirect (str "/" (get-conf-value :url-path))))))
+                          :url-path (:url-path env)})))
+        (resp/redirect (str "/" (:url-path env))))))
   (GET "/tracks" [artist]
     (let [artist (s/replace artist "&amp;" "&")]
       (render-file "templates/tracks.html"
                    {:artist artist
                     :tracks (db/get-tracks-by-artist db/postgres-ds artist)
-                    :url-path (get-conf-value :url-path)})))
+                    :url-path (:url-path env)})))
   (GET "/track-episodes" [track]
     (let [track-name (s/replace track "&amp;" "&")]
       (render-file "templates/track-episodes.html"
                    {:track track-name
                     :episodes (db/get-episodes-with-track db/postgres-ds
                                                           track-name)
-                    :url-path (get-conf-value :url-path)})))
+                    :url-path (:url-path env)})))
   (GET "/sc-fetch" [sc-url]
-    (if-not (s/starts-with? sc-url (get-conf-value :ktra-sc-url-prefix))
+    (if-not (s/starts-with? sc-url (:ktra-sc-url-prefix env))
       (generate-string {:status "error"
                         :cause "invalid-url"})
       (generate-string {:status "ok"
@@ -107,8 +107,7 @@
                                          (:encodedTracklist form-params)
                                          true))]
       (render-file "templates/add.html" {:insert-status insert-res
-                                         :url-path (get-conf-value
-                                                    :url-path)
+                                         :url-path (:url-path env)
                                          :logged-in (authenticated?
                                                      request)})))
   (POST "/add-tracks" request
@@ -119,11 +118,11 @@
                       (parse-string (:encodedTracklist form-params) true))]
       (render-file "templates/add-tracks.html"
                    {:insert-status insert-res
-                    :url-path (get-conf-value :url-path)})))
+                    :url-path (:url-path env)})))
   ;; WebAuthn routes
   (GET "/register" request
     (if (or (authenticated? request)
-            (get-conf-value :allow-register-page-access))
+            (:allow-register-page-access env))
       (let [username (if (authenticated? request)
                        (name (get-in request
                                      [:session :identity]))
@@ -145,7 +144,7 @@
   []
   (let [port (Integer/parseInt (get (System/getenv)
                                     "APP_PORT" "8080"))
-        production? (get-conf-value :in-production)
+        production? (:in-production env)
         opts {:port port}
         config-no-csrf (assoc-in (if production?
                                    secure-site-defaults
@@ -155,8 +154,8 @@
                           config-no-csrf
                           (assoc (assoc-in config-no-csrf
                                            [:security :hsts]
-                                           (get-conf-value :use-hsts))
-                                 :proxy (get-conf-value :use-proxy)))
+                                           (:use-hsts env))
+                                 :proxy (:use-proxy env)))
         handler (as-> app-routes $
                   (wrap-authorization $ auth/auth-backend)
                   (wrap-authentication $ auth/auth-backend)

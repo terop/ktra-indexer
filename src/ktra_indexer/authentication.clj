@@ -6,12 +6,12 @@
             [cljwebauthn.core :as webauthn]
             [cljwebauthn.b64 :as b64]
             [cheshire.core :refer [generate-string]]
+            [config.core :refer [env]]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
             [ring.util.response :as resp]
             [taoensso.timbre :refer [error]]
             [ktra-indexer
-             [config :refer [get-conf-value]]
              [db :as db]])
   (:import com.webauthn4j.authenticator.AuthenticatorImpl
            com.webauthn4j.converter.AttestedCredentialDataConverter
@@ -23,15 +23,15 @@
 
 ;; WebAuthn
 
-(let [production? (get-conf-value :in-production)]
+(let [production? (:in-production env)]
   (def site-properties
-    {:site-id (get-conf-value :hostname)
+    {:site-id (:hostname env)
      :site-name "KTRA indexer"
      :protocol (if production?
                  "https" "http")
      :port (if production?
              443 80)
-     :host (get-conf-value :hostname)}))
+     :host (:hostname env)}))
 
 (def authenticator-name (atom ""))
 
@@ -153,7 +153,7 @@
         (if (webauthn/login-user payload
                                  site-properties
                                  (fn [_] authenticators))
-          (assoc (resp/response (str "/" (get-conf-value :url-path) "/"))
+          (assoc (resp/response (str "/" (:url-path env) "/"))
                  :session (assoc session :identity (keyword username)))
           (resp/status 500))))))
 
@@ -166,13 +166,13 @@
 (defn logout
   "Logs out the user and redirects her to the front page."
   [_]
-  (assoc (resp/redirect (str "/" (get-conf-value :url-path)))
+  (assoc (resp/redirect (str "/" (:url-path env)))
          :session nil))
 
 (defn unauthorized-response
   "The response sent when a request is unauthorised."
   []
-  (resp/redirect (str (get-conf-value :url-path) "/login")))
+  (resp/redirect (str (:url-path env) "/login")))
 
 (defn unauthorized-handler
   "Handles unauthorized requests."
@@ -182,7 +182,7 @@
     ;; is authenticated but permission denied is raised.
     (resp/status (resp/response "403 Forbidden") 403)
     ;; In other cases, redirect it user to login
-    (resp/redirect (format (str (get-conf-value :url-path) "/login?next=%s")
+    (resp/redirect (format (str (:url-path env) "/login?next=%s")
                            (:uri request)))))
 
 (def auth-backend (session-backend

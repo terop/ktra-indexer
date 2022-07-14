@@ -3,8 +3,8 @@
             [java-time :as t]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
-            [ktra-indexer.config :refer [db-conf]]
-            [ktra-indexer.db :refer [edit-distance-similarity
+            [ktra-indexer.db :refer [db-conf
+                                     edit-distance-similarity
                                      get-all-artists
                                      get-episode-basic-data
                                      get-episode-tracks

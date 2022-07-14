@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
             [buddy.auth :refer [authenticated?]]
             [cheshire.core :refer [parse-string]]
+            [config.core :refer [env]]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
             [cljwebauthn.b64 :as b64]
@@ -110,7 +111,10 @@
     (let [resp (wa-prepare-register {:params {:username test-user}})
           body (parse-string (:body resp) true)]
       (is (= 200 (:status resp)))
-      (is (= "localhost" (get-in body [:rp :id])))
+      (if (:ci env)
+        ;; Use value from CircleCI machine when running in CircleCI
+        (is (= (:hostname env) (get-in body [:rp :id])))
+        (is (= "localhost" (get-in body [:rp :id]))))
       (is (= "dGVzdC11c2Vy" (get-in body [:user :id]))))))
 
 (deftest login-preparation

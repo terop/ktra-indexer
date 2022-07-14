@@ -1,33 +1,38 @@
 (ns ktra-indexer.db
   "Namespace containing database functions"
   (:require [clojure.string :as s]
+            [config.core :refer [env]]
             [taoensso.timbre :refer [error]]
             [java-time :as t]
             [next.jdbc :as jdbc]
             [next.jdbc
              [result-set :as rs]
-             [sql :as js]]
-            [ktra-indexer.config :as cfg])
+             [sql :as js]])
   (:import org.apache.commons.text.similarity.LevenshteinDistance
            org.postgresql.util.PSQLException))
 (refer-clojure :exclude '[filter for group-by into partition-by set update])
 (require '[honey.sql :as sql])
 
+(defn db-conf
+  "Returns the value of the requested database configuration key"
+  [k]
+  (k (:database env)))
+
 (let [db-host (get (System/getenv)
                    "POSTGRESQL_DB_HOST"
-                   (cfg/db-conf :host))
+                   (db-conf :host))
       db-port (get (System/getenv)
                    "POSTGRESQL_DB_PORT"
-                   (cfg/db-conf :port))
+                   (db-conf :port))
       db-name (get (System/getenv)
                    "POSTGRESQL_DB_NAME"
-                   (cfg/db-conf :db))
+                   (db-conf :db))
       db-user (get (System/getenv)
                    "POSTGRESQL_DB_USERNAME"
-                   (cfg/db-conf :user))
+                   (db-conf :user))
       db-password (get (System/getenv)
                        "POSTGRESQL_DB_PASSWORD"
-                       (cfg/db-conf :password))]
+                       (db-conf :password))]
   (def postgres {:dbtype "postgresql"
                  :dbname db-name
                  :host db-host
