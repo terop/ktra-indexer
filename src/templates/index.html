@@ -128,13 +128,14 @@
             </script>
         {% endif %}
         <script>
-            document.getElementById('trackSearchBtn').
-                     addEventListener('click',
-                                      function() {
-                                          window.document.location =
-                                              'track-episodes?track=' +
-                                              encodeURIComponent(document.getElementById('trackField').value);
-                                      }, false);
+            if (document.getElementById('trackSearchBtn'))
+                document.getElementById('trackSearchBtn').
+                         addEventListener('click',
+                                          function() {
+                                              window.document.location =
+                                                  'track-episodes?track=' +
+                                                  encodeURIComponent(document.getElementById('trackField').value);
+                                          }, false);
         </script>
     </body>
 </html>
