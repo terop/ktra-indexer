@@ -40,12 +40,12 @@
   (GET "/login" request
     (if-not (authenticated? request)
       (render-file "templates/login.html" {})
-      (resp/redirect (str (:url-path env) "/"))))
+      (resp/redirect (:application-url env))))
   (GET "/logout" [] auth/logout)
   (GET "/add" request
     (if (authenticated? request)
       (render-file "templates/add.html"
-                   {:url-path (:url-path env)
+                   {:application-url (:application-url env)
                     :logged-in (authenticated? request)})
       (auth/unauthorized-response)))
   (GET "/add-tracks" request
@@ -60,9 +60,9 @@
               (render-file "templates/add-tracks.html"
                            {:episode-id id
                             :data (:data episode-data)
-                            :url-path (:url-path env)})))
+                            :application-url (:application-url env)})))
           (auth/unauthorized-response))
-        (resp/redirect (str "/" (:url-path env))))))
+        (resp/redirect (:application-url env)))))
   (GET "/view" request
     (let [id (:id (:params request))]
       (if (and id
@@ -76,21 +76,21 @@
                           :basic-data (:data episode-data)
                           :logged-in (authenticated? request)
                           :episode-id id
-                          :url-path (:url-path env)})))
-        (resp/redirect (str "/" (:url-path env))))))
+                          :application-url (:application-url env)})))
+        (resp/redirect (:application-url env)))))
   (GET "/tracks" [artist]
     (let [artist (s/replace artist "&amp;" "&")]
       (render-file "templates/tracks.html"
                    {:artist artist
                     :tracks (db/get-tracks-by-artist db/postgres-ds artist)
-                    :url-path (:url-path env)})))
+                    :application-url (:application-url env)})))
   (GET "/track-episodes" [track]
     (let [track-name (s/replace track "&amp;" "&")]
       (render-file "templates/track-episodes.html"
                    {:track track-name
                     :episodes (db/get-episodes-with-track db/postgres-ds
                                                           track-name)
-                    :url-path (:url-path env)})))
+                    :application-url (:application-url env)})))
   (GET "/sc-fetch" [sc-url]
     (if-not (s/starts-with? sc-url (:ktra-sc-url-prefix env))
       (generate-string {:status "error"
@@ -107,7 +107,7 @@
                                          (:encodedTracklist form-params)
                                          true))]
       (render-file "templates/add.html" {:insert-status insert-res
-                                         :url-path (:url-path env)
+                                         :application-url (:application-url env)
                                          :logged-in (authenticated?
                                                      request)})))
   (POST "/add-tracks" request
@@ -118,7 +118,7 @@
                       (parse-string (:encodedTracklist form-params) true))]
       (render-file "templates/add-tracks.html"
                    {:insert-status insert-res
-                    :url-path (:url-path env)})))
+                    :application-url (:application-url env)})))
   ;; WebAuthn routes
   (GET "/register" request
     (if (or (authenticated? request)
@@ -144,25 +144,23 @@
   []
   (let [port (Integer/parseInt (get (System/getenv)
                                     "APP_PORT" "8080"))
-        production? (:in-production env)
         opts {:port port}
-        config-no-csrf (assoc-in (if production?
-                                   secure-site-defaults
-                                   site-defaults)
-                                 [:security :anti-forgery] false)
-        defaults-config (if-not production?
-                          config-no-csrf
-                          (assoc (assoc-in config-no-csrf
-                                           [:security :hsts]
-                                           (:use-hsts env))
-                                 :proxy (:use-proxy env)))
+        use-https? (:force-https env)
+        force-https? (:force-https env)
+        defaults (if force-https?
+                   secure-site-defaults
+                   site-defaults)
+        ;; CSRF protection is knowingly not implemented
+        defaults-config (assoc-in (assoc defaults
+                                         :proxy (:use-proxy env))
+                                  [:security :anti-forgery] false)
         handler (as-> app-routes $
                   (wrap-authorization $ auth/auth-backend)
                   (wrap-authentication $ auth/auth-backend)
                   (wrap-json-response $ {:pretty false})
                   (wrap-json-params $ {:keywords? true})
                   (wrap-defaults $ defaults-config))]
-    (run-jetty (if production?
+    (run-jetty (if use-https?
                  handler
                  (wrap-reload handler))
                opts)))

@@ -1,24 +1,24 @@
-{:database {
-            :host "localhost"
+{:database {:host "localhost"
             :db "ktra"
             :port "5432"
             :user "foobar"
             :password "123"}
  ;; Time zone to use in database operations
  :time-zone "Europe/Helsinki"
- ;; Hostname where the application is hosted
- :hostname "localhost"
  ;; Switch to allow access to the register page unauthenticated
  ;; WARNING! Major security risk, only keep enabled when no WebAuthn
  ;; authenticator is registered
  :allow-register-page-access false
- ;; Toggle development or production mode (TLS is enforced)
- :in-production true
+ ;; WebAuthn site property settings
+ :webauthn {;; Hostname
+            :hostname "localhost"
+            ;; Use HTTPS?
+            :use-https true}
+ ;; Force settings for HTTPS access without prior HTTPS stripping
+ :force-https true
  ;; Use through proxy (usually needed when a reverse proxy is used)
  :use-proxy true
- ;; Enable or disable HSTS; disable if a HSTS configured reverse proxy is used
- :use-hsts true
- ;; Path of the URL through which the application is accessed
- :url-path "ktra"
+ ;; Full URL through which the application is accessed, MUST end with a slash
+ :application-url "http://example.com/ktra/"
  ;; Prefix for KTRA SoundCloud page URL needed for SoundCloud URL validation
  :ktra-sc-url-prefix "https://soundcloud.com/keepingtheravealive"}

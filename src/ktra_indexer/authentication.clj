@@ -23,15 +23,15 @@
 
 ;; WebAuthn
 
-(let [production? (:in-production env)]
+(let [use-https? (:use-https (:webauthn env))]
   (def site-properties
-    {:site-id (:hostname env)
+    {:site-id (:hostname (:webauthn env))
      :site-name "KTRA indexer"
-     :protocol (if production?
+     :protocol (if use-https?
                  "https" "http")
-     :port (if production?
+     :port (if use-https?
              443 80)
-     :host (:hostname env)}))
+     :host (:hostname (:webauthn env))}))
 
 (def authenticator-name (atom ""))
 
@@ -153,7 +153,7 @@
         (if (webauthn/login-user payload
                                  site-properties
                                  (fn [_] authenticators))
-          (assoc (resp/response (str "/" (:url-path env) "/"))
+          (assoc (resp/response (:application-url env))
                  :session (assoc session :identity (keyword username)))
           (resp/status 500))))))
 
@@ -166,13 +166,13 @@
 (defn logout
   "Logs out the user and redirects her to the front page."
   [_]
-  (assoc (resp/redirect (str "/" (:url-path env)))
-         :session nil))
+  (assoc (resp/redirect (:application-url env))
+         :session {}))
 
 (defn unauthorized-response
   "The response sent when a request is unauthorised."
   []
-  (resp/redirect (str (:url-path env) "/login")))
+  (resp/redirect (str (:application-url env) "login")))
 
 (defn unauthorized-handler
   "Handles unauthorized requests."
@@ -182,8 +182,7 @@
     ;; is authenticated but permission denied is raised.
     (resp/status (resp/response "403 Forbidden") 403)
     ;; In other cases, redirect it user to login
-    (resp/redirect (format (str (:url-path env) "/login?next=%s")
-                           (:uri request)))))
+    (resp/redirect (str (:application-url env) "login"))))
 
 (def auth-backend (session-backend
                    {:unauthorized-handler unauthorized-handler}))
