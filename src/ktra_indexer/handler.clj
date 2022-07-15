@@ -145,9 +145,8 @@
   (let [port (Integer/parseInt (get (System/getenv)
                                     "APP_PORT" "8080"))
         opts {:port port}
-        use-https? (:force-https env)
-        force-https? (:force-https env)
-        defaults (if force-https?
+        force-https (:force-https env)
+        defaults (if force-https
                    secure-site-defaults
                    site-defaults)
         ;; CSRF protection is knowingly not implemented
@@ -160,7 +159,7 @@
                   (wrap-json-response $ {:pretty false})
                   (wrap-json-params $ {:keywords? true})
                   (wrap-defaults $ defaults-config))]
-    (run-jetty (if use-https?
+    (run-jetty (if force-https
                  handler
                  (wrap-reload handler))
                opts)))

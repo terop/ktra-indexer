@@ -23,15 +23,16 @@
 
 ;; WebAuthn
 
-(let [use-https? (:use-https (:webauthn env))]
+(let [use-https (:use-https (:webauthn env))
+      hostname (:hostname (:webauthn env))]
   (def site-properties
-    {:site-id (:hostname (:webauthn env))
+    {:site-id hostname
      :site-name "KTRA indexer"
-     :protocol (if use-https?
+     :protocol (if use-https
                  "https" "http")
-     :port (if use-https?
+     :port (if use-https
              443 80)
-     :host (:hostname (:webauthn env))}))
+     :host hostname}))
 
 (def authenticator-name (atom ""))
 
