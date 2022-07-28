@@ -145,21 +145,28 @@
   (let [port (Integer/parseInt (get (System/getenv)
                                     "APP_PORT" "8080"))
         opts {:port port}
-        force-https (:force-https env)
-        defaults (if force-https
-                   secure-site-defaults
-                   site-defaults)
+        dev-mode (:development-mode env)
+        defaults (if dev-mode
+                   site-defaults
+                   secure-site-defaults)
         ;; CSRF protection is knowingly not implemented
-        defaults-config (assoc-in (assoc defaults
-                                         :proxy (:use-proxy env))
-                                  [:security :anti-forgery] false)
+        defaults-config (assoc-in defaults [:security :anti-forgery] false)
         handler (as-> app-routes $
                   (wrap-authorization $ auth/auth-backend)
                   (wrap-authentication $ auth/auth-backend)
                   (wrap-json-response $ {:pretty false})
                   (wrap-json-params $ {:keywords? true})
-                  (wrap-defaults $ defaults-config))]
-    (run-jetty (if force-https
-                 handler
-                 (wrap-reload handler))
+                  (wrap-defaults $ (if dev-mode
+                                     defaults-config
+                                     (if (:force-hsts env)
+                                       (-> defaults-config
+                                           (assoc :proxy true))
+                                       (-> defaults-config
+                                           (assoc-in [:security :ssl-redirect]
+                                                     false)
+                                           (assoc-in [:security :hsts]
+                                                     false))))))]
+    (run-jetty (if dev-mode
+                 (wrap-reload handler)
+                 handler)
                opts)))
