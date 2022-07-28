@@ -159,8 +159,7 @@
                   (wrap-defaults $ (if dev-mode
                                      defaults-config
                                      (if (:force-hsts env)
-                                       (-> defaults-config
-                                           (assoc :proxy true))
+                                       (assoc defaults-config :proxy true)
                                        (-> defaults-config
                                            (assoc-in [:security :ssl-redirect]
                                                      false)
