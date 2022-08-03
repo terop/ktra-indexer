@@ -10,8 +10,8 @@
         selmer/selmer {:mvn/version "1.12.53"}
         cheshire/cheshire {:mvn/version "5.11.0"}
         org.postgresql/postgresql {:mvn/version "42.4.0"}
-        com.github.seancorfield/honeysql {:mvn/version "2.2.891"}
-        com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}
+        com.github.seancorfield/honeysql {:mvn/version "2.3.911"}
+        com.github.seancorfield/next.jdbc {:mvn/version "1.2.796"}
         buddy/buddy-auth {:mvn/version "3.0.323"}
         com.taoensso/timbre {:mvn/version "5.2.1"}
         com.fzakaria/slf4j-timbre {:mvn/version "0.3.21"}
