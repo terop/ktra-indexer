@@ -108,7 +108,7 @@
 
 (deftest register-preparation
   (testing "User register preparation data generation"
-    (let [resp (wa-prepare-register {:params {:username test-user}})
+    (let [resp (wa-prepare-register {:params {"username" test-user}})
           body (j/read-value (:body resp) json-decode-opts)]
       (is (= 200 (:status resp)))
       (is (= "localhost" (get-in body [:rp :id])))
@@ -117,7 +117,7 @@
 (deftest login-preparation
   (testing "User login preparation data generation"
     (insert-authenticator)
-    (let [resp (do-prepare-login {:params {:username test-user}} test-ds)
+    (let [resp (do-prepare-login {:params {"username" test-user}} test-ds)
           body (j/read-value (:body resp) json-decode-opts)]
       (is (= 200 (:status resp)))
       (is (= "09w4snBXtbIKzw/O7krAjYTzkIWeOVDkYGvlT/v90Uc="

@@ -5,172 +5,229 @@
                                            wrap-authorization]]
             [clojure.string :as s]
             [config.core :refer [env]]
-            [compojure
-             [core :refer [defroutes context GET POST]]
-             [route :as route]]
             [jsonista.core :as j]
+            [muuntaja.core :as m]
             [next.jdbc :as jdbc]
-            [ring.middleware.defaults :refer
-             [secure-site-defaults site-defaults wrap-defaults]]
+            [reitit.ring :as ring]
+            [reitit.ring.middleware
+             [muuntaja :as muuntaja]
+             [parameters :as parameters]]
             [ring.middleware
-             [reload :refer [wrap-reload]]
-             [json :refer [wrap-json-params wrap-json-response]]]
+             [defaults :refer
+              [secure-site-defaults site-defaults wrap-defaults]]
+             [reload :refer [wrap-reload]]]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.response :as resp]
-            [selmer.parser :refer [render-file]]
             [ktra-indexer
              [authentication :as auth]
              [db :as db]
-             [parser :refer [parse-sc-tracklist]]])
+             [parser :refer [parse-sc-tracklist]]
+             [render :refer [serve-json serve-template]]])
   (:gen-class))
 
 (def json-decode-opts
   "Options for jsonista read-value."
   (j/object-mapper {:decode-key-fn true}))
 
-(defroutes app-routes
-  (GET "/" request
-    (with-open [con (jdbc/get-connection db/postgres-ds)]
-      (let [episodes (db/get-episodes con)
-            artists (db/get-all-artists con)]
-        (if (or (= :error (:status episodes))
-                (= :error (:status artists)))
-          (render-file "templates/error.html"
-                       {})
-          (render-file "templates/index.html"
-                       {:episodes (:episodes episodes)
-                        :artists (:artists artists)
-                        :logged-in (authenticated? request)})))))
-  (GET "/login" request
-    (if-not (authenticated? request)
-      (render-file "templates/login.html" {})
-      (resp/redirect (:application-url env))))
-  (GET "/logout" [] auth/logout)
-  (GET "/add" request
-    (if (authenticated? request)
-      (render-file "templates/add.html"
-                   {:application-url (:application-url env)
-                    :logged-in (authenticated? request)})
-      (auth/unauthorized-response)))
-  (GET "/add-tracks" request
-    (let [id (:id (:params request))]
-      (if (and id
-               (re-find #"\d+" id))
-        (if (authenticated? request)
-          (let [episode-data (db/get-episode-basic-data db/postgres-ds id)]
-            (if (= :error (:status episode-data))
-              (render-file "templates/error.html"
-                           {})
-              (render-file "templates/add-tracks.html"
-                           {:episode-id id
-                            :data (:data episode-data)
-                            :application-url (:application-url env)})))
-          (auth/unauthorized-response))
-        (resp/redirect (:application-url env)))))
-  (GET "/view" request
-    (let [id (:id (:params request))]
-      (if (and id
-               (re-find #"\d+" id))
-        (let [episode-data (db/get-episode-basic-data db/postgres-ds id)]
-          (if (= :error (:status episode-data))
-            (render-file "templates/error.html"
-                         {})
-            (render-file "templates/view.html"
-                         {:tracks (db/get-episode-tracks db/postgres-ds id)
-                          :basic-data (:data episode-data)
-                          :logged-in (authenticated? request)
-                          :episode-id id
-                          :application-url (:application-url env)})))
-        (resp/redirect (:application-url env)))))
-  (GET "/tracks" [artist]
-    (let [artist (s/replace artist "&amp;" "&")]
-      (render-file "templates/tracks.html"
-                   {:artist artist
-                    :tracks (db/get-tracks-by-artist db/postgres-ds artist)
-                    :application-url (:application-url env)})))
-  (GET "/track-episodes" [track]
-    (let [track-name (s/replace track "&amp;" "&")]
-      (render-file "templates/track-episodes.html"
-                   {:track track-name
-                    :episodes (db/get-episodes-with-track db/postgres-ds
-                                                          track-name)
-                    :application-url (:application-url env)})))
-  (GET "/sc-fetch" [sc-url]
-    (if-not (s/starts-with? sc-url (:ktra-sc-url-prefix env))
-      (j/write-value-as-string {:status "error"
-                                :cause "invalid-url"})
-      (j/write-value-as-string {:status "ok"
-                                :content (parse-sc-tracklist sc-url)})))
-  ;; Form submissions
-  (POST "/add" request
-    (let [form-params (:params request)
-          insert-res (db/insert-episode db/postgres-ds
-                                        (:date form-params)
-                                        (:name form-params)
-                                        (j/read-value
-                                         (:encodedTracklist form-params)
-                                         json-decode-opts))]
-      (render-file "templates/add.html" {:insert-status insert-res
+(defn wrap-authenticated
+  "Checks if the request is authenticated using (authenticated?) function and
+  calls the (success-fn request). If the request is not authenticated then the
+  unauthorised response handler is called."
+  [request success-fn]
+  (if (authenticated? (:session request))
+    (success-fn request)
+    (auth/unauthorized-response)))
+
+(defn get-index
+  "Handles the index page request."
+  [request]
+  (with-open [con (jdbc/get-connection db/postgres-ds)]
+    (let [episodes (db/get-episodes con)
+          artists (db/get-all-artists con)]
+      (if (or (= :error (:status episodes))
+              (= :error (:status artists)))
+        (serve-template "templates/error.html" {})
+        (serve-template "templates/index.html"
+                        {:episodes (:episodes episodes)
+                         :artists (:artists artists)
+                         :logged-in (authenticated? (:session request))})))))
+
+(defn get-middleware
+  "Returns the middlewares to be applied."
+  []
+  (let [dev-mode (:development-mode env)
+        defaults (if dev-mode
+                   site-defaults
+                   secure-site-defaults)
+        ;; CSRF protection is knowingly not implemented
+        ;; :params and :static options are disabled as Reitit handles them
+        defaults-config (-> defaults
+                            (assoc-in [:security :anti-forgery]
+                                      false)
+                            (assoc :params false)
+                            (assoc :static false))]
+    [[wrap-authorization auth/auth-backend]
+     [wrap-authentication auth/auth-backend]
+     parameters/parameters-middleware
+     [wrap-defaults (if dev-mode
+                      defaults-config
+                      (if (:force-hsts env)
+                        (assoc defaults-config :proxy true)
+                        (-> defaults-config
+                            (assoc-in [:security :ssl-redirect]
+                                      false)
+                            (assoc-in [:security :hsts]
+                                      false))))]]))
+
+(def app
+  (ring/ring-handler
+   (ring/router
+    ;; Index
+    [["/" {:get get-index}]
+     ;; Login and logout
+     ["/login" {:get #(if-not (authenticated? (:session %))
+                        (serve-template "templates/login.html" {})
+                        (resp/redirect (:application-url env)))}]
+     ["/logout" {:get auth/logout}]
+     ;; WebAuthn
+     ["/register" {:get (fn [request]
+                          (let [authenticated (authenticated?
+                                               (:session request))]
+                            (if (or authenticated
+                                    (:allow-register-page-access env))
+                              (let [username (if authenticated
+                                               (name (get-in request
+                                                             [:session
+                                                              :identity]))
+                                               (db/get-username
+                                                db/postgres-ds))]
+                                (serve-template "templates/register.html"
+                                                {:username username}))
+                              auth/response-unauthorized)))}]
+     ["/webauthn"
+      ["/register" {:get auth/wa-prepare-register
+                    :post auth/wa-register}]
+      ["/login" {:get auth/wa-prepare-login
+                 :post auth/wa-login}]]
+     ;; Tracks
+     ["/add" {:get #(wrap-authenticated
+                     %
+                     (fn [request]
+                       (serve-template "templates/add.html"
+                                       {:application-url (:application-url env)
+                                        :logged-in (authenticated?
+                                                    (:session request))})))
+              :post (fn [request]
+                      (let [params (:params request)
+                            result (db/insert-episode db/postgres-ds
+                                                      (get params "date")
+                                                      (get params "name")
+                                                      (j/read-value
+                                                       (get params
+                                                            "encodedTracklist")
+                                                       json-decode-opts))]
+                        (serve-template "templates/add.html"
+                                        {:insert-status result
                                          :application-url (:application-url env)
                                          :logged-in (authenticated?
-                                                     request)})))
-  (POST "/add-tracks" request
-    (let [form-params (:params request)
-          insert-res (db/insert-additional-tracks
-                      db/postgres-ds
-                      (:episode-id form-params)
-                      (j/read-value (:encodedTracklist form-params)
-                                    json-decode-opts))]
-      (render-file "templates/add-tracks.html"
-                   {:insert-status insert-res
-                    :application-url (:application-url env)})))
-  ;; WebAuthn routes
-  (GET "/register" request
-    (if (or (authenticated? request)
-            (:allow-register-page-access env))
-      (let [username (if (authenticated? request)
-                       (name (get-in request
-                                     [:session :identity]))
-                       (db/get-username db/postgres-ds))]
-        (render-file "templates/register.html"
-                     {:username username}))
-      auth/response-unauthorized))
-  (context "/webauthn" []
-    (GET "/register" [] auth/wa-prepare-register)
-    (POST "/register" [] auth/wa-register)
-    (GET "/login" [] auth/wa-prepare-login)
-    (POST "/login" [] auth/wa-login))
-  ;; Serve static files
-  (route/resources "/")
-  (route/not-found "404 Not Found"))
+                                                     (:session request))})))}]
+     ["/add-tracks" {:get (fn [request]
+                            (let [id (get (:params request) "id")]
+                              (if (and id
+                                       (re-find #"\d+" id))
+                                (wrap-authenticated
+                                 request
+                                 #(let [id (get (:params %) "id")
+                                        episode-data (db/get-episode-basic-data
+                                                      db/postgres-ds id)]
+                                    (if (= :error (:status episode-data))
+                                      (serve-template "templates/error.html"
+                                                      {})
+                                      (serve-template
+                                       "templates/add-tracks.html"
+                                       {:episode-id id
+                                        :data (:data episode-data)
+                                        :application-url
+                                        (:application-url env)}))))
+                                (resp/redirect (:application-url env)))))
+                     :post (fn [request]
+                             (let [params (:params request)
+                                   result (db/insert-additional-tracks
+                                           db/postgres-ds
+                                           (get params "episode-id")
+                                           (j/read-value
+                                            (get params
+                                                 "encodedTracklist")
+                                            json-decode-opts))]
+                               (serve-template "templates/add-tracks.html"
+                                               {:insert-status result
+                                                :application-url
+                                                (:application-url env)})))}]
+     ["/view/:id" {:get (fn [{params :path-params :as request}]
+                          (let [id (:id params)]
+                            (if (and id
+                                     (re-find #"\d+" id))
+                              (let [episode-data (db/get-episode-basic-data
+                                                  db/postgres-ds id)]
+                                (if (= :error (:status episode-data))
+                                  (serve-template "templates/error.html"
+                                                  {})
+                                  (serve-template "templates/view.html"
+                                                  {:tracks
+                                                   (db/get-episode-tracks
+                                                    db/postgres-ds id)
+                                                   :basic-data (:data
+                                                                episode-data)
+                                                   :logged-in (authenticated?
+                                                               (:session
+                                                                request))
+                                                   :episode-id id
+                                                   :application-url
+                                                   (:application-url env)})))
+                              (resp/redirect (:application-url env)))))}]
+     ["/tracks/:artist" {:get (fn [{params :path-params}]
+                                (let [artist (s/replace (:artist params)
+                                                        "&amp;" "&")]
+                                  (serve-template "templates/tracks.html"
+                                                  {:artist artist
+                                                   :tracks
+                                                   (db/get-tracks-by-artist
+                                                    db/postgres-ds artist)
+                                                   :application-url
+                                                   (:application-url env)})))}]
+     ["/track-episodes/:track" {:get (fn [{params :path-params}]
+                                       (let [track-name (s/replace
+                                                         (:track params)
+                                                         "&amp;" "&")]
+                                         (serve-template
+                                          "templates/track-episodes.html"
+                                          {:track track-name
+                                           :episodes (db/get-episodes-with-track
+                                                      db/postgres-ds
+                                                      track-name)
+                                           :application-url (:application-url
+                                                             env)})))}]
+     ["/sc-fetch" {:get (fn [{params :params}]
+                          (let [sc-url (get params "sc-url")]
+                            (serve-json
+                             (if-not (s/starts-with? sc-url
+                                                     (:ktra-sc-url-prefix env))
+                               {:status "error"
+                                :cause "invalid-url"}
+                               {:status "ok"
+                                :content (parse-sc-tracklist sc-url)}))))}]]
+    {:data {:muuntaja m/instance
+            :middleware [muuntaja/format-middleware]}})
+   (ring/routes
+    (ring/create-resource-handler {:path "/"})
+    (ring/create-default-handler))
+   {:middleware (get-middleware)}))
 
 (defn -main
   "Starts the web server."
   []
   (let [port (Integer/parseInt (get (System/getenv)
-                                    "APP_PORT" "8080"))
-        opts {:port port}
-        dev-mode (:development-mode env)
-        defaults (if dev-mode
-                   site-defaults
-                   secure-site-defaults)
-        ;; CSRF protection is knowingly not implemented
-        defaults-config (assoc-in defaults [:security :anti-forgery] false)
-        handler (as-> app-routes $
-                  (wrap-authorization $ auth/auth-backend)
-                  (wrap-authentication $ auth/auth-backend)
-                  (wrap-json-response $ {:pretty false})
-                  (wrap-json-params $ {:keywords? true})
-                  (wrap-defaults $ (if dev-mode
-                                     defaults-config
-                                     (if (:force-hsts env)
-                                       (assoc defaults-config :proxy true)
-                                       (-> defaults-config
-                                           (assoc-in [:security :ssl-redirect]
-                                                     false)
-                                           (assoc-in [:security :hsts]
-                                                     false))))))]
-    (run-jetty (if dev-mode
-                 (wrap-reload handler)
-                 handler)
-               opts)))
+                                    "APP_PORT" "8080"))]
+    (run-jetty (if (:development-mode env)
+                 (wrap-reload #'app) #'app)
+               {:port port})))

@@ -6,7 +6,7 @@
         ring/ring-json {:mvn/version "0.5.1"}
         io.github.dm3/clojure.java-time
         {:sha "6a56f6c144c296efded2872ebb127d4b2e05ec9c"}
-        compojure/compojure {:mvn/version "1.7.0"}
+        metosin/reitit {:mvn/version "0.5.18"}
         selmer/selmer {:mvn/version "1.12.53"}
         metosin/jsonista {:mvn/version "0.3.6"}
         org.postgresql/postgresql {:mvn/version "42.4.0"}

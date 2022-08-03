@@ -12,7 +12,8 @@
             [ring.util.response :as resp]
             [taoensso.timbre :refer [error]]
             [ktra-indexer
-             [db :as db]])
+             [db :as db]
+             [render :refer [serve-json]]])
   (:import com.webauthn4j.authenticator.AuthenticatorImpl
            com.webauthn4j.converter.AttestedCredentialDataConverter
            com.webauthn4j.converter.util.ObjectConverter
@@ -111,8 +112,8 @@
 (defn wa-prepare-register
   "Function for getting user register preparation data."
   [request]
-  (reset! authenticator-name (get-in request [:params :name]))
-  (-> (get-in request [:params :username])
+  (reset! authenticator-name (get-in request [:params "name"]))
+  (-> (get-in request [:params "username"])
       (webauthn/prepare-registration site-properties)
       j/write-value-as-string
       resp/response))
@@ -120,7 +121,7 @@
 (defn wa-register
   "User registration function."
   [request]
-  (if-let [user (webauthn/register-user (:params request)
+  (if-let [user (webauthn/register-user (:body-params request)
                                         site-properties
                                         register-user!)]
     (resp/created "/login" (j/write-value-as-string user))
@@ -129,11 +130,11 @@
 (defn do-prepare-login
   "Function doing the login preparation."
   [request db-con]
-  (let [username (get-in request [:params :username])
+  (let [username (get-in request [:params "username"])
         authenticators (get-authenticators db-con username)]
     (if-let [resp (webauthn/prepare-login username
                                           (fn [_] authenticators))]
-      (resp/response (j/write-value-as-string resp))
+      (serve-json resp)
       (resp/status 500))))
 
 (defn wa-prepare-login
@@ -144,10 +145,9 @@
 (defn wa-login
   "User login function."
   [{session :session :as request}]
-  (let [payload (:params request)]
+  (let [payload (:body-params request)]
     (if (empty? payload)
-      (resp/status (resp/response
-                    (j/write-value-as-string {:error "invalid-authenticator"}))
+      (resp/status (serve-json {:error "invalid-authenticator"})
                    403)
       (let [username (b64/decode (:user-handle payload))
             authenticators (get-authenticators db/postgres-ds
