@@ -1,8 +1,7 @@
 (ns ktra-indexer.authentication-test
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
             [buddy.auth :refer [authenticated?]]
-            [cheshire.core :refer [parse-string]]
-            [config.core :refer [env]]
+            [jsonista.core :as j]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
             [cljwebauthn.b64 :as b64]
@@ -15,7 +14,8 @@
                                      unauthorized-response
                                      logout]]
              [db :refer [rs-opts]]
-             [db-test :refer [test-ds]]])
+             [db-test :refer [test-ds]]
+             [handler :refer [json-decode-opts]]])
   (:import com.webauthn4j.authenticator.AuthenticatorImpl
            com.webauthn4j.converter.AttestedCredentialDataConverter
            com.webauthn4j.converter.util.ObjectConverter
@@ -109,7 +109,7 @@
 (deftest register-preparation
   (testing "User register preparation data generation"
     (let [resp (wa-prepare-register {:params {:username test-user}})
-          body (parse-string (:body resp) true)]
+          body (j/read-value (:body resp) json-decode-opts)]
       (is (= 200 (:status resp)))
       (is (= "localhost" (get-in body [:rp :id])))
       (is (= "dGVzdC11c2Vy" (get-in body [:user :id]))))))
@@ -118,7 +118,7 @@
   (testing "User login preparation data generation"
     (insert-authenticator)
     (let [resp (do-prepare-login {:params {:username test-user}} test-ds)
-          body (parse-string (:body resp) true)]
+          body (j/read-value (:body resp) json-decode-opts)]
       (is (= 200 (:status resp)))
       (is (= "09w4snBXtbIKzw/O7krAjYTzkIWeOVDkYGvlT/v90Uc="
              (:id (first (:credentials body))))))

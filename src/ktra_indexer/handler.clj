@@ -3,12 +3,12 @@
   (:require [buddy.auth :refer [authenticated?]]
             [buddy.auth.middleware :refer [wrap-authentication
                                            wrap-authorization]]
-            [cheshire.core :refer [generate-string parse-string]]
             [clojure.string :as s]
             [config.core :refer [env]]
             [compojure
              [core :refer [defroutes context GET POST]]
              [route :as route]]
+            [jsonista.core :as j]
             [next.jdbc :as jdbc]
             [ring.middleware.defaults :refer
              [secure-site-defaults site-defaults wrap-defaults]]
@@ -23,6 +23,10 @@
              [db :as db]
              [parser :refer [parse-sc-tracklist]]])
   (:gen-class))
+
+(def json-decode-opts
+  "Options for jsonista read-value."
+  (j/object-mapper {:decode-key-fn true}))
 
 (defroutes app-routes
   (GET "/" request
@@ -93,19 +97,19 @@
                     :application-url (:application-url env)})))
   (GET "/sc-fetch" [sc-url]
     (if-not (s/starts-with? sc-url (:ktra-sc-url-prefix env))
-      (generate-string {:status "error"
-                        :cause "invalid-url"})
-      (generate-string {:status "ok"
-                        :content (parse-sc-tracklist sc-url)})))
+      (j/write-value-as-string {:status "error"
+                                :cause "invalid-url"})
+      (j/write-value-as-string {:status "ok"
+                                :content (parse-sc-tracklist sc-url)})))
   ;; Form submissions
   (POST "/add" request
     (let [form-params (:params request)
           insert-res (db/insert-episode db/postgres-ds
                                         (:date form-params)
                                         (:name form-params)
-                                        (parse-string
+                                        (j/read-value
                                          (:encodedTracklist form-params)
-                                         true))]
+                                         json-decode-opts))]
       (render-file "templates/add.html" {:insert-status insert-res
                                          :application-url (:application-url env)
                                          :logged-in (authenticated?
@@ -115,7 +119,8 @@
           insert-res (db/insert-additional-tracks
                       db/postgres-ds
                       (:episode-id form-params)
-                      (parse-string (:encodedTracklist form-params) true))]
+                      (j/read-value (:encodedTracklist form-params)
+                                    json-decode-opts))]
       (render-file "templates/add-tracks.html"
                    {:insert-status insert-res
                     :application-url (:application-url env)})))

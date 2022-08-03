@@ -5,7 +5,7 @@
              [session :refer [session-backend]]]
             [cljwebauthn.core :as webauthn]
             [cljwebauthn.b64 :as b64]
-            [cheshire.core :refer [generate-string]]
+            [jsonista.core :as j]
             [config.core :refer [env]]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
@@ -114,7 +114,7 @@
   (reset! authenticator-name (get-in request [:params :name]))
   (-> (get-in request [:params :username])
       (webauthn/prepare-registration site-properties)
-      generate-string
+      j/write-value-as-string
       resp/response))
 
 (defn wa-register
@@ -123,7 +123,7 @@
   (if-let [user (webauthn/register-user (:params request)
                                         site-properties
                                         register-user!)]
-    (resp/created "/login" (generate-string user))
+    (resp/created "/login" (j/write-value-as-string user))
     (resp/status 500)))
 
 (defn do-prepare-login
@@ -133,7 +133,7 @@
         authenticators (get-authenticators db-con username)]
     (if-let [resp (webauthn/prepare-login username
                                           (fn [_] authenticators))]
-      (resp/response (generate-string resp))
+      (resp/response (j/write-value-as-string resp))
       (resp/status 500))))
 
 (defn wa-prepare-login
@@ -147,7 +147,8 @@
   (let [payload (:params request)]
     (if (empty? payload)
       (resp/status (resp/response
-                    (generate-string {:error "invalid-authenticator"})) 403)
+                    (j/write-value-as-string {:error "invalid-authenticator"}))
+                   403)
       (let [username (b64/decode (:user-handle payload))
             authenticators (get-authenticators db/postgres-ds
                                                username)]
