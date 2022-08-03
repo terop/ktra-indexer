@@ -59,10 +59,14 @@
         defaults (if dev-mode
                    site-defaults
                    secure-site-defaults)
-        ;; CSRF protection is knowingly not implemented
-        ;; :params and :static options are disabled as Reitit handles them
+        ;; CSRF protection is knowingly not implemented.
+        ;; XSS protection is disabled as it is no longer recommended to enabled,
+        ;; it will soon be disabled in ring-defaults.
+        ;; :params and :static options are disabled as Reitit handles them.
         defaults-config (-> defaults
                             (assoc-in [:security :anti-forgery]
+                                      false)
+                            (assoc-in [:security :xss-protection]
                                       false)
                             (assoc :params false)
                             (assoc :static false))]
