@@ -17,7 +17,7 @@
               [secure-site-defaults site-defaults wrap-defaults]]
              [reload :refer [wrap-reload]]]
             [ring.adapter.jetty :refer [run-jetty]]
-            [ring.util.response :as resp]
+            [ring.util.http-response :refer :all]
             [ktra-indexer
              [authentication :as auth]
              [db :as db]
@@ -91,7 +91,7 @@
      ;; Login and logout
      ["/login" {:get #(if-not (authenticated? (:session %))
                         (serve-template "templates/login.html" {})
-                        (resp/redirect (:application-url env)))}]
+                        (found (:application-url env)))}]
      ["/logout" {:get auth/logout}]
      ;; WebAuthn
      ["/register" {:get (fn [request]
@@ -153,7 +153,7 @@
                                         :data (:data episode-data)
                                         :application-url
                                         (:application-url env)}))))
-                                (resp/redirect (:application-url env)))))
+                                (found (:application-url env)))))
                      :post (fn [request]
                              (let [params (:params request)
                                    result (db/insert-additional-tracks
@@ -188,7 +188,7 @@
                                                    :episode-id id
                                                    :application-url
                                                    (:application-url env)})))
-                              (resp/redirect (:application-url env)))))}]
+                              (found (:application-url env)))))}]
      ["/tracks/:artist" {:get (fn [{params :path-params}]
                                 (let [artist (s/replace (:artist params)
                                                         "&amp;" "&")]
