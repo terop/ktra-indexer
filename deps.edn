@@ -20,9 +20,9 @@
         org.jsoup/jsoup {:mvn/version "1.15.2"}
         io.github.terop/cljwebauthn
         {:sha "bb262552d3e79bda6b975c71d06ec3d323d5580f"}}
- :jvm-opts ["-Dconfig=resources/config.edn"]
  :aliases
- {:run {:main-opts ["-m" "ktra-indexer.handler"]}
+ {:run {:main-opts ["-m" "ktra-indexer.handler"]
+        :jvm-opts ["-Dconfig=resources/dev/config.edn"]}
   :build {:deps {io.github.seancorfield/build-clj
                  {:git/tag "v0.8.3" :git/sha "7ac1f8d"
                   ;; since we're building an app uberjar, we do not
@@ -34,6 +34,7 @@
          :extra-deps {io.github.cognitect-labs/test-runner
                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
          :main-opts ["-m" "cognitect.test-runner"]
+         :jvm-opts ["-Dconfig=resources/dev/config.edn"]
          :exec-fn cognitect.test-runner.api/test}
   :eastwood {:main-opts ["-m" "eastwood.lint"
                          ;; Any Eastwood options can be passed here as edn:

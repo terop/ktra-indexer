@@ -33,7 +33,9 @@ USER ${APPLICATION_USER}
 
 COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
     ./target/ktra-indexer.jar /app/ktra-indexer.jar
+COPY --chown=${APPLICATION_USER}:${APPLICATION_USER} \
+    ./resources/prod/config.edn /etc/config.edn
 WORKDIR /app
 
 EXPOSE 8080
-ENTRYPOINT ["dumb-init", "/jre/bin/java", "-jar", "/app/ktra-indexer.jar"]
+ENTRYPOINT ["dumb-init", "/jre/bin/java", "-Dconfig=/etc/config.edn", "-jar", "/app/ktra-indexer.jar"]

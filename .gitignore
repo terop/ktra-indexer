@@ -1,14 +1,10 @@
 /target
-/lib
-/classes
-/checkouts
 /.clj-kondo
 /.eastwood
 pom.xml
 pom.xml.asc
 *.jar
 *.class
-/.lein-*
 /.nrepl-port
-bower_components
-resources/config.edn
+resources/dev/config.edn
+resources/prod/config.edn
