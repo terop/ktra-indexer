@@ -1,8 +1,11 @@
 DATE := $(shell date +%Y-%m-%d)
 
-build: update # build container
+build: uberjar update # build container
 	podman build -t ktra-indexer:$(DATE) .
 
-update: # update runtime base image
-	podman pull gcr.io/distroless/java17-debian11:latest
-	podman pull clojure:temurin-17-tools-deps-alpine
+uberjar: # build the jar
+	clojure -T:build uberjar
+	mv target/ktra-indexer-*.jar target/ktra-indexer.jar
+
+update: # update base images
+	podman pull amazoncorretto:17-alpine alpine:latest
