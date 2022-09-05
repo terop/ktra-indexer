@@ -91,7 +91,7 @@
      ;; Login and logout
      ["/login" {:get #(if-not (authenticated? (:session %))
                         (serve-template "templates/login.html" {})
-                        (found (:application-url env)))}]
+                        (found (:app-url env)))}]
      ["/logout" {:get auth/logout}]
      ;; WebAuthn
      ["/register" {:get (fn [request]
@@ -118,7 +118,7 @@
                      %
                      (fn [request]
                        (serve-template "templates/add.html"
-                                       {:application-url (:application-url env)
+                                       {:app-url (:app-url env)
                                         :logged-in (authenticated?
                                                     (:session request))})))
               :post (fn [request]
@@ -132,7 +132,7 @@
                                                        json-decode-opts))]
                         (serve-template "templates/add.html"
                                         {:insert-status result
-                                         :application-url (:application-url env)
+                                         :app-url (:app-url env)
                                          :logged-in (authenticated?
                                                      (:session request))})))}]
      ["/add-tracks" {:get (fn [request]
@@ -151,9 +151,8 @@
                                        "templates/add-tracks.html"
                                        {:episode-id id
                                         :data (:data episode-data)
-                                        :application-url
-                                        (:application-url env)}))))
-                                (found (:application-url env)))))
+                                        :app-url (:app-url env)}))))
+                                (found (:app-url env)))))
                      :post (fn [request]
                              (let [params (:params request)
                                    result (db/insert-additional-tracks
@@ -165,8 +164,7 @@
                                             json-decode-opts))]
                                (serve-template "templates/add-tracks.html"
                                                {:insert-status result
-                                                :application-url
-                                                (:application-url env)})))}]
+                                                :app-url (:app-url env)})))}]
      ["/view/:id" {:get (fn [{params :path-params :as request}]
                           (let [id (:id params)]
                             (if (and id
@@ -186,9 +184,8 @@
                                                                (:session
                                                                 request))
                                                    :episode-id id
-                                                   :application-url
-                                                   (:application-url env)})))
-                              (found (:application-url env)))))}]
+                                                   :app-url (:app-url env)})))
+                              (found (:app-url env)))))}]
      ["/tracks/:artist" {:get (fn [{params :path-params}]
                                 (let [artist (s/replace (:artist params)
                                                         "&amp;" "&")]
@@ -197,8 +194,7 @@
                                                    :tracks
                                                    (db/get-tracks-by-artist
                                                     db/postgres-ds artist)
-                                                   :application-url
-                                                   (:application-url env)})))}]
+                                                   :app-url (:app-url env)})))}]
      ["/track-episodes/:track" {:get (fn [{params :path-params}]
                                        (let [track-name (s/replace
                                                          (:track params)
@@ -209,8 +205,7 @@
                                            :episodes (db/get-episodes-with-track
                                                       db/postgres-ds
                                                       track-name)
-                                           :application-url (:application-url
-                                                             env)})))}]
+                                           :app-url (:app-url env)})))}]
      ["/sc-fetch" {:get (fn [{params :params}]
                           (let [sc-url (get params "sc-url")]
                             (serve-json

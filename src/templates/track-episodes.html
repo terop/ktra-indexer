@@ -6,8 +6,8 @@
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
               integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
-        <link href="{{ application-url }}css/common.css" rel="stylesheet">
-        <link href="{{ application-url }}css/tablesort.css" rel="stylesheet">
+        <link href="{{ app-url }}css/common.css" rel="stylesheet">
+        <link href="{{ app-url }}css/tablesort.css" rel="stylesheet">
 
         <title>KTRA indexer - show episode for track</title>
     </head>
@@ -21,7 +21,7 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <ul class="navbar-nav me-auto mb-2 mb-md-0">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ application-url }}">Home</a>
+                            <a class="nav-link" href="{{ app-url }}">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="#">Tracks in episode</a>
@@ -47,7 +47,7 @@
                         <tr>
                             <td>{{ ep.artist }}</td>
                             <td>{{ ep.track }}</td>
-                            <td><a href="{{ application-url }}view/{{ ep.number }}">{{ ep.ep-name }}</a></td>
+                            <td><a href="{{ app-url }}view/{{ ep.number }}">{{ ep.ep-name }}</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>

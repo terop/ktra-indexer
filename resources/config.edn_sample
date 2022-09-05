@@ -21,6 +21,6 @@
  ;; uses the site-defaults config
  :development-mode false
  ;; Full URL through which the application is accessed, MUST end with a slash
- :application-url "http://example.com/ktra/"
+ :app-url "http://example.com/ktra/"
  ;; Prefix for KTRA SoundCloud page URL needed for SoundCloud URL validation
  :ktra-sc-url-prefix "https://soundcloud.com/keepingtheravealive"}

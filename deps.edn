@@ -11,7 +11,7 @@
         selmer/selmer {:mvn/version "1.12.53"}
         metosin/jsonista {:mvn/version "0.3.6"}
         org.postgresql/postgresql {:mvn/version "42.5.0"}
-        com.github.seancorfield/honeysql {:mvn/version "2.3.911"}
+        com.github.seancorfield/honeysql {:mvn/version "2.3.928"}
         com.github.seancorfield/next.jdbc {:mvn/version "1.2.796"}
         buddy/buddy-auth {:mvn/version "3.0.323"}
         com.taoensso/timbre {:mvn/version "5.2.1"}
@@ -39,6 +39,6 @@
   :eastwood {:main-opts ["-m" "eastwood.lint"
                          ;; Any Eastwood options can be passed here as edn:
                          {}]
-             :extra-deps {jonase/eastwood {:mvn/version "1.2.4"}}}
+             :extra-deps {jonase/eastwood {:mvn/version "1.2.5"}}}
   :kibit {:extra-deps {tvaughan/kibit-runner {:mvn/version "1.0.1"}}
           :main-opts  ["-m" "kibit-runner.cmdline"]}}}

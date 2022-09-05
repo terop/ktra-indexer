@@ -155,7 +155,7 @@
         (if (webauthn/login-user payload
                                  site-properties
                                  (fn [_] authenticators))
-          (assoc (ok (:application-url env))
+          (assoc (ok (:app-url env))
                  :session (assoc session :identity (keyword username)))
           (status 500))))))
 
@@ -168,12 +168,12 @@
 (defn logout
   "Logs out the user and redirects her to the front page."
   [_]
-  (assoc (found (:application-url env)) :session {}))
+  (assoc (found (:app-url env)) :session {}))
 
 (defn unauthorized-response
   "The response sent when a request is unauthorised."
   []
-  (found (str (:application-url env) "login")))
+  (found (str (:app-url env) "login")))
 
 (defn unauthorized-handler
   "Handles unauthorized requests."
@@ -183,7 +183,7 @@
     ;; is authenticated but permission denied is raised.
     (forbidden "403 Forbidden")
     ;; In other cases, redirect it user to login
-    (found (str (:application-url env) "login"))))
+    (found (str (:app-url env) "login"))))
 
 (def auth-backend (session-backend
                    {:unauthorized-handler unauthorized-handler}))
