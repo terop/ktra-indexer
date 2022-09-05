@@ -9,7 +9,7 @@
             [config.core :refer [env]]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
-            [ring.util.http-response :refer :all]
+            [ring.util.http-response :refer [created forbidden found ok status]]
             [taoensso.timbre :refer [error]]
             [ktra-indexer
              [db :as db]

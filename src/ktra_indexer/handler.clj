@@ -17,7 +17,7 @@
               [secure-site-defaults site-defaults wrap-defaults]]
              [reload :refer [wrap-reload]]]
             [ring.adapter.jetty :refer [run-jetty]]
-            [ring.util.http-response :refer :all]
+            [ring.util.http-response :refer [found]]
             [ktra-indexer
              [authentication :as auth]
              [db :as db]
