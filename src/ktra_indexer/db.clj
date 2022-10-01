@@ -3,7 +3,7 @@
   (:require [clojure.string :as s]
             [config.core :refer [env]]
             [taoensso.timbre :refer [error]]
-            [java-time :as t]
+            [java-time.api :as t]
             [next.jdbc :as jdbc]
             [next.jdbc
              [result-set :as rs]

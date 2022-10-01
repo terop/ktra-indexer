@@ -1,6 +1,6 @@
 (ns ktra-indexer.db-test
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
-            [java-time :as t]
+            [java-time.api :as t]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
             [ktra-indexer.db :refer [db-conf

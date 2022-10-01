@@ -2,7 +2,7 @@
   "Tracklist parser"
   (:refer-clojure :exclude [range iterate format max min])
   (:require [clojure.string :as s]
-            [java-time :as t])
+            [java-time.api :as t])
   (:import java.time.DayOfWeek
            org.jsoup.Jsoup
            org.jsoup.nodes.Element))
