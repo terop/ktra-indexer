@@ -4,7 +4,7 @@ build: uberjar update # build container
 	podman build -t ktra-indexer:$(DATE) .
 
 uberjar: # build the jar
-	clojure -T:build uberjar
+	clojure -T:build uber
 	mv target/ktra-indexer-*.jar target/ktra-indexer.jar
 
 update: # update base images
