@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "db-cleaner"
+version = "0.1.0"
+description = "DB cleaner script"
+authors = ["Tero Paloheimo <tero.paloheimo@iki.fi>"]
+packages = [{include = "db_cleaner.py"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+psycopg2 = "^2.9.5"
+editdistance = "^0.6.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
