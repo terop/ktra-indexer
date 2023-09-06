@@ -151,7 +151,7 @@
   if not found. Returns the track's ID (> 0) on success and -1 on error."
   [db-con track-json]
   (let [artist-id (get-or-insert-artist db-con (:artist track-json))]
-    (if (and (not (nil? artist-id))
+    (if (and (some? artist-id)
              (pos? artist-id))
       ;; Got a valid ID
       (try

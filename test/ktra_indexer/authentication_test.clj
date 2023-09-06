@@ -69,16 +69,6 @@
   []
   (jdbc/execute! test-ds ["DELETE FROM webauthn_authenticators"]))
 
-(defn get-login-count
-  "Returns the login count for an authenticator."
-  [authenticator-id]
-  (:login-count (jdbc/execute-one! test-ds
-                                   (sql/format {:select [:login_count]
-                                                :from [:webauthn_authenticators]
-                                                :where [:= :authn_id
-                                                        authenticator-id]})
-                                   rs-opts)))
-
 ;; Fixture run at the start and end of tests
 (use-fixtures :once clean-test-database)
 
@@ -102,7 +92,7 @@
     (insert-authenticator)
     (let [authenticator (get-authenticators test-ds test-user)]
       (is (= 1 (count authenticator)))
-      (is (not (nil? (first authenticator))))
+      (is (some? (first authenticator)))
       (is (instance? AuthenticatorImpl (first authenticator))))
     (delete-authenticators)))
 
