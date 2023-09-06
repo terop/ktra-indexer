@@ -18,6 +18,7 @@
              [reload :refer [wrap-reload]]]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.http-response :refer [found]]
+            [taoensso.timbre :refer [set-min-level!]]
             [ktra-indexer
              [authentication :as auth]
              [db :as db]
@@ -225,6 +226,7 @@
 (defn -main
   "Starts the web server."
   []
+  (set-min-level! :info)
   (let [port (Integer/parseInt (get (System/getenv)
                                     "APP_PORT" "8080"))]
     (run-jetty (if (:development-mode env)
