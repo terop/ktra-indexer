@@ -1,0 +1,3 @@
+{:linters {:single-key-in {:level :warning}
+           :unresolved-var {:exclude [ring.util.http-response/status
+                                      ring.util.http-response/content-type]}}}

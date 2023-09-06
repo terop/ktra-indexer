@@ -9,7 +9,7 @@ jobs:
           password: $DOCKERHUB_PASSWORD
         environment:
           TEST_DATABASE_URL: postgresql://postgres@localhost/ktra_test
-      - image: cimg/postgres:15.2
+      - image: cimg/postgres:15.4
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
@@ -41,8 +41,21 @@ jobs:
           command: |
             cp resources/config.edn_sample resources/dev/config.edn
 
-      -  run: clojure -T:build build && clojure -M:test
+      - run:
+          name: run tests
+          command: clojure -T:build build && clojure -M:test
 
-      - run: clojure -M:eastwood
+      - run:
+          name: run linters
+          command: |
+            clojure -M:eastwood
+            clojure -X:kibit
 
-      - run: clojure -X:kibit
+      - run:
+          name: run clj-kondo
+          command: |
+            (cd /tmp
+             curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
+             chmod +x install-clj-kondo
+             ./install-clj-kondo --dir /tmp)
+             /tmp/clj-kondo --lint src test

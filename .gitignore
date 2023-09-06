@@ -1,10 +1,9 @@
-/target
-/.clj-kondo
-/.eastwood
-pom.xml
-pom.xml.asc
-*.jar
-*.class
-/.nrepl-port
+target/
+.clj-kondo/*
+!.clj-kondo/config.edn
+.cpcache/
+.eastwood/
+.lsp/
+.nrepl-port
 resources/dev/config.edn
 resources/prod/config.edn
