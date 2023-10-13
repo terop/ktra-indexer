@@ -99,7 +99,8 @@
                           (let [authenticated (authenticated?
                                                (:session request))]
                             (if (or authenticated
-                                    (:allow-register-page-access env))
+                                    (:allow-register-page-access env)
+                                    (System/getenv "ALLOW_REG_ACCESS"))
                               (let [username (if authenticated
                                                (name (get-in request
                                                              [:session
