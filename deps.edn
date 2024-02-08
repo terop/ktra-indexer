@@ -1,10 +1,10 @@
 {:paths ["src" "resources" "target/classes"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
         ;; Only needed for unit tests, test run fails without this
-        org.clojure/tools.namespace {:mvn/version "1.4.4"}
+        org.clojure/tools.namespace {:mvn/version "1.4.5"}
         yogthos/config {:mvn/version "1.2.0"}
-        ring/ring-devel {:mvn/version "1.11.0-RC2"}
-        ring/ring-jetty-adapter {:mvn/version "1.11.0-RC2"}
+        ring/ring-devel {:mvn/version "1.11.0"}
+        ring/ring-jetty-adapter {:mvn/version "1.11.0"}
         ring/ring-defaults {:mvn/version "0.4.0"}
         clojure.java-time/clojure.java-time {:mvn/version "1.4.2"}
         metosin/reitit {:mvn/version "0.6.0"}
@@ -13,12 +13,12 @@
         metosin/jsonista {:mvn/version "0.3.8"}
         org.postgresql/postgresql {:mvn/version "42.7.1"}
         com.github.seancorfield/honeysql {:mvn/version "2.5.1103"}
-        com.github.seancorfield/next.jdbc {:mvn/version "1.3.894"}
+        com.github.seancorfield/next.jdbc {:mvn/version "1.3.909"}
         buddy/buddy-auth {:mvn/version "3.0.323"}
         com.taoensso/timbre {:mvn/version "6.3.1"}
         com.fzakaria/slf4j-timbre {:mvn/version "0.4.1"}
         org.apache.commons/commons-text {:mvn/version "1.11.0"}
-        org.jsoup/jsoup {:mvn/version "1.17.1"}
+        org.jsoup/jsoup {:mvn/version "1.17.2"}
         terop/cljwebauthn
         {:git/url "https://github.com/terop/cljwebauthn.git"
          :sha "bb262552d3e79bda6b975c71d06ec3d323d5580f"}}
