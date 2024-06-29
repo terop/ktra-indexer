@@ -83,7 +83,7 @@
     (with-redefs [js/insert! (fn [_ _ _ _]
                                (throw (PSQLException.
                                        "Test exception"
-                                       (PSQLState/COMMUNICATION_ERROR))))]
+                                       PSQLState/COMMUNICATION_ERROR)))]
       (is (false? (save-authenticator test-ds test-user authenticator))))))
 
 (deftest authenticator-query

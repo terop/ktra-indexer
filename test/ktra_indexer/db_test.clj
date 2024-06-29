@@ -72,7 +72,7 @@
                   (fn [_ _ _]
                     (throw (PSQLException.
                             "Test exception"
-                            (PSQLState/COMMUNICATION_ERROR))))]
+                            PSQLState/COMMUNICATION_ERROR)))]
       (is (= {:status :error}
              (get-user-id test-ds test-user))))))
 
@@ -103,7 +103,7 @@
     (with-redefs [jdbc/plan (fn [_ _]
                               (throw (PSQLException.
                                       "Test exception"
-                                      (PSQLState/COMMUNICATION_ERROR))))]
+                                      PSQLState/COMMUNICATION_ERROR)))]
       (is (= -1
              (get-or-insert-artist test-ds
                                    "Art of Fighters"))))))
@@ -121,7 +121,7 @@
       (with-redefs [jdbc/plan (fn [_ _]
                                 (throw (PSQLException.
                                         "Test exception"
-                                        (PSQLState/COMMUNICATION_ERROR))))]
+                                        PSQLState/COMMUNICATION_ERROR)))]
         (is (= -1
                (get-or-insert-track test-ds track-data)))))))
 
@@ -151,7 +151,7 @@
       (with-redefs [js/insert! (fn [_ _ _ _]
                                  (throw (PSQLException.
                                          "Test exception"
-                                         (PSQLState/COMMUNICATION_ERROR))))]
+                                         PSQLState/COMMUNICATION_ERROR)))]
         (is (= -1
                (insert-episode-track test-ds
                                      episode-id
@@ -181,7 +181,7 @@
     (with-redefs [js/insert! (fn [_ _ _ _]
                                (throw (PSQLException.
                                        "Test exception"
-                                       (PSQLState/COMMUNICATION_ERROR))))]
+                                       PSQLState/COMMUNICATION_ERROR)))]
       (is (= {:status :error
               :cause :general-error}
              (insert-episode test-ds
@@ -201,7 +201,7 @@
                   (fn [_ _ _]
                     (throw (PSQLException.
                             "Test exception"
-                            (PSQLState/COMMUNICATION_ERROR))))]
+                            PSQLState/COMMUNICATION_ERROR)))]
       (is (= {:status :error}
              (insert-additional-tracks test-ds
                                        "1"
@@ -246,7 +246,7 @@
                   (fn [_ _ _]
                     (throw (PSQLException.
                             "Test exception"
-                            (PSQLState/COMMUNICATION_ERROR))))]
+                            PSQLState/COMMUNICATION_ERROR)))]
       (is (= {:status :error}
              (get-episode-basic-data test-ds "3"))))))
 
@@ -263,7 +263,7 @@
     (with-redefs [jdbc/plan (fn [_ _]
                               (throw (PSQLException.
                                       "Test exception"
-                                      (PSQLState/COMMUNICATION_ERROR))))]
+                                      PSQLState/COMMUNICATION_ERROR)))]
       (is (= {:status :error}
              (get-all-artists test-ds))))))
 
