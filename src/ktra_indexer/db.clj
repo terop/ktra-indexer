@@ -315,7 +315,7 @@
       (error pge "Failed to insert additional tracks")
       {:status :error})))
 
-(defn sql-date-to-date-str
+(defn sql-date->date-str
   "Returns the given SQL date as a dd.mm.yyyy formatted string."
   [sql-date]
   (t/format "d.M.y" (t/local-date sql-date)))
@@ -333,7 +333,7 @@
                                                      :order-by [[:number
                                                                  :desc]]})
                                         rs-opts)]
-                 (merge row {:date (sql-date-to-date-str (:date row))}))
+                 (merge row {:date (sql-date->date-str (:date row))}))
      :status :ok}
     (catch PSQLException pge
       (error pge "Failed to get episodes")
@@ -353,7 +353,7 @@
                                                               episode-number)]})
                                         rs-opts)]
              #_{:splint/disable [lint/assoc-fn]}
-             (assoc row :date (sql-date-to-date-str (:date row))))}
+             (assoc row :date (sql-date->date-str (:date row))))}
     (catch PSQLException pge
       (error pge
              (format "Could not get basic data for episode '%s'"

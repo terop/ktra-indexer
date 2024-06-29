@@ -19,7 +19,7 @@
                                      insert-episode
                                      insert-episode-track
                                      rs-opts
-                                     sql-date-to-date-str]])
+                                     sql-date->date-str]])
   (:import (org.postgresql.util PSQLException
                                 PSQLState)))
 (refer-clojure :exclude '[filter for group-by into partition-by set update])
@@ -212,7 +212,7 @@
 (deftest sql-timestamp-to-string
   (testing "Conversion of SQL timestamp to a string"
     (is (= "12.1.2020"
-           (sql-date-to-date-str (t/sql-date (t/local-date 2020 1 12)))))))
+           (sql-date->date-str (t/sql-date (t/local-date 2020 1 12)))))))
 
 (deftest episode-query
   (testing "Query of episodes and episode data"
