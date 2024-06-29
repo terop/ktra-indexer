@@ -1,9 +1,10 @@
 (ns ktra-indexer.handler
   "The main namespace of the application"
   (:require [buddy.auth :refer [authenticated?]]
-            [buddy.auth.middleware :refer [wrap-authentication
-                                           wrap-authorization]]
-            [clojure.string :as s]
+            [buddy.auth.middleware
+             :refer
+             [wrap-authentication wrap-authorization]]
+            [clojure.string :as str]
             [config.core :refer [env]]
             [jsonista.core :as j]
             [muuntaja.core :as m]
@@ -13,8 +14,7 @@
              [muuntaja :as muuntaja]
              [parameters :as parameters]]
             [ring.middleware
-             [defaults :refer
-              [secure-site-defaults site-defaults wrap-defaults]]
+             [defaults :refer [secure-site-defaults site-defaults wrap-defaults]]
              [reload :refer [wrap-reload]]]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.http-response :refer [found]]
@@ -189,8 +189,8 @@
                                                    :app-url (:app-url env)})))
                               (found (:app-url env)))))}]
      ["/tracks/:artist" {:get (fn [{params :path-params}]
-                                (let [artist (s/replace (:artist params)
-                                                        "&amp;" "&")]
+                                (let [artist (str/replace (:artist params)
+                                                          "&amp;" "&")]
                                   (serve-template "templates/tracks.html"
                                                   {:artist artist
                                                    :tracks
@@ -198,7 +198,7 @@
                                                     db/postgres-ds artist)
                                                    :app-url (:app-url env)})))}]
      ["/track-episodes/:track" {:get (fn [{params :path-params}]
-                                       (let [track-name (s/replace
+                                       (let [track-name (str/replace
                                                          (:track params)
                                                          "&amp;" "&")]
                                          (serve-template
@@ -211,8 +211,8 @@
      ["/sc-fetch" {:get (fn [{params :params}]
                           (let [sc-url (get params "sc-url")]
                             (serve-json
-                             (if-not (s/starts-with? sc-url
-                                                     (:ktra-sc-url-prefix env))
+                             (if-not (str/starts-with? sc-url
+                                                       (:ktra-sc-url-prefix env))
                                {:status "error"
                                 :cause "invalid-url"}
                                {:status "ok"

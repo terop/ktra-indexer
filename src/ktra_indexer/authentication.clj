@@ -43,16 +43,16 @@
   [db-con username authenticator]
   (try
     (let [user-id (db/get-user-id db-con username)
-          object-converter (new ObjectConverter)
-          credential-converter (new AttestedCredentialDataConverter
-                                    object-converter)
+          object-converter (ObjectConverter.)
+          credential-converter (AttestedCredentialDataConverter.
+                                object-converter)
           cred-base64 (b64/encode-binary (.convert credential-converter
                                                    (.getAttestedCredentialData
                                                     ^AuthenticatorImpl
                                                     authenticator)))
-          envelope (new AttestationStatementEnvelope (.getAttestationStatement
-                                                      ^AuthenticatorImpl
-                                                      authenticator))
+          envelope (AttestationStatementEnvelope. (.getAttestationStatement
+                                                   ^AuthenticatorImpl
+                                                   authenticator))
           row (js/insert! db-con
                           :webauthn_authenticators
                           {:user_id user-id
@@ -78,9 +78,9 @@
   "Returns the user's saved authenticators."
   [db-con username]
   (let [user-id (db/get-user-id db-con username)
-        object-converter (new ObjectConverter)
-        credential-converter (new AttestedCredentialDataConverter
-                                  object-converter)
+        object-converter (ObjectConverter.)
+        credential-converter (AttestedCredentialDataConverter.
+                              object-converter)
         cbor-converter (.getCborConverter object-converter)]
     (for [row (jdbc/execute! db-con
                              (sql/format {:select [:counter
@@ -89,17 +89,17 @@
                                           :from [:webauthn_authenticators]
                                           :where [:= :user_id user-id]})
                              db/rs-opts)]
-      (new AuthenticatorImpl
-           (.convert credential-converter
-                     (bytes (b64/decode-binary
-                             (:attested-credential row))))
-           (.getAttestationStatement
-            ^AttestationStatementEnvelope
-            (.readValue cbor-converter
-                        (bytes (b64/decode-binary
-                                (:attestation-statement row)))
-                        AttestationStatementEnvelope))
-           (:counter row)))))
+      (AuthenticatorImpl.
+       (.convert credential-converter
+                 (bytes (b64/decode-binary
+                         (:attested-credential row))))
+       (.getAttestationStatement
+        ^AttestationStatementEnvelope
+        (.readValue cbor-converter
+                    (bytes (b64/decode-binary
+                            (:attestation-statement row)))
+                    AttestationStatementEnvelope))
+       (:counter row)))))
 
 (defn register-user!
   "Callback function for user registration."

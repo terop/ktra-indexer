@@ -1,7 +1,7 @@
 (ns ktra-indexer.parser
   "Tracklist parser"
   (:refer-clojure :exclude [range iterate format max min])
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as str]
             [java-time.api :as t])
   (:import java.time.DayOfWeek
            org.jsoup.Jsoup
@@ -26,17 +26,17 @@
   [sc-url]
   (let [document (.get (Jsoup/connect sc-url))
         ;; Remove description from tracklist start
-        tracklist (s/join "\n" (s/split-lines
-                                (.get (.attributes
-                                       (.first
-                                        (.select document
-                                                 "article > p > meta")))
-                                      "content")))]
-    {:title (s/trim (s/replace (first (s/split (.title document) #" by"))
-                               "Stream" ""))
-     :tracklist (if (s/index-of (s/lower-case tracklist) "tracklist")
-                  (s/triml (subs tracklist (+ (s/index-of tracklist "Tracklist")
-                                              (count "Tracklist"))))
+        tracklist (str/join "\n" (str/split-lines
+                                  (.get (.attributes
+                                         (.first
+                                          (.select document
+                                                   "article > p > meta")))
+                                        "content")))]
+    {:title (str/trim (str/replace (first (str/split (.title document) #" by"))
+                                   "Stream" ""))
+     :tracklist (if (str/index-of (str/lower-case tracklist) "tracklist")
+                  (str/triml (subs tracklist (+ (str/index-of tracklist "Tracklist")
+                                                (count "Tracklist"))))
                   tracklist)
      :date (get-friday-date (.text ^Element (first
                                              (.select document "time"))))}))

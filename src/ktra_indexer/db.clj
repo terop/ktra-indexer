@@ -1,6 +1,6 @@
 (ns ktra-indexer.db
   "Namespace containing database functions"
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as str]
             [config.core :refer [env]]
             [taoensso.timbre :refer [error]]
             [java-time.api :as t]
@@ -74,12 +74,12 @@
   in a case-insensitive the edit distance comparison. threshold specifies the
   maximum difference threshold in the edit distance comparison."
   [reference coll threshold]
-  (let [lowercase-ref (s/lower-case reference)
+  (let [lowercase-ref (str/lower-case reference)
         distances (map (fn [value]
                          {:value value
-                          :distance (.apply (new LevenshteinDistance
-                                                 (int threshold))
-                                            (s/lower-case value)
+                          :distance (.apply (LevenshteinDistance.
+                                             (int threshold))
+                                            (str/lower-case value)
                                             lowercase-ref)}) coll)]
     (first (sort-by :distance <
                     (filter #(>= (:distance %) 0) distances)))))
@@ -90,7 +90,7 @@
   returns the ID. Returns ID > 0 on success and -1 on error."
   [db-con artist-name]
   (try
-    (let [artist-name (s/trim artist-name)
+    (let [artist-name (str/trim artist-name)
           match (re-find #"\d+\. (.+)" artist-name)
           ;; Remove possible leading order numbers from the artist name
           artist-name (if-not match
@@ -102,17 +102,17 @@
                                      (sql/format {:select :artist_id
                                                   :from :artists
                                                   :where [:= :%lower.name
-                                                          (s/lower-case
+                                                          (str/lower-case
                                                            artist-name)]})))]
       (if (= (count query-res) 1)
         ;; Artist found
         (first query-res)
         (let [threshold (if (< (count artist-name) 4)
                           1 2)
-              artist-subs (s/lower-case (subs artist-name
-                                              0
-                                              (- (count artist-name)
-                                                 threshold)))
+              artist-subs (str/lower-case (subs artist-name
+                                                0
+                                                (- (count artist-name)
+                                                   threshold)))
               similar-artists (into []
                                     (map :name)
                                     (jdbc/plan db-con
@@ -138,7 +138,7 @@
                          (sql/format {:select :artist_id
                                       :from :artists
                                       :where [:= :%lower.name
-                                              (s/lower-case
+                                              (str/lower-case
                                                (:value
                                                 closest-artist))]})
                          rs-opts))))))
@@ -155,7 +155,7 @@
              (pos? artist-id))
       ;; Got a valid ID
       (try
-        (let [track-name (s/trim (:track track-json))
+        (let [track-name (str/trim (:track track-json))
               query-res (into []
                               (map :track_id)
                               (jdbc/plan db-con
@@ -166,17 +166,17 @@
                                            [:and [:= :artist_id
                                                   artist-id]
                                             [:= :%lower.name
-                                             (s/lower-case
+                                             (str/lower-case
                                               track-name)]]})))]
           (if (= (count query-res) 1)
             ;; Track found
             (first query-res)
             (let [threshold (if (< (count track-name) 5)
                               1 2)
-                  track-name-subs (s/lower-case (subs track-name
-                                                      0
-                                                      (- (count track-name)
-                                                         threshold)))
+                  track-name-subs (str/lower-case (subs track-name
+                                                        0
+                                                        (- (count track-name)
+                                                           threshold)))
                   similar-tracks (into []
                                        (map :name)
                                        (jdbc/plan db-con
@@ -206,7 +206,7 @@
                                              [:and [:= :artist_id
                                                     artist-id]
                                               [:= :%lower.name
-                                               (s/lower-case
+                                               (str/lower-case
                                                 (:value
                                                  closest-track))]]})
                                 rs-opts))
@@ -255,7 +255,7 @@
   status of the insert operation."
   [db-con date ep-name tracklist-json]
   (try
-    (let [ep-name (s/trim (s/replace ep-name "KTRA" ""))
+    (let [ep-name (str/trim (str/replace ep-name "KTRA" ""))
           ep-name-parts (re-matches
                          #"Episode (\d+)\.?\s?.+" ep-name)]
       (if-not (= (count ep-name-parts) 2)
@@ -352,6 +352,7 @@
                                                              (Integer/parseInt
                                                               episode-number)]})
                                         rs-opts)]
+             #_{:splint/disable [lint/assoc-fn]}
              (assoc row :date (sql-date-to-date-str (:date row))))}
     (catch PSQLException pge
       (error pge
