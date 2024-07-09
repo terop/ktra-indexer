@@ -16,7 +16,7 @@
             [ring.middleware
              [defaults :refer [secure-site-defaults site-defaults wrap-defaults]]
              [reload :refer [wrap-reload]]]
-            [ring.adapter.jetty :refer [run-jetty]]
+            [ring.adapter.jetty9 :refer [run-jetty]]
             [ring.util.http-response :refer [found]]
             [taoensso.timbre :refer [set-min-level!]]
             [ktra-indexer

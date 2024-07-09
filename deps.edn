@@ -4,8 +4,8 @@
         org.clojure/tools.namespace {:mvn/version "1.5.0"}
         yogthos/config {:mvn/version "1.2.0"}
         ring/ring-devel {:mvn/version "1.12.2"}
-        ring/ring-jetty-adapter {:mvn/version "1.12.2"}
         ring/ring-defaults {:mvn/version "0.5.0"}
+        info.sunng/ring-jetty9-adapter {:mvn/version "0.33.4"}
         clojure.java-time/clojure.java-time {:mvn/version "1.4.2"}
         metosin/reitit {:mvn/version "0.7.1"}
         metosin/ring-http-response {:mvn/version "0.9.4"}
