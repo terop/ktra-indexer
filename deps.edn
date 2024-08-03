@@ -25,7 +25,7 @@
  :aliases
  {:run {:main-opts ["-m" "ktra-indexer.handler"]
         :jvm-opts ["-Dconfig=resources/dev/config.edn"]}
-  :build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.4"}}
+  :build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.5"}}
           :ns-default build}
   :test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
@@ -36,7 +36,7 @@
   :eastwood {:main-opts ["-m" "eastwood.lint"
                          ;; Any Eastwood options can be passed here as edn:
                          {}]
-             :extra-deps {jonase/eastwood {:mvn/version "1.4.2"}}}
+             :extra-deps {jonase/eastwood {:mvn/version "1.4.3"}}}
   :splint {:extra-deps {io.github.noahtheduke/splint {:mvn/version "1.15.2"}
                         org.clojure/clojure {:mvn/version "1.11.1"}}
            :main-opts ["-m" "noahtheduke.splint"]}}}
