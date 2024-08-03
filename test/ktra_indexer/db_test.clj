@@ -6,6 +6,7 @@
             [ktra-indexer.db :refer [db-conf
                                      edit-distance-similarity
                                      get-all-artists
+                                     get-db-password
                                      get-episode-basic-data
                                      get-episode-tracks
                                      get-episodes
@@ -35,9 +36,7 @@
       db-user (get (System/getenv)
                    "POSTGRESQL_DB_USERNAME"
                    (db-conf :user))
-      db-password (get (System/getenv)
-                       "POSTGRESQL_DB_PASSWORD"
-                       (db-conf :password))]
+      db-password (get-db-password)]
   (def test-ds {:dbtype "postgresql"
                 :dbname db-name
                 :host db-host
@@ -276,3 +275,13 @@
             :distance 1}
            (edit-distance-similarity "Dun" ["Dune"] 2)))
     (is (nil? (edit-distance-similarity "Dune" ["Endymion"] 2)))))
+
+(deftest test-get-db-password
+  (testing "Database password fetch"
+    (with-redefs [db-conf (fn [_] nil)]
+      (is (nil? (get-db-password))))
+    (with-redefs [db-conf (fn [_] "foobar")]
+      (is (= "foobar" (get-db-password))))
+    ;; Reading the password from a file is not tested because of the difficulty
+    ;; of setting environment variables in Clojure / Java
+    ))
