@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
-"""This a script for cleaning up the ktra-indexer database from similar
-artists names."""
+"""A script for cleaning up the ktra-indexer database.
+
+Similar artist names are checked and removed.
+"""
 
 import argparse
 import sys
 from collections import OrderedDict
 
-import editdistance  # pylint: disable=import-error
-import psycopg2
+import editdistance
+import psycopg
 
 
 class DbCleaner:
@@ -16,8 +18,8 @@ class DbCleaner:
 
     def __init__(self, db_name, db_user, db_password):
         """Class constructor."""
-        self._conn = psycopg2.connect(dbname=db_name, user=db_user,
-                                      password=db_password)
+        self._conn = psycopg.connect(dbname=db_name, user=db_user,
+                                     password=db_password)
         self._cursor = self._conn.cursor()
         self._artists = OrderedDict()
 
@@ -30,8 +32,9 @@ class DbCleaner:
             self._artists[artist[0]] = artist[1]
 
     def check_artists(self, edit_distance):
-        """Goes through each artists, filters them by edit distance and asks the user
-        whether to merge to a another one."""
+        """Go through each artists, filters them by edit distance and asks the user
+        whether to merge to a another one.
+        """
         self.get_artists()
 
         print('Press \'q\' to quit')
@@ -50,8 +53,8 @@ class DbCleaner:
             print(f'Artists similar to "{filtered[0][0]}":')
             print('0. Retain all')
             for index, artist in enumerate(filtered):
-                # pylint: disable=consider-using-f-string
-                print('{}. {} (edit distance {})'.format(index + 1, artist[0], artist[1]))
+                print('{}. {} (edit distance {})'.format(index + 1, artist[0],
+                                                         artist[1]))
 
             choice = input('Choose option: ')
             choice = choice.rstrip('.')
@@ -60,29 +63,33 @@ class DbCleaner:
                 break
             choice = int(choice)
             if choice > len(filtered):
-                choice = input(f'Please choose an option between 0 and {len(filtered)}: ')
+                choice = input('Please choose an option between 0 and '
+                               f'{len(filtered)}: ')
                 choice = int(choice.rstrip('.'))
 
             if choice == 0:
-                for index, artist in enumerate(filtered):
+                for index, _ in enumerate(filtered):
                     self._artists.pop(filtered[index][0])
                 continue
 
             new_artist_id = self._artists[filtered[choice - 1][0]]
 
-            for index, artist in enumerate(filtered):
+            for index, _ in enumerate(filtered):
                 if index == (choice - 1):
                     self._artists.pop(filtered[index][0])
                     continue
 
                 try:
                     old_id = self._artists[filtered[index][0]]
-                    self._cursor.execute('UPDATE tracks SET artist_id = %s WHERE artist_id = %s',
+                    self._cursor.execute('UPDATE tracks SET artist_id = %s '
+                                         'WHERE artist_id = %s',
                                          (new_artist_id, old_id))
-                    self._cursor.execute('DELETE FROM artists WHERE artist_id = %s', (old_id,))
-                except psycopg2.DatabaseError as dbe:
+                    self._cursor.execute('DELETE FROM artists WHERE artist_id = %s',
+                                         (old_id,))
+                except psycopg.DatabaseError as dbe:
                     self._cursor.rollback()
-                    print(f'Error: got a database error: {dbe.pgerror}', file=sys.stderr)
+                    print(f'Error: got a database error: {dbe.pgerror}',
+                          file=sys.stderr)
                     return False
 
                 self._artists.pop(filtered[index][0])
@@ -92,15 +99,17 @@ class DbCleaner:
 
 
 def main():
-    """Module main function."""
-    parser = argparse.ArgumentParser(description='Cleans up a ktra-indexer database by removing'
-                                     ' artists whose names are close to each other. The "closeness"'
-                                     ' is compared with edit distance; an edit distance over 2'
-                                     ' is practically unusable.')
+    """Main function of the module."""
+    parser = argparse.ArgumentParser(description='Cleans up a ktra-indexer database by '
+                                     'removing artists whose names are close to each '
+                                     'other. The "closeness" is compared with edit '
+                                     'distance; an edit distance over 2 is practically '
+                                     'unusable.')
     parser.add_argument('db_name', type=str, help='Name of the database')
     parser.add_argument('db_user', type=str, help='Database user name')
     parser.add_argument('db_password', type=str, help='Database user password')
-    parser.add_argument('--distance', type=int, help='Default edit distance, now 1', default=1)
+    parser.add_argument('--distance', type=int, help='Default edit distance '
+                        '(currently 1)', default=1)
 
     args = parser.parse_args()
 

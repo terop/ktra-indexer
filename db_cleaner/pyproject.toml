@@ -1,16 +1,18 @@
-[tool.poetry]
+[project]
 name = "db-cleaner"
 version = "0.1.0"
 description = "DB cleaner script"
-authors = ["Tero Paloheimo <tero.paloheimo@iki.fi>"]
-packages = [{include = "db_cleaner.py"}]
+readme = "README.md"
+authors = [
+  {name = "Tero Paloheimo", email = "tero.paloheimo@iki.fi"}
+]
+requires-python = ">=3.13"
+dependencies = [
+    "editdistance>=0.8.1",
+    "psycopg[binary]>=3.2.3",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-psycopg2 = "^2.9.5"
-editdistance = "^0.6.2"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff]
+lint.select = ["B", "D", "E", "F", "G", "I", "N", "PERF", "PIE", "PL", "PTH", "SIM", "RUF", "S", "TRY", "W"]
+lint.ignore = ["D203", "D213"]
+target-version = "py313"
