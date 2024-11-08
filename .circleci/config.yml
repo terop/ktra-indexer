@@ -3,13 +3,13 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/clojure:1.11.1
+      - image: clojure:temurin-22-tools-deps-bookworm-slim
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
         environment:
           TEST_DATABASE_URL: postgresql://postgres@localhost/ktra_test
-      - image: cimg/postgres:16.3
+      - image: cimg/postgres:17.0
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
@@ -33,7 +33,7 @@ jobs:
           name: database setup
           command: |
             sleep 5
-            sudo apt install -y postgresql-client || true
+            apt-get update && apt-get install -y postgresql-client
             psql -d ${TEST_DATABASE_URL} < db-def.sql
 
       - run:
@@ -43,17 +43,17 @@ jobs:
 
       - run:
           name: run tests
-          command: clojure -T:build build && clojure -M:test
+          command: clojure -T:build build && clojure -X:test
 
       - run:
           name: run linters
           command: |
-            clojure -M:eastwood
             clojure -M:splint
 
       - run:
           name: run clj-kondo
           command: |
+            apt-get install -y curl unzip
             (cd /tmp
              curl -sLO https://raw.githubusercontent.com/clj-kondo/clj-kondo/master/script/install-clj-kondo
              chmod +x install-clj-kondo
@@ -63,5 +63,5 @@ jobs:
       - run:
           name: run cljfmt
           command: |
-            clojure -Ttools install io.github.weavejester/cljfmt '{:git/tag "0.11.2"}' :as cljfmt
+            clojure -Ttools install io.github.weavejester/cljfmt '{:git/tag "0.13.0"}' :as cljfmt
             clojure -Tcljfmt check
