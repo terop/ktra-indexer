@@ -14,12 +14,13 @@
   [date]
   (let [parsed-date (t/local-date-time (t/formatter :iso-offset-date-time)
                                        date)
-        friday (t/local-date (LocalDateTime/.plusDays parsed-date
-                                                      (- (DayOfWeek/.getValue
-                                                          (DayOfWeek/FRIDAY))
-                                                         (DayOfWeek/.getValue
-                                                          (LocalDateTime/.getDayOfWeek
-                                                           parsed-date)))))]
+        friday (t/local-date (LocalDateTime/.plusDays
+                              parsed-date
+                              (- (DayOfWeek/.getValue
+                                  DayOfWeek/FRIDAY)
+                                 (DayOfWeek/.getValue
+                                  (LocalDateTime/.getDayOfWeek
+                                   parsed-date)))))]
     (t/format "y-MM-dd" friday)))
 
 (defn parse-sc-tracklist
