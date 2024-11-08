@@ -8,7 +8,8 @@
             [next.jdbc
              [result-set :as rs]
              [sql :as js]])
-  (:import org.apache.commons.text.similarity.LevenshteinDistance
+  (:import java.sql.Connection
+           org.apache.commons.text.similarity.LevenshteinDistance
            org.postgresql.util.PSQLException))
 (refer-clojure :exclude '[filter for group-by into partition-by set update])
 (require '[honey.sql :as sql])
@@ -86,10 +87,11 @@
   (let [lowercase-ref (str/lower-case reference)
         distances (map (fn [value]
                          {:value value
-                          :distance (.apply (LevenshteinDistance.
-                                             (int threshold))
-                                            (str/lower-case value)
-                                            lowercase-ref)}) coll)]
+                          :distance (LevenshteinDistance/.apply
+                                     (LevenshteinDistance.
+                                      (int threshold))
+                                     (str/lower-case value)
+                                     lowercase-ref)}) coll)]
     (first (sort-by :distance <
                     (filter #(>= (:distance %) 0) distances)))))
 
@@ -287,12 +289,12 @@
               {:status :ok
                :episode-number episode-number}
               (do
-                (.rollback tx)
+                (Connection/.rollback tx)
                 {:status :error
                  :cause :general-error}))))))
     (catch PSQLException pge
       (error pge "Failed to insert episode")
-      (if (re-find #"violates unique constraint" (.getMessage pge))
+      (if (re-find #"violates unique constraint" (PSQLException/.getMessage pge))
         {:status :error
          :cause :duplicate-episode}
         {:status :error
@@ -318,7 +320,7 @@
                                                  track)))
           {:status :ok}
           (do
-            (.rollback tx)
+            (Connection/.rollback tx)
             {:status :error}))))
     (catch PSQLException pge
       (error pge "Failed to insert additional tracks")
