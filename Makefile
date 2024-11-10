@@ -10,4 +10,4 @@ uberjar: # build the jar
 	mv target/ktra-indexer-*.jar target/ktra-indexer.jar
 
 update: # update base images
-	podman pull amazoncorretto:22-alpine alpine:latest
+	podman pull amazoncorretto:23-alpine alpine:latest

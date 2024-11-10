@@ -1,4 +1,4 @@
-FROM amazoncorretto:22-alpine as corretto-jdk
+FROM amazoncorretto:23-alpine as corretto-jdk
 LABEL maintainer="tero.paloheimo@iki.fi"
 
 # Required for strip-debug to work
