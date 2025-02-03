@@ -1,8 +1,10 @@
+/* global axios */
+
 var username = '';
 
 const publicKeyCredentialRequestOptions = function(server) {
     var credentials = [];
-    for (cred of server.credentials)
+    for (const cred of server.credentials)
         credentials.push({
             id: Uint8Array.from(
                 atob(cred.id),
@@ -46,7 +48,7 @@ const doWebAuthnLogin = function (resolve, reject) {
                 'client-data': btoa(String.fromCharCode(...new Uint8Array(assertion.response.clientDataJSON))),
             };
         })
-        .catch(error => {})
+        .catch(_ => {})
         .then(payload => {
             axios.post('webauthn/login',
                        payload)

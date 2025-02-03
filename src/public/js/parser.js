@@ -1,3 +1,5 @@
+/* eslint no-unused-vars: "error" */
+/* exported parseTracklist */
 
 /* Parses a feature, that is, checks whether the current line represents a
  * show feature.

@@ -1,3 +1,5 @@
+/* global axios,username */
+
 const publicKeyCredentialCreationOptions = (server, username) => ({
     challenge: Uint8Array.from(
         server.challenge, c => c.charCodeAt(0)),
@@ -43,10 +45,10 @@ const handleRegistration = function () {
         .then(payload => {
             axios.post('webauthn/register',
                        payload)
-                .then(resp => {
+                .then(_ => {
                     document.getElementById('registerSuccess').classList.remove('hidden');
                 })
-                .catch(error => {
+                .catch(_ => {
                     document.getElementById('registerFailure').classList.remove('hidden');
                 });
         });
