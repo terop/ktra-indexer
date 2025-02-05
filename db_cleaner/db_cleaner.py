@@ -32,9 +32,7 @@ class DbCleaner:
             self._artists[artist[0]] = artist[1]
 
     def check_artists(self, edit_distance):
-        """Go through each artists, filters them by edit distance and asks the user
-        whether to merge to a another one.
-        """
+        """Check if an artist should be merged to another one."""
         self.get_artists()
 
         print('Press \'q\' to quit')
@@ -99,7 +97,7 @@ class DbCleaner:
 
 
 def main():
-    """Main function of the module."""
+    """Run the module code."""
     parser = argparse.ArgumentParser(description='Cleans up a ktra-indexer database by '
                                      'removing artists whose names are close to each '
                                      'other. The "closeness" is compared with edit '
