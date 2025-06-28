@@ -24,7 +24,7 @@
     (t/format "y-MM-dd" friday)))
 
 (defn parse-sc-tracklist
-  "Parse tracklist from SoundCloud and return date, title, and tracklist
+  "Parses the tracklist from SoundCloud and return date, title, and tracklist
   in a map. The SoundCloud URL must be valid, no input validation is performed
   on it."
   [sc-url]
@@ -36,10 +36,15 @@
                                                      (Element/.select
                                                       document
                                                       "article > p > meta")))
-                                                   "content")))]
-    {:title (str/trim (str/replace (first (str/split (Document/.title document)
-                                                     #" by"))
-                                   "Stream" ""))
+                                                   "content")))
+        title (str/trim (str/replace (first (str/split (Document/.title
+                                                        document)
+                                                       #" by"))
+                                     "Stream" ""))
+        title-match (re-matches #"(.+) \(KTRA .+ (\d+)\)" title)]
+    {:title (if-not title-match
+              title
+              (str "Episode " (nth title-match 2) ": " (nth title-match 1)))
      :tracklist (if (str/index-of (str/lower-case tracklist) "tracklist")
                   (str/triml (subs tracklist (+ (str/index-of tracklist
                                                               "Tracklist")

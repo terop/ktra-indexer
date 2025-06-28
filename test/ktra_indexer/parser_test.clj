@@ -18,4 +18,10 @@
                           "-show"))]
       (is (= "KTRA Episode 656: Kutski Tracks Live Show!!" (:title tracklist)))
       (is (= "2024-10-25" (:date tracklist)))
+      (is (includes? (:tracklist tracklist) "Kutski")))
+    (let [tracklist (parse-sc-tracklist
+                     (str "https://soundcloud.com/keepingtheravealive/"
+                          "ktra-ep-689"))]
+      (is (= "Episode 689: Gamer Rave" (:title tracklist)))
+      (is (= "2025-06-13" (:date tracklist)))
       (is (includes? (:tracklist tracklist) "Kutski")))))
