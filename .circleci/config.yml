@@ -50,4 +50,4 @@ jobs:
           command: |
             git clone https://github.com/terop/env-logger.git
             cp env-logger/scripts/verification.sh .
-            CI=1 ./verification.sh
+            ./verification.sh
