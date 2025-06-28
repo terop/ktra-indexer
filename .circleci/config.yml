@@ -49,4 +49,5 @@ jobs:
           name: run verification script
           command: |
             git clone https://github.com/terop/env-logger.git
-            CI=1 env-logger/scripts/verification.sh
+            cp env-logger/scripts/verification.sh .
+            CI=1 ./verification.sh

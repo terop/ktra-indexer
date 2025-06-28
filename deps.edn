@@ -38,5 +38,5 @@
                          {}]
              :extra-deps {jonase/eastwood {:mvn/version "1.4.3"}}}
   :splint {:extra-deps {io.github.noahtheduke/splint {:mvn/version "1.21.0"}
-                        org.clojure/clojure {:mvn/version "1.11.4"}}
+                        org.clojure/clojure {:mvn/version "1.12.1"}}
            :main-opts ["-m" "noahtheduke.splint"]}}}
