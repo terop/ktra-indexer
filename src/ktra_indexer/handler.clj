@@ -21,7 +21,7 @@
             [taoensso.timbre :refer [set-min-level!]]
             [ktra-indexer.authentication :as auth]
             [ktra-indexer.db :as db]
-            [ktra-indexer.parser :refer [parse-sc-tracklist]]
+            [ktra-indexer.parser :refer [get-episode-info]]
             [ktra-indexer.render :refer [serve-json serve-template]])
   (:gen-class))
 
@@ -215,7 +215,7 @@
                                {:status "error"
                                 :cause "invalid-url"}
                                {:status "ok"
-                                :content (parse-sc-tracklist sc-url)}))))}]]
+                                :content (get-episode-info sc-url)}))))}]]
     {:data {:muuntaja m/instance
             :middleware [muuntaja/format-middleware]}})
    (ring/routes

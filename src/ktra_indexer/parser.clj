@@ -2,7 +2,7 @@
   "Tracklist parser"
   (:refer-clojure :exclude [range iterate format max min])
   (:require [clojure.string :as str]
-            [java-time.api :as t])
+            [java-time.api :as jt])
   (:import (java.time DayOfWeek LocalDateTime)
            (org.jsoup Connection Jsoup)
            org.jsoup.select.Elements
@@ -12,18 +12,18 @@
   "Returns the date of the same week's Friday formatted as dd.mm.yyyy.
   Input date must be in ISO 8601 date-time offset format."
   [date]
-  (let [parsed-date (t/local-date-time (t/formatter :iso-offset-date-time)
-                                       date)
-        friday (t/local-date (LocalDateTime/.plusDays
-                              parsed-date
-                              (- (DayOfWeek/.getValue
-                                  DayOfWeek/FRIDAY)
-                                 (DayOfWeek/.getValue
-                                  (LocalDateTime/.getDayOfWeek
-                                   parsed-date)))))]
-    (t/format "y-MM-dd" friday)))
+  (let [parsed-date (jt/local-date-time (jt/formatter :iso-offset-date-time)
+                                        date)
+        friday (jt/local-date (LocalDateTime/.plusDays
+                               parsed-date
+                               (- (DayOfWeek/.getValue
+                                   DayOfWeek/FRIDAY)
+                                  (DayOfWeek/.getValue
+                                   (LocalDateTime/.getDayOfWeek
+                                    parsed-date)))))]
+    (jt/format "y-MM-dd" friday)))
 
-(defn parse-sc-tracklist
+(defn get-episode-info
   "Parses the tracklist from SoundCloud and return date, title, and tracklist
   in a map. The SoundCloud URL must be valid, no input validation is performed
   on it."

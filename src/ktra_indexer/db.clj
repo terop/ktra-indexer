@@ -3,7 +3,7 @@
   (:require [clojure.string :as str]
             [config.core :refer [env]]
             [taoensso.timbre :refer [error]]
-            [java-time.api :as t]
+            [java-time.api :as jt]
             [next.jdbc :as jdbc]
             [next.jdbc.result-set :as rs]
             [next.jdbc.sql :as js])
@@ -278,8 +278,8 @@
                                         :episodes
                                         {:number episode-number
                                          :name ep-name
-                                         :date (t/local-date "y-M-d"
-                                                             date)}
+                                         :date (jt/local-date "y-M-d"
+                                                              date)}
                                         rs-opts))]
             (if (every? pos? (for [track-json tracklist-json]
                                (insert-episode-track tx
@@ -328,7 +328,7 @@
 (defn sql-date->date-str
   "Returns the given SQL date as a dd.mm.yyyy formatted string."
   [sql-date]
-  (t/format "d.M.y" (t/local-date sql-date)))
+  (jt/format "d.M.y" (jt/local-date sql-date)))
 
 (defn get-episodes
   "Returns all the episodes in the database. Returns episode number, name

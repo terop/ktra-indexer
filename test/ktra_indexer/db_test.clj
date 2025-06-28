@@ -1,6 +1,6 @@
 (ns ktra-indexer.db-test
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
-            [java-time.api :as t]
+            [java-time.api :as jt]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
             [ktra-indexer.db :refer [db-conf
@@ -130,7 +130,7 @@
                                          :episodes
                                          {:number 2
                                           :name "Test episode"
-                                          :date (t/local-date)}
+                                          :date (jt/local-date)}
                                          rs-opts))]
       (is (pos? (insert-episode-track test-ds
                                       episode-id
@@ -211,7 +211,7 @@
 (deftest sql-timestamp-to-string
   (testing "Conversion of SQL timestamp to a string"
     (is (= "12.1.2020"
-           (sql-date->date-str (t/sql-date (t/local-date 2020 1 12)))))))
+           (sql-date->date-str (jt/sql-date (jt/local-date 2020 1 12)))))))
 
 (deftest episode-query
   (testing "Query of episodes and episode data"
