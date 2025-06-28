@@ -1,8 +1,7 @@
 (ns ktra-indexer.authentication
   "A namespace for authentication related functions"
   (:require [buddy.auth :refer [authenticated?]]
-            [buddy.auth.backends
-             [session :refer [session-backend]]]
+            [buddy.auth.backends.session :refer [session-backend]]
             [cljwebauthn.core :as webauthn]
             [cljwebauthn.b64 :as b64]
             [jsonista.core :as j]
@@ -11,9 +10,8 @@
             [next.jdbc.sql :as js]
             [ring.util.http-response :refer [created forbidden found ok status]]
             [taoensso.timbre :refer [error]]
-            [ktra-indexer
-             [db :as db]
-             [render :refer [serve-json]]])
+            [ktra-indexer.db :as db]
+            [ktra-indexer.render :refer [serve-json]])
   (:import (com.webauthn4j.authenticator AuthenticatorImpl CoreAuthenticatorImpl)
            com.webauthn4j.converter.AttestedCredentialDataConverter
            (com.webauthn4j.converter.util CborConverter ObjectConverter)

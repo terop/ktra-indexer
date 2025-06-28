@@ -10,20 +10,19 @@
             [muuntaja.core :as m]
             [next.jdbc :as jdbc]
             [reitit.ring :as ring]
-            [reitit.ring.middleware
-             [muuntaja :as muuntaja]
-             [parameters :as parameters]]
-            [ring.middleware
-             [defaults :refer [secure-site-defaults site-defaults wrap-defaults]]
-             [reload :refer [wrap-reload]]]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [reitit.ring.middleware.parameters :as parameters]
+            [ring.middleware.defaults :refer [secure-site-defaults
+                                              site-defaults
+                                              wrap-defaults]]
+            [ring.middleware.reload :refer [wrap-reload]]
             [ring.adapter.jetty9 :refer [run-jetty]]
             [ring.util.http-response :refer [found]]
             [taoensso.timbre :refer [set-min-level!]]
-            [ktra-indexer
-             [authentication :as auth]
-             [db :as db]
-             [parser :refer [parse-sc-tracklist]]
-             [render :refer [serve-json serve-template]]])
+            [ktra-indexer.authentication :as auth]
+            [ktra-indexer.db :as db]
+            [ktra-indexer.parser :refer [parse-sc-tracklist]]
+            [ktra-indexer.render :refer [serve-json serve-template]])
   (:gen-class))
 
 (def json-decode-opts

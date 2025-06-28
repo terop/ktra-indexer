@@ -5,17 +5,16 @@
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as js]
             [cljwebauthn.b64 :as b64]
-            [ktra-indexer
-             [authentication :refer [save-authenticator
-                                     get-authenticators
-                                     wa-prepare-register
-                                     do-prepare-login
-                                     unauthorized-handler
-                                     unauthorized-response
-                                     logout]]
-             [db :refer [rs-opts]]
-             [db-test :refer [test-ds]]
-             [handler :refer [json-decode-opts]]])
+            [ktra-indexer.authentication :refer [save-authenticator
+                                                 get-authenticators
+                                                 wa-prepare-register
+                                                 do-prepare-login
+                                                 unauthorized-handler
+                                                 unauthorized-response
+                                                 logout]]
+            [ktra-indexer.db :refer [rs-opts]]
+            [ktra-indexer.db-test :refer [test-ds]]
+            [ktra-indexer.handler :refer [json-decode-opts]])
   (:import com.webauthn4j.authenticator.AuthenticatorImpl
            com.webauthn4j.converter.AttestedCredentialDataConverter
            (com.webauthn4j.converter.util CborConverter ObjectConverter)

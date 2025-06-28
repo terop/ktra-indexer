@@ -5,9 +5,8 @@
             [taoensso.timbre :refer [error]]
             [java-time.api :as t]
             [next.jdbc :as jdbc]
-            [next.jdbc
-             [result-set :as rs]
-             [sql :as js]])
+            [next.jdbc.result-set :as rs]
+            [next.jdbc.sql :as js])
   (:import java.sql.Connection
            org.apache.commons.text.similarity.LevenshteinDistance
            org.postgresql.util.PSQLException))
