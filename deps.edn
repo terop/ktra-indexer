@@ -5,11 +5,11 @@
         yogthos/config {:mvn/version "1.2.1"}
         ring/ring-devel {:mvn/version "1.15.3"}
         ring/ring-defaults {:mvn/version "0.7.0"}
-        info.sunng/ring-jetty9-adapter {:mvn/version "0.38.0"}
+        info.sunng/ring-jetty9-adapter {:mvn/version "0.39.0"}
         clojure.java-time/clojure.java-time {:mvn/version "1.4.3"}
-        metosin/reitit {:mvn/version "0.9.1"}
+        metosin/reitit {:mvn/version "0.9.2"}
         metosin/ring-http-response {:mvn/version "0.9.5"}
-        selmer/selmer {:mvn/version "1.12.62"}
+        selmer/selmer {:mvn/version "1.12.65"}
         metosin/jsonista {:mvn/version "0.3.13"}
         org.postgresql/postgresql {:mvn/version "42.7.8"}
         com.github.seancorfield/honeysql {:mvn/version "2.7.1350"}
@@ -25,7 +25,7 @@
  :aliases
  {:run {:main-opts ["-m" "ktra-indexer.handler"]
         :jvm-opts ["-Dconfig=resources/dev/config.edn"]}
-  :build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.10"}}
+  :build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.11"}}
           :ns-default build}
   :test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
