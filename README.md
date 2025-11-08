@@ -16,22 +16,12 @@ before the application can be started.
 
 ## Authentication
 
-This application only supports WebAuthn as the authentication method.
-There are two options to allow registration of the first authenticator for a user:
-
-* Set the `:allow-register-page-access` value to `true` in the config file
-* Set an environment variable called `ALLOW_REG_ACCESS` to a non-empty value
-
-This allows you to register an authenticator by navigating to the
-`<app url>/register` page. After registering the authenticator
-change the config value back to `false` if you used the first option mentioned
-above.
-Further authenticators can be registered on the same page when being logged in
-to the application.
+This application uses OpenID Connect based authentication. Keycloak has been used
+for development but other OpenID Connect implementations should work as well.
+See the `oid-auth` section in the configuration file for the settings to be
+configured.
 
 ## Configuration
-
-Users are directly added the to the `users` table.
 
 A sample configuration can be found in the `resources/config.edn_sample` file.
 The configuration file used in development is `resources/dev/config.edn` and the
@@ -57,9 +47,7 @@ _NOTE_! The first variable is not defined in `config.edn`.
 ## Running
 ### Locally
 
-To start the application locally run `clojure -M:run`. If the `target/classes`
-directory does not exist then you need to run the `clojure -T:build build-java`
-command to create the required Java .class file.
+To start the application locally run `clojure -M:run`.
 
 ### Docker / podman
 

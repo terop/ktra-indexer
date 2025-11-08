@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="favicon.ico">
+</head>
+
+<body>
+    <script>
+        const applicationUrl = '{{ application-url }}';
+        const staticAssetPath = '{{ static-asset-path }}';
+    </script>
+    <script src="{{ static-asset-path }}/js/auth.js"></script>
+    <script>
+        doLogout();
+
+        window.location.href = applicationUrl;
+    </script>
+</body>
+</html>

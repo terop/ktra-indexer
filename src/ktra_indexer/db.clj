@@ -51,32 +51,6 @@
 (def postgres-ds (jdbc/get-datasource postgres))
 (def rs-opts {:builder-fn rs/as-unqualified-kebab-maps})
 
-;; User handling
-(defn get-user-id
-  "Returns the user ID of the user with the given username.
-  Returns nil if the user is not found or an error map in case of an error."
-  [db-con username]
-  (try
-    (:user-id (jdbc/execute-one! db-con
-                                 (sql/format {:select :user_id
-                                              :from :users
-                                              :where [:= :username username]})
-                                 rs-opts))
-    (catch PSQLException pge
-      (error pge
-             (format "Could not get user ID for user '%s'" username))
-      {:status :error})))
-
-(defn get-username
-  "Returns the username of the user with the smallest user ID.
-  Returns nil if there are no users."
-  [db-con]
-  (:username (jdbc/execute-one! db-con
-                                (sql/format {:select :username
-                                             :from :users
-                                             :order-by [[:user_id :desc]]})
-                                rs-opts)))
-
 ;; Misc functions
 (defn edit-distance-similarity
   "Returns the string and distance from coll which is most similar to reference

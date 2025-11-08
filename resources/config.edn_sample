@@ -5,15 +5,13 @@
             :password "123"}
  ;; Time zone to use in database operations
  :time-zone "Europe/Helsinki"
- ;; Switch to allow access to the register page unauthenticated
- ;; WARNING! Major security risk, only keep enabled when no WebAuthn
- ;; authenticator is registered
- :allow-register-page-access false
- ;; WebAuthn site property settings
- :webauthn {;; Hostname
-            :hostname "localhost"
-            ;; Use HTTPS?
-            :use-https true}
+   ;; OpenID Connect authentication settings
+ :oid-auth {;; Base URL for all endpoints
+            :base-url "https://example.com/keycloak/realms/myrealm"
+            ;; Client name
+            :client-id "myclient"
+            ;; JWT subject UUIDs of authorised users
+            :authorised-subject-uuids ["myuuid"]}
  ;; Enable enforcing of HSTS, only use if HTTPS is not terminated by a reverse
  ;; proxy or load balancer
  :force-hsts false
@@ -22,5 +20,7 @@
  :development-mode false
  ;; Full URL through which the application is accessed, MUST end with a slash
  :app-url "http://example.com/ktra/"
+   ;; Location for static assets
+ :static-asset-path "https://static-assets.example.com"
  ;; Prefix for KTRA SoundCloud page URL needed for SoundCloud URL validation
  :ktra-sc-url-prefix "https://soundcloud.com/keepingtheravealive"}

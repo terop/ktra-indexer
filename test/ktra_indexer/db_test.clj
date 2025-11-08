@@ -14,8 +14,6 @@
                                      get-or-insert-artist
                                      get-or-insert-track
                                      get-tracks-by-artist
-                                     get-user-id
-                                     get-username
                                      insert-additional-tracks
                                      insert-episode
                                      insert-episode-track
@@ -44,17 +42,10 @@
                 :user db-user
                 :password db-password}))
 
-(def test-user "test-user")
-
 (defn clean-test-database
   "Cleans the test database before and after running tests."
   [test-fn]
-  (js/insert! test-ds
-              :users
-              {:username test-user}
-              rs-opts)
   (test-fn)
-  (jdbc/execute! test-ds (sql/format {:delete-from [:users]}))
   (jdbc/execute! test-ds (sql/format {:delete-from [:tracks]}))
   (jdbc/execute! test-ds (sql/format {:delete-from [:episode_tracks]}))
   (jdbc/execute! test-ds (sql/format {:delete-from [:artists]}))
@@ -62,22 +53,6 @@
 
 ;; Fixture run at the start and end of tests
 (use-fixtures :once clean-test-database)
-
-(deftest user-id-query
-  (testing "Querying of user ID"
-    (is (nil? (get-user-id test-ds "notfounduser")))
-    (is (pos? (get-user-id test-ds test-user)))
-    (with-redefs [jdbc/execute-one!
-                  (fn [_ _ _]
-                    (throw (PSQLException.
-                            "Test exception"
-                            PSQLState/COMMUNICATION_ERROR)))]
-      (is (= {:status :error}
-             (get-user-id test-ds test-user))))))
-
-(deftest username-query
-  (testing "Querying of username"
-    (is (= test-user (get-username test-ds)))))
 
 (deftest artist-query-or-insert
   (testing "Query and insert of artist"

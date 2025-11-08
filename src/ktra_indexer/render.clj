@@ -20,3 +20,8 @@
   [template values]
   (serve-as (render-file template values)
             "text/html;charset=utf-8"))
+
+(defn serve-text
+  "Serves the given content as text with the text/plain Content-Type."
+  [content]
+  (serve-as content "text/plain"))

@@ -40,19 +40,3 @@ CREATE TABLE episode_tracks (
        track_id INTEGER REFERENCES tracks (track_id) ON DELETE CASCADE,
        feature_id INTEGER
 );
-
--- Users table
-CREATE TABLE users (
-       user_id SERIAL PRIMARY KEY,
-       username VARCHAR(100) NOT NULL UNIQUE
-);
-
--- WebAuthn authenticator table
-CREATE TABLE webauthn_authenticators (
-       authn_id SERIAL PRIMARY KEY,
-       user_id INTEGER REFERENCES users (user_id) ON DELETE CASCADE,
-       name VARCHAR(40),
-       counter INTEGER NOT NULL,
-       attested_credential VARCHAR(500) NOT NULL,
-       attestation_statement VARCHAR(2000) NOT NULL
-);

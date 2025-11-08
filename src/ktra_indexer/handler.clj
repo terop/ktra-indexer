@@ -1,10 +1,6 @@
 (ns ktra-indexer.handler
   "The main namespace of the application"
-  (:require [buddy.auth :refer [authenticated?]]
-            [buddy.auth.middleware
-             :refer
-             [wrap-authentication wrap-authorization]]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [config.core :refer [env]]
             [jsonista.core :as j]
             [muuntaja.core :as m]
@@ -19,10 +15,13 @@
             [ring.adapter.jetty9 :refer [run-jetty]]
             [ring.util.http-response :refer [found]]
             [taoensso.timbre :refer [set-min-level!]]
+            [terop.openid-connect-auth :refer [access-ok?
+                                               make-logout-url
+                                               receive-and-check-id-token]]
             [ktra-indexer.authentication :as auth]
             [ktra-indexer.db :as db]
             [ktra-indexer.parser :refer [get-episode-info]]
-            [ktra-indexer.render :refer [serve-json serve-template]])
+            [ktra-indexer.render :refer [serve-json serve-template serve-text]])
   (:gen-class))
 
 (def json-decode-opts
@@ -30,13 +29,19 @@
   (j/object-mapper {:decode-key-fn true}))
 
 (defn wrap-authenticated
-  "Checks if the request is authenticated using (authenticated?) function and
+  "Checks if the request is authenticated using (access-ok?) function and
   calls the (success-fn request). If the request is not authenticated then the
   unauthorised response handler is called."
   [request success-fn]
-  (if (authenticated? (:session request))
+  (if (access-ok? (:oid-auth env) request)
     (success-fn request)
     (auth/unauthorized-response)))
+
+(defn get-auth-params
+  "Returns the parameters needed for authentication."
+  [_]
+  (serve-json {:oid-base-url (:base-url (:oid-auth env))
+               :client-id (:client-id (:oid-auth env))}))
 
 (defn get-index
   "Handles the index page request."
@@ -50,7 +55,7 @@
         (serve-template "templates/index.html"
                         {:episodes (:episodes episodes)
                          :artists (:artists artists)
-                         :logged-in (authenticated? (:session request))})))))
+                         :logged-in (access-ok? (:oid-auth env) request)})))))
 
 (defn get-middleware
   "Returns the middlewares to be applied."
@@ -70,9 +75,7 @@
                                       false)
                             (assoc :params false)
                             (assoc :static false))]
-    [[wrap-authorization auth/auth-backend]
-     [wrap-authentication auth/auth-backend]
-     parameters/parameters-middleware
+    [parameters/parameters-middleware
      [wrap-defaults (if dev-mode
                       defaults-config
                       (if (:force-hsts env)
@@ -89,39 +92,32 @@
     ;; Index
     [["/" {:get get-index}]
      ;; Login and logout
-     ["/login" {:get #(if-not (authenticated? (:session %))
-                        (serve-template "templates/login.html" {})
+     ["/login" {:get #(if-not (access-ok? (:oid-auth env) %)
+                        (serve-template "templates/login.html"
+                                        {:application-url (:app-url env)
+                                         :static-asset-path (:static-asset-path env)})
                         (found (:app-url env)))}]
-     ["/logout" {:get auth/logout}]
-     ;; WebAuthn
-     ["/register" {:get (fn [request]
-                          (let [authenticated (authenticated?
-                                               (:session request))]
-                            (if (or authenticated
-                                    (:allow-register-page-access env)
-                                    (System/getenv "ALLOW_REG_ACCESS"))
-                              (let [username (if authenticated
-                                               (name (get-in request
-                                                             [:session
-                                                              :identity]))
-                                               (db/get-username
-                                                db/postgres-ds))]
-                                (serve-template "templates/register.html"
-                                                {:username username}))
-                              auth/response-unauthorized)))}]
-     ["/webauthn"
-      ["/register" {:get auth/wa-prepare-register
-                    :post auth/wa-register}]
-      ["/login" {:get auth/wa-prepare-login
-                 :post auth/wa-login}]]
+     ["/logout" {:get (fn [_] (found (make-logout-url (str (:app-url env)
+                                                           "do-logout")
+                                                      (:oid-auth env))))}]
+     ["/do-logout" {:get (fn [_] (serve-template "templates/logout.html"
+                                                 {:application-url (:app-url env)
+                                                  :static-asset-path (:static-asset-path
+                                                                      env)}))}]
+     ["/store-id-token" {:get #(serve-text (if (receive-and-check-id-token
+                                                (:oid-auth env) %)
+                                             "OK" "Not valid"))}]
+     ;; Data queries
+     ["/data"
+      ["/auth" {:get get-auth-params}]]
      ;; Tracks
      ["/add" {:get #(wrap-authenticated
                      %
                      (fn [request]
                        (serve-template "templates/add.html"
                                        {:app-url (:app-url env)
-                                        :logged-in (authenticated?
-                                                    (:session request))})))
+                                        :logged-in (access-ok? (:oid-auth env)
+                                                               request)})))
               :post (fn [request]
                       (let [params (:params request)
                             result (db/insert-episode db/postgres-ds
@@ -134,8 +130,8 @@
                         (serve-template "templates/add.html"
                                         {:insert-status result
                                          :app-url (:app-url env)
-                                         :logged-in (authenticated?
-                                                     (:session request))})))}]
+                                         :logged-in (access-ok? (:oid-auth env)
+                                                                request)})))}]
      ["/add-tracks" {:get (fn [request]
                             (let [id (get (:params request) "id")]
                               (if (and id
@@ -181,9 +177,8 @@
                                                     db/postgres-ds id)
                                                    :basic-data (:data
                                                                 episode-data)
-                                                   :logged-in (authenticated?
-                                                               (:session
-                                                                request))
+                                                   :logged-in (access-ok? (:oid-auth env)
+                                                                          request)
                                                    :episode-id id
                                                    :app-url (:app-url env)})))
                               (found (:app-url env)))))}]
