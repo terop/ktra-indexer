@@ -254,17 +254,20 @@
                                          :name ep-name
                                          :date (jt/local-date "y-M-d"
                                                               date)}
-                                        rs-opts))]
-            (if (every? pos? (for [track-json tracklist-json]
-                               (insert-episode-track tx
-                                                     episode-id
-                                                     track-json)))
-              {:status :ok
-               :episode-number episode-number}
-              (do
-                (Connection/.rollback tx)
-                {:status :error
-                 :cause :general-error}))))))
+                                        rs-opts))
+                success-response {:status :ok
+                                  :episode-number episode-number}]
+            (if-not tracklist-json
+              success-response
+              (if (every? pos? (for [track-json tracklist-json]
+                                 (insert-episode-track tx
+                                                       episode-id
+                                                       track-json)))
+                success-response
+                (do
+                  (Connection/.rollback tx)
+                  {:status :error
+                   :cause :general-error})))))))
     (catch PSQLException pge
       (error pge "Failed to insert episode")
       (if (re-find #"violates unique constraint" (PSQLException/.getMessage pge))

@@ -123,10 +123,13 @@
                             result (db/insert-episode db/postgres-ds
                                                       (get params "date")
                                                       (get params "name")
-                                                      (j/read-value
-                                                       (get params
-                                                            "encodedTracklist")
-                                                       json-decode-opts))]
+                                                      (let [tracklist
+                                                            (get params
+                                                                 "encodedTracklist")]
+                                                        (when (seq tracklist)
+                                                          (j/read-value
+                                                           tracklist
+                                                           json-decode-opts))))]
                         (serve-template "templates/add.html"
                                         {:insert-status result
                                          :app-url (:app-url env)
