@@ -18,7 +18,6 @@
             [terop.openid-connect-auth :refer [access-ok?
                                                make-logout-url
                                                receive-and-check-id-token]]
-            [ktra-indexer.authentication :as auth]
             [ktra-indexer.db :as db]
             [ktra-indexer.parser :refer [get-episode-info]]
             [ktra-indexer.render :refer [serve-json serve-template serve-text]])
@@ -35,7 +34,7 @@
   [request success-fn]
   (if (access-ok? (:oid-auth env) request)
     (success-fn request)
-    (auth/unauthorized-response)))
+    (found (str (:app-url env) "login"))))
 
 (defn get-auth-params
   "Returns the parameters needed for authentication."
@@ -86,6 +85,9 @@
                             (assoc-in [:security :hsts]
                                       false))))]]))
 
+(def js-load-params {:application-url (:app-url env)
+                     :static-asset-path (:static-asset-path env)})
+
 (def app
   (ring/ring-handler
    (ring/router
@@ -94,16 +96,13 @@
      ;; Login and logout
      ["/login" {:get #(if-not (access-ok? (:oid-auth env) %)
                         (serve-template "templates/login.html"
-                                        {:application-url (:app-url env)
-                                         :static-asset-path (:static-asset-path env)})
+                                        js-load-params)
                         (found (:app-url env)))}]
      ["/logout" {:get (fn [_] (found (make-logout-url (str (:app-url env)
                                                            "do-logout")
                                                       (:oid-auth env))))}]
      ["/do-logout" {:get (fn [_] (serve-template "templates/logout.html"
-                                                 {:application-url (:app-url env)
-                                                  :static-asset-path (:static-asset-path
-                                                                      env)}))}]
+                                                 js-load-params))}]
      ["/store-id-token" {:get #(serve-text (if (receive-and-check-id-token
                                                 (:oid-auth env) %)
                                              "OK" "Not valid"))}]

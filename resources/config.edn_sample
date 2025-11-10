@@ -20,7 +20,7 @@
  :development-mode false
  ;; Full URL through which the application is accessed, MUST end with a slash
  :app-url "http://example.com/ktra/"
-   ;; Location for static assets
+ ;; Location for static assets
  :static-asset-path "https://static-assets.example.com"
  ;; Prefix for KTRA SoundCloud page URL needed for SoundCloud URL validation
  :ktra-sc-url-prefix "https://soundcloud.com/keepingtheravealive"}

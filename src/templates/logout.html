@@ -11,11 +11,6 @@
         const applicationUrl = '{{ application-url }}';
         const staticAssetPath = '{{ static-asset-path }}';
     </script>
-    <script src="{{ static-asset-path }}/js/auth.js"></script>
-    <script>
-        doLogout();
-
-        window.location.href = applicationUrl;
-    </script>
+    <script src="{{ static-asset-path }}/js/auth-load.js"></script>
 </body>
 </html>
