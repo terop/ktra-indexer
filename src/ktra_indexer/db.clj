@@ -412,3 +412,17 @@
                                                  track-name "%'")]]
                               :order-by [[:ep_name :asc]]})
                  rs-opts))
+
+(defn get-episode-max-date
+  "Returns biggest date of all episodes in the database."
+  [db-con]
+  (try
+    (when-let [date (:max
+                     (jdbc/execute-one!
+                      db-con
+                      (sql/format {:select [:%max.date], :from :episodes})
+                      rs-opts))]
+      (jt/local-date date))
+    (catch PSQLException pge
+      (error pge "Failed to get biggest episode date")
+      nil)))

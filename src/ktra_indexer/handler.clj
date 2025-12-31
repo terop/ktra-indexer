@@ -212,7 +212,7 @@
                                {:status "error"
                                 :cause "invalid-url"}
                                {:status "ok"
-                                :content (get-episode-info sc-url)}))))}]]
+                                :content (get-episode-info db/postgres-ds sc-url)}))))}]]
     {:data {:muuntaja m/instance
             :middleware [muuntaja/format-middleware]}})
    (ring/routes

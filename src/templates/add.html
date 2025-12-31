@@ -87,9 +87,6 @@
                     integrity="sha256-B3naREaZ1fMFNS84kvok78FBjl9K3hAXsozbv+d64ZI=" crossorigin="anonymous"></script>
             <script src="js/parser.js"></script>
             <script>
-                // Set max date for datepicker
-                document.getElementById('date').max = luxon.DateTime.local().toISODate();
-
                 // Handler for the submit button click event
                 var submitClickHandler = function (event) {
                     var tracklistTa = document.getElementById('tracklist'),
@@ -138,8 +135,6 @@
                          .then(function (response) {
                              const data = response.data;
                              if (response.data.status === 'ok') {
-                                 // Update max value in case episode date is later then the current date
-                                 document.getElementById('date').max = data.content.date;
                                  document.getElementById('date').value = data.content.date;
                                  document.getElementById('name').value = data.content.title;
                                  document.getElementById('tracklist').value = data.content.tracklist;

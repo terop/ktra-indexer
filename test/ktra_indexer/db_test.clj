@@ -8,6 +8,7 @@
                                      get-all-artists
                                      get-db-password
                                      get-episode-basic-data
+                                     get-episode-max-date
                                      get-episode-tracks
                                      get-episodes
                                      get-episodes-with-track
@@ -260,3 +261,12 @@
     ;; Reading the password from a file is not tested because of the difficulty
     ;; of setting environment variables in Clojure / Java
     ))
+
+(deftest test-get-episode-max-date
+  (testing "Episode max date fetch"
+    (with-redefs [jdbc/plan (fn [_ _]
+                              (throw (PSQLException.
+                                      "Test exception"
+                                      PSQLState/COMMUNICATION_ERROR)))]
+      (is (nil? (get-episode-max-date test-ds))))
+    (is (nil? (get-episode-max-date test-ds)))))
