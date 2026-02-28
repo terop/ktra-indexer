@@ -39,7 +39,7 @@ var parseTracklist = function (tracklistArray) {
                     'sample-mania': false,
                     'guest-mix': false,
                     'final-vinyl': false},
-        track = null,
+        track,
         tracks = [];
 
     for (var i = 0; i < tracklistArray.length;) {        
