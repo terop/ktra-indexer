@@ -4,6 +4,7 @@ target/
 .cpcache/
 .eastwood/
 .lsp/
+node_modules/
 .nrepl-port
 resources/dev/config.edn
 resources/prod/config.edn
