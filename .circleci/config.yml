@@ -9,7 +9,7 @@ jobs:
           password: $DOCKERHUB_PASSWORD
         environment:
           TEST_DATABASE_URL: postgresql://postgres@localhost/ktra_test
-      - image: cimg/postgres:18.0
+      - image: cimg/postgres:18.1
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
@@ -27,7 +27,8 @@ jobs:
       POSTGRESQL_DB_PASSWORD: testpwd
 
     steps:
-      - checkout
+      - checkout:
+          method: blobless
 
       - run:
           name: database setup
@@ -49,5 +50,4 @@ jobs:
           name: run verification script
           command: |
             git clone https://github.com/terop/env-logger.git
-            cp env-logger/scripts/verification.sh .
-            ./verification.sh
+            env-logger/scripts/verification.sh
