@@ -52,7 +52,8 @@ To start the application locally run `clojure -M:run`.
 ### Docker / podman
 
 This application can be also be run in a Docker or podman container. To build the
-container call `make build` from root directory of the application.
+container call `just build` from root directory of the application.
+This requires the [just](https://github.com/casey/just) command to be installed.
 The container will be called `ktra-indexer`. The .jar file to run in in the
 container can be executed with the `java -jar <name>.jar` command.
 
