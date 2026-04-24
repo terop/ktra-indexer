@@ -1,6 +1,5 @@
 (ns ktra-indexer.parser
   "Tracklist parser"
-  (:refer-clojure :exclude [range iterate format max min])
   (:require [clojure.string :as str]
             [java-time.api :as jt]
             [ktra-indexer.db :as db])
