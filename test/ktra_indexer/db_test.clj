@@ -44,16 +44,20 @@
                 :password db-password}))
 
 (defn clean-test-database
-  "Cleans the test database before and after running tests."
+  "Cleans the test database before and after each test."
   [test-fn]
+  (jdbc/execute! test-ds (sql/format {:delete-from [:tracks]}))
+  (jdbc/execute! test-ds (sql/format {:delete-from [:episode_tracks]}))
+  (jdbc/execute! test-ds (sql/format {:delete-from [:artists]}))
+  (jdbc/execute! test-ds (sql/format {:delete-from [:episodes]}))
   (test-fn)
   (jdbc/execute! test-ds (sql/format {:delete-from [:tracks]}))
   (jdbc/execute! test-ds (sql/format {:delete-from [:episode_tracks]}))
   (jdbc/execute! test-ds (sql/format {:delete-from [:artists]}))
   (jdbc/execute! test-ds (sql/format {:delete-from [:episodes]})))
 
-;; Fixture run at the start and end of tests
-(use-fixtures :once clean-test-database)
+;; Fixture run before and after each test
+(use-fixtures :each clean-test-database)
 
 (deftest artist-query-or-insert
   (testing "Query and insert of artist"
@@ -118,7 +122,7 @@
                                       {:artist "Endymion"
                                        :track "Save Me"
                                        :feature "hardest-record"})))
-      (is (= 6 (:count (jdbc/execute-one! test-ds
+      (is (= 2 (:count (jdbc/execute-one! test-ds
                                           (sql/format
                                            {:select [:%count.ep_tr_id]
                                             :from :episode_tracks})
@@ -166,6 +170,12 @@
 
 (deftest additional-track-insert
   (testing "Insert of additional tracks"
+    (insert-episode test-ds
+                    "2020-10-11"
+                    "Episode 1 ft. Endymion"
+                    [{:artist "Endymion"
+                      :track "Progress"
+                      :feature nil}])
     (is (= {:status :ok}
            (insert-additional-tracks test-ds
                                      "1"
@@ -227,11 +237,41 @@
 
 (deftest tracks-by-artist
   (testing "Query all tracks by a given artist"
+    (insert-episode test-ds
+                    "2020-10-11"
+                    "Episode 1 ft. Endymion"
+                    [{:artist "Endymion"
+                      :track "Progress"
+                      :feature nil}
+                     {:artist "Art of Fighters"
+                      :track "Guardians of Unlost"
+                      :feature nil}])
+    (insert-episode test-ds
+                    "2020-10-18"
+                    "Episode 2 ft. Endymion"
+                    [{:artist "Endymion"
+                      :track "Save Me"
+                      :feature "hardest-record"}
+                     {:artist "Endymion"
+                      :track "Punk Ass Bitch"
+                      :feature nil}
+                     {:artist "Art of Fighters"
+                      :track "Toxic Hotel"
+                      :feature nil}])
     (is (= 3 (count (get-tracks-by-artist test-ds "Endymion"))))
     (is (= 2 (count (get-tracks-by-artist test-ds "Art of Fighters"))))))
 
 (deftest all-artists
   (testing "Query all artists"
+    (insert-episode test-ds
+                    "2020-10-11"
+                    "Episode 1 ft. Endymion"
+                    [{:artist "Endymion"
+                      :track "Progress"
+                      :feature nil}
+                     {:artist "Art of Fighters"
+                      :track "Guardians of Unlost"
+                      :feature nil}])
     (is (= {:status :ok
             :artists '("Art of Fighters" "Endymion")}
            (get-all-artists test-ds)))

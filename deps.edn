@@ -27,11 +27,9 @@
   :build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.13"}}
           :ns-default build}
   :test {:extra-paths ["test"]
-         :extra-deps {io.github.cognitect-labs/test-runner
-                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
-         :main-opts ["-m" "cognitect.test-runner"]
-         :jvm-opts ["-Dconfig=resources/dev/config.edn"]
-         :exec-fn cognitect.test-runner.api/test}
+         :extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}}
+         :main-opts ["-m" "kaocha.runner"]
+         :jvm-opts ["-Dconfig=resources/config.edn_sample"]}
   :eastwood {:main-opts ["-m" "eastwood.lint"
                          ;; Any Eastwood options can be passed here as edn:
                          {}]
