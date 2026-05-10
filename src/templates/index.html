@@ -9,7 +9,7 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/autocompleter@9.3.2/autocomplete.css"
               integrity="sha256-tq5C0xV32se1Tslz6rGbLAjgIyNU/46aWhZk3z/i2bA=" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tablesort@5.7.1/tablesort.min.css">
-        <link href="css/common.css" rel="stylesheet">
+        <link href="{{ app-url }}css/common.css" rel="stylesheet">
         <style type="text/css">
             #episode-table > tbody > tr {
                 cursor: pointer;
@@ -35,18 +35,18 @@
                         </li>
                         {% if logged-in %}
                             <li class="nav-item">
-                                <a class="nav-link" href="add">Add</a>
+                                <a class="nav-link" href="{{ app-url }}add">Add</a>
                             </li>
                         {% endif %}
                     </ul>
                     <ul class="navbar-nav">
                         {% if logged-in %}
                             <li class="nav-item">
-                                <a class="nav-link" href="logout">Log out</a>
+                                <a class="nav-link" href="{{ app-url }}logout">Log out</a>
                             </li>
                         {% else %}
                             <li>
-                                <a class="nav-link" href="login">Log in</a>
+                                <a class="nav-link" href="{{ app-url }}login">Log in</a>
                             </li>
                         {% endif %}
                     </ul>
@@ -78,7 +78,7 @@
                     </thead>
                     <tbody>
                         {% for ep in episodes %}
-                            <tr onclick="window.document.location='view/{{ ep.number }}';">
+                            <tr onclick="window.document.location='{{ app-url }}view/{{ ep.number }}';">
                                 <td>{{ep.number}}</td>
                                 <td>{{ep.name}}</td>
                                 <td>{{ep.date}}</td>
@@ -99,8 +99,8 @@
                     integrity="sha256-JyhGx6ftkbAHbHlqZSeTEn8iZlkujL2XK6xZ4Rg2Qdo=" crossorigin="anonymous"></script>
             <script src="https://cdn.jsdelivr.net/npm/tablesort@5.7.1/dist/tablesort.min.js"
                     integrity="sha256-7pnxfryYUXCJmgBOn2vwnn9g60tFm2v+ZoPPAUA1LGM=" crossorigin="anonymous"></script>
-            <script src="js/tablesort.number.min.js"></script>
-            <script src="js/tablesort.date.js"></script>
+            <script src="{{ app-url }}js/tablesort.number.min.js"></script>
+            <script src="{{ app-url }}js/tablesort.date.js"></script>
             <script>
                 new Tablesort(document.getElementById('episode-table'));
 
@@ -121,7 +121,7 @@
                     },
                     onSelect: function(item) {
                         window.document.location =
-                            'tracks/' + encodeURIComponent(item);
+                            '{{ app-url }}tracks/' + encodeURIComponent(item);
                     },
                     minLength: 2,
                     emptyMsg: 'No artist found'
@@ -134,7 +134,7 @@
                          addEventListener('click',
                                           function() {
                                               window.document.location =
-                                                  'track-episodes/' +
+                                                  '{{ app-url }}track-episodes/' +
                                                   encodeURIComponent(document.getElementById('trackField').value);
                                           }, false);
         </script>

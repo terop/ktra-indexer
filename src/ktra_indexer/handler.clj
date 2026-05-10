@@ -50,9 +50,10 @@
           artists (db/get-all-artists con)]
       (if (or (= :error (:status episodes))
               (= :error (:status artists)))
-        (serve-template "templates/error.html" {})
+        (serve-template "templates/error.html" {:app-url (:app-url env)})
         (serve-template "templates/index.html"
-                        {:episodes (:episodes episodes)
+                        {:app-url (:app-url env)
+                         :episodes (:episodes episodes)
                          :artists (:artists artists)
                          :logged-in (access-ok? (:oid-auth env) request)})))))
 
@@ -85,7 +86,7 @@
                             (assoc-in [:security :hsts]
                                       false))))]]))
 
-(def js-load-params {:application-url (:app-url env)
+(def js-load-params {:app-url (:app-url env)
                      :static-asset-path (:static-asset-path env)})
 
 (def app
@@ -145,7 +146,7 @@
                                                       db/postgres-ds id)]
                                     (if (= :error (:status episode-data))
                                       (serve-template "templates/error.html"
-                                                      {})
+                                                      {:app-url (:app-url env)})
                                       (serve-template
                                        "templates/add-tracks.html"
                                        {:episode-id id
@@ -172,7 +173,7 @@
                                                   db/postgres-ds id)]
                                 (if (= :error (:status episode-data))
                                   (serve-template "templates/error.html"
-                                                  {})
+                                                  {:app-url (:app-url env)})
                                   (serve-template "templates/view.html"
                                                   {:tracks
                                                    (db/get-episode-tracks

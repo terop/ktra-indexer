@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="shortcut icon" href="{{ app-url }}favicon.ico">
 
     <title>KTRA indexer - login</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link href="css/login.css" rel="stylesheet">
+    <link href="{{ app-url }}css/login.css" rel="stylesheet">
     <style>
         #oidLogin {
             margin-top: 20px;
@@ -33,7 +33,7 @@
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.7.2/build/global/luxon.min.js"
             integrity="sha256-UWxf6lyCvfH7XEcrmq/cqc2m3IBrLBLOnWLC4Pw0gQQ=" crossorigin="anonymous"></script>
     <script>
-        const applicationUrl = '{{ application-url }}';
+        const applicationUrl = '{{ app-url }}';
         const staticAssetPath = '{{ static-asset-path }}';
     </script>
     <script src="{{ static-asset-path }}/js/auth-load.js"></script>
