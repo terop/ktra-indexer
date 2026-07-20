@@ -12,7 +12,7 @@
                                               site-defaults
                                               wrap-defaults]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [ring.adapter.jetty9 :refer [run-jetty]]
+            [org.httpkit.server :refer [run-server]]
             [ring.util.http-response :refer [found]]
             [taoensso.timbre :refer [set-min-level!]]
             [terop.openid-connect-auth :refer [access-ok?
@@ -227,6 +227,6 @@
   (set-min-level! :info)
   (let [port (Integer/parseInt (get (System/getenv)
                                     "APP_PORT" "8080"))]
-    (run-jetty (if (:development-mode env)
-                 (wrap-reload #'app) #'app)
-               {:port port})))
+    (run-server (if (:development-mode env)
+                  (wrap-reload #'app) #'app)
+                {:port port})))
