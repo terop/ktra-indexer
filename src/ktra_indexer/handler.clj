@@ -11,7 +11,6 @@
             [ring.middleware.defaults :refer [secure-site-defaults
                                               site-defaults
                                               wrap-defaults]]
-            [ring.middleware.reload :refer [wrap-reload]]
             [org.httpkit.server :refer [run-server]]
             [ring.util.http-response :refer [found]]
             [taoensso.timbre :refer [set-min-level!]]
@@ -221,12 +220,17 @@
     (ring/create-default-handler))
    {:middleware (get-middleware)}))
 
+(defn wrap-dev-reload
+  "Wraps the handler with code reload in development mode."
+  [handler]
+  (if (:development-mode env)
+    ((requiring-resolve 'ring.middleware.reload/wrap-reload) handler)
+    handler))
+
 (defn -main
   "Starts the web server."
   []
   (set-min-level! :info)
   (let [port (Integer/parseInt (get (System/getenv)
                                     "APP_PORT" "8080"))]
-    (run-server (if (:development-mode env)
-                  (wrap-reload #'app) #'app)
-                {:port port})))
+    (run-server (wrap-dev-reload #'app) {:port port})))

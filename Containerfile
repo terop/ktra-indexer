@@ -12,11 +12,12 @@ RUN BASE_MODS="$($JAVA_HOME/bin/jdeps \
     --print-module-deps \
     /tmp/classes)" \
     && EXTRA_MODS="jdk.crypto.ec,java.naming,java.management" \
-    && MODS="${BASE_MODS},${EXTRA_MODS}" \
+    && MODS="$(printf '%s,%s' "$BASE_MODS" "$EXTRA_MODS" \
+        | tr ',' '\n' | grep -v '^java\.desktop$' | paste -sd, -)" \
     && $JAVA_HOME/bin/jlink \
-        --verbose \
         --module-path "$JAVA_HOME/jmods" \
         --add-modules "$MODS" \
+        --compress zip-6 \
         --strip-debug \
         --no-man-pages \
         --no-header-files \
